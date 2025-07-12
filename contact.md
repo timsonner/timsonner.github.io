@@ -40,12 +40,9 @@ Have a specific question or want to collaborate? You can reach out to me through
 
 I'm always excited to discuss:
 
-- **Web Development**: Frontend and backend technologies
-- **JavaScript Frameworks**: React, Vue, Angular, and emerging frameworks
-- **Python Projects**: Data science, automation, and web development
-- **Open Source**: Contributing to and maintaining open source projects
-- **Tech Mentoring**: Helping other developers grow their skills
-- **Collaboration**: Working together on interesting projects
+- **Pentesting**: Tools and techniques
+- **Sytem hardening**: How to make systems resistant to attack
+- **LOL Bins**: Using trusted applications in non-standard ways
 
 ## Response Time
 

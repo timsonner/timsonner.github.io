@@ -18,10 +18,3 @@ Welcome to my blog! I'm a passionate Cybersecurity Analyst and Software Develope
 
 - **Linux**: Various pentesting tools and distros
 - **Programming**: GoLang, C#, PowerShell  
-
-## Get in Touch
-
-Feel free to reach out if you have any questions or just want to connect!
-
-- GitHub: [timsonner](https://github.com/timsonner)
-- Email: tim@timsonner.com
