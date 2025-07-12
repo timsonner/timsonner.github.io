@@ -6,21 +6,18 @@ permalink: /about/
 
 # About Me
 
-Welcome to my blog! I'm a passionate developer who loves to share knowledge about programming, technology, and software development.
+Welcome to my blog! I'm a passionate Cybersecurity Analyst and Software Developer who loves sharing knowledge about Networking, Cybersecurity, and Software Development.
 
 ## What You'll Find Here
 
-- **Tutorials**: Step-by-step guides on various programming topics
-- **Project Showcases**: Interesting projects I've worked on
-- **Tech Insights**: Thoughts and opinions on the latest in technology
-- **Code Examples**: Practical code snippets with syntax highlighting
+- **Tutorials**: Guides on various topics
+- **Projects**: Interesting projects I've worked on
+- **Research**: Insight from research
 
-## Technologies I Work With
+## Technologies I Work With  
 
-- **Frontend**: HTML, CSS, JavaScript, React, Vue.js
-- **Backend**: Node.js, Python, Ruby
-- **Databases**: MySQL, PostgreSQL, MongoDB
-- **Tools**: Git, Docker, VS Code
+- **Linux**: Various pentesting tools and distros
+- **Programming**: GoLang, C#, PowerShell  
 
 ## Get in Touch
 
