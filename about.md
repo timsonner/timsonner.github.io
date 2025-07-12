@@ -24,4 +24,4 @@ Welcome to my blog! I'm a passionate Cybersecurity Analyst and Software Develope
 Feel free to reach out if you have any questions or just want to connect!
 
 - GitHub: [timsonner](https://github.com/timsonner)
-- Email: your.email@example.com
+- Email: tim@timsonner.com
