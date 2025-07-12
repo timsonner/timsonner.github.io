@@ -40,19 +40,24 @@ body {
   text-decoration: none;
 }
 
-.site-nav {
+.site-nav .trigger {
   display: flex;
   gap: 2rem;
+  align-items: center;
 }
 
 .page-link {
   color: #333;
   text-decoration: none;
   font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
 }
 
 .page-link:hover {
   color: #667eea;
+  background-color: #f8f9fa;
 }
 
 /* Footer styles */
