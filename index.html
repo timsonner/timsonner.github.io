@@ -7,6 +7,9 @@ title: Home
   <div class="hero-section">
     <!-- <h1 class="site-title">{{ site.title | default: "timsonner.com" }}</h1> -->
     <p class="site-description">{{ site.description | default: "timsonner.com" }}</p>
+    <div id="visitor-info" class="visitor-info">
+      <span id="visitor-greeting">Welcome, visitor!</span>
+    </div>
   </div>
 
   <div class="posts-section">
@@ -35,3 +38,29 @@ title: Home
     </ul>
   </div>
 </div>
+
+<script>
+// Fetch visitor IP and location information
+async function fetchVisitorInfo() {
+  const greetingElement = document.getElementById('visitor-greeting');
+  
+  try {
+    const response = await fetch('https://ipapi.co/json/');
+    const data = await response.json();
+    
+    if (data.ip && data.city && data.region) {
+      const location = `${data.city}, ${data.region}`;
+      
+      greetingElement.innerHTML = `Welcome ${data.ip} from ${location}! 🌍`;
+    } else {
+      greetingElement.innerHTML = 'Welcome, visitor! 👋';
+    }
+  } catch (error) {
+    console.log('Could not fetch visitor info:', error);
+    greetingElement.innerHTML = 'Welcome to my blog! 👋';
+  }
+}
+
+// Load visitor info when page loads
+document.addEventListener('DOMContentLoaded', fetchVisitorInfo);
+</script>
