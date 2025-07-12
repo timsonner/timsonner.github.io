@@ -1,11 +1,11 @@
-title: My Blog
+title: timsonner.com
 description: Welcome to my coding blog where I share tutorials, projects, and thoughts about development.
 baseurl: ""
 url: "https://timsonner.github.io"
 
 # Author information
 author:
-  name: Your Name
+  name: Tim Sonner
   email: tim@timsonner.com
 
 # Build settings
@@ -49,4 +49,4 @@ defaults:
       type: "posts"
     values:
       layout: "post"
-      author: "Your Name"
+      author: "Tim Sonner"
