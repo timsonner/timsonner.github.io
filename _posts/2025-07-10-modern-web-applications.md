@@ -4,7 +4,7 @@ title: "Building Modern Web Applications with JavaScript"
 date: 2025-07-10 15:30:00 -0000
 categories: javascript web development
 excerpt: "Explore modern JavaScript frameworks and tools for building scalable web applications."
-featured_image: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Blue_jay_in_PP_%2830960%29.jpg/320px-Blue_jay_in_PP_%2830960%29.jpg"
+featured_image: "/assets/images/blue-jay.jpg"
 ---
 
 # Building Modern Web Applications

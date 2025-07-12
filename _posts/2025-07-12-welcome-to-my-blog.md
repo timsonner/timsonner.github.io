@@ -4,7 +4,7 @@ title: "Welcome to My Blog - Getting Started with Jekyll and GitHub Pages"
 date: 2025-07-12 10:00:00 -0000
 categories: jekyll tutorial
 excerpt: "Learn how to create a beautiful blog with Jekyll, complete with syntax highlighting and image support."
-featured_image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Red_Panda_%2824986761703%29.jpg/320px-Red_Panda_%2824986761703%29.jpg"
+featured_image: "/assets/images/red-panda.jpg"
 ---
 
 # Welcome to My Blog!
