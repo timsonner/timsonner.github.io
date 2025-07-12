@@ -50,8 +50,9 @@ async function fetchVisitorInfo() {
     
     if (data.ip && data.city && data.region) {
       const location = `${data.city}, ${data.region}`;
-      
-      greetingElement.innerHTML = `Welcome ${data.ip} from ${location}! 🌍`;
+
+      greetingElement.innerHTML = `Welcome ${data.ip} from ${location}! 🌍 - courtesy of <a href="https://ipapi.co/json/">ipapi.co</a>`;
+
     } else {
       greetingElement.innerHTML = 'Welcome, visitor! 👋';
     }
