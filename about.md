@@ -12,9 +12,10 @@ Welcome to my blog! I'm a passionate Cybersecurity Analyst and Software Develope
 
 - **Tutorials**: Guides on various topics
 - **Projects**: Interesting projects I've worked on
-- **Research**: Insight from research
+- **Research**: Insights from research
 
 ## Technologies I Work With  
 
-- **Linux**: Various pentesting tools and distros
+- **Linux**: Various pentesting tools and distros  
+- **Windows**: Active Directory  
 - **Programming**: GoLang, C#, PowerShell  
