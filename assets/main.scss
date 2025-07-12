@@ -74,6 +74,42 @@ body {
   gap: 2rem;
 }
 
+/* Footer social media styling */
+.social-media-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 1rem;
+}
+
+.social-media-list li {
+  margin: 0;
+}
+
+.social-media-list a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #666;
+  text-decoration: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.social-media-list a:hover {
+  color: #333;
+  background-color: #f0f0f0;
+}
+
+.social-media-list .svg-icon {
+  flex-shrink: 0;
+}
+
+.social-media-list .username {
+  font-size: 0.9rem;
+}
+
 /* Post layout styles */
 .post-header {
   margin-bottom: 2rem;
@@ -285,6 +321,75 @@ pre code {
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   margin: 1rem 0;
+}
+
+/* Contact page styles */
+.contact-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.contact-link {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #fff;
+  border: 2px solid #e1e5e9;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #333;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.contact-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  text-decoration: none;
+  color: #333;
+}
+
+.contact-link.github:hover {
+  border-color: #333;
+}
+
+.contact-link.linkedin:hover {
+  border-color: #0077b5;
+}
+
+.contact-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+}
+
+.contact-link .github .contact-icon {
+  color: #333;
+}
+
+.contact-link.linkedin .contact-icon {
+  color: #0077b5;
+}
+
+.contact-link > div {
+  flex: 1;
+}
+
+.contact-link span {
+  display: block;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+}
+
+.contact-link small {
+  display: block;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 /* Responsive design */
