@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Welcome to My Blog - Getting Started with Jekyll and GitHub Pages"
+title: "Converted Blog from SvelteKit to Jekyll - Getting Started with Jekyll and GitHub Pages"
 date: 2025-07-12 10:00:00 -0000
 categories: jekyll tutorial
 excerpt: "Learn how to create a beautiful blog with Jekyll, complete with syntax highlighting and image support."
