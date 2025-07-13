@@ -2,12 +2,12 @@
 layout: post
 title: "Windows Server Active Directory VM Setup with VirtualBox and Linux"
 date: 2023-11-08 10:00:00 -0000
-categories: activedirectory tutorial
+categories: active directory tutorial
 excerpt: "Guide to setting up an Active Directory Domain Controller in VirtualBox using Kali"
 featured_image: "/assets/images/ad-vm-setup/ad-vm-setup-hero.jpeg"
 ---
 
-![](/assets/images/ad-vm-setup/ad-vm-setup-hero.jpeg)  
+https://timsonner.com/active/directory/tutorial/2023/11/08/ad-vm-setup/
 
 > A "white pages" telephone directory
 © 2010 by Tomasz Sienicki [user: tsca, mail: tomasz.sienicki at gmail.com] - Photograph by Tomasz Sienicki (Own work) Image intentionally scaled down.
