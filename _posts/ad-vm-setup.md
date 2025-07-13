@@ -1,8 +1,8 @@
 ---
 layout: post
-title: 'Windows Server Active Directory VM Setup with VirtualBox and Linux'
+title: "Windows Server Active Directory VM Setup with VirtualBox and Linux"
 date: 2023-11-08 10:00:00 -0000
-categories: jekyll tutorial
+categories: activedirectory tutorial
 excerpt: "Guide to setting up an Active Directory Domain Controller in VirtualBox using Kali"
 featured_image: "/assets/images/ad-vm-setup/ad-vm-setup-hero.jpeg"
 ---
