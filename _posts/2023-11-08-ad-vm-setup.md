@@ -7,8 +7,6 @@ excerpt: "Guide to setting up an Active Directory Domain Controller in VirtualBo
 featured_image: "/assets/images/ad-vm-setup/ad-vm-setup-hero.jpeg"
 ---
 
-https://timsonner.com/active/directory/tutorial/2023/11/08/ad-vm-setup/
-
 > A "white pages" telephone directory
 © 2010 by Tomasz Sienicki [user: tsca, mail: tomasz.sienicki at gmail.com] - Photograph by Tomasz Sienicki (Own work) Image intentionally scaled down.
 a phone / telephone book / directory  
