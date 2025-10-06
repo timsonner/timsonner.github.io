@@ -19,7 +19,9 @@ title: Home
         <li class="post-item">
           {% if post.featured_image %}
             <div class="post-image">
-              <img src="{{ post.featured_image }}" alt="{{ post.title | escape }}" />
+              <a href="{{ post.url | relative_url }}">
+                <img src="{{ post.featured_image }}" alt="{{ post.title | escape }}" />
+              </a>
             </div>
           {% endif %}
           <div class="post-content-preview">
