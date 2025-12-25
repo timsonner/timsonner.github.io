@@ -1,0 +1,29 @@
+// Color Palette
+$color-primary: #39ff14;       // Hacker Green
+$color-bg-body: #181c1f;       // Dark Grey/Blue
+$color-bg-container: #23272a;  // Slightly lighter container
+$color-bg-header: #2c2c2c;     // Header background (Terminal)
+$color-bg-code: #0c0c0c;       // Black for code blocks
+$color-bg-light: #f8f9fa;      // Light background (Tables/Hover)
+
+$color-text-main: #e0e0e0;     // Light Grey text
+$color-text-muted: #ccc;       // Muted text
+$color-text-grey: #666;        // Grey text (Meta/Quotes)
+$color-text-dark: #333;        // Dark text (for light backgrounds if any)
+
+$color-white: #fff;
+$color-black: #000;
+
+// Borders & Shadows
+$color-border-dark: #222;
+$color-border-light: #e1e5e9;
+$color-shadow-dark: #111;
+
+// Accents
+$color-accent-blue: #667eea;
+$color-accent-red: #ff5f56;
+$color-accent-yellow: #ffbd2e;
+$color-accent-green: #27c93f;
+
+// Fonts
+$font-family-mono: 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', 'Liberation Mono', monospace;

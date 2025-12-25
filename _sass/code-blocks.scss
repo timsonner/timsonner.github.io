@@ -1,7 +1,7 @@
 /* Code block styling */
 pre, code {
-  background-color: #181c1f;
-  color: #39ff14;
+  background-color: $color-bg-body;
+  color: $color-primary;
   border-radius: 4px;
   font-family: inherit;
 }
@@ -9,14 +9,14 @@ pre, code {
 pre {
   padding: 1rem;
   overflow-x: auto;
-  border-left: 4px solid #39ff14;
-  background: #181c1f;
+  border-left: 4px solid $color-primary;
+  background: $color-bg-body;
 }
 
 code {
   padding: 0.2rem 0.4rem;
   font-size: 0.95em;
-  background: #181c1f;
+  background: $color-bg-body;
 }
 
 pre code {
@@ -27,14 +27,14 @@ pre code {
 /* Syntax highlighting styles for Rouge */
 .highlight {
   position: relative;
-  background: #0c0c0c;
+  background: $color-bg-code;
   border-radius: 6px;
   padding: 1rem;
   overflow-x: auto;
-  border: 1px solid #39ff14;
+  border: 1px solid $color-primary;
   margin: 1rem 0;
-  color: #39ff14;
-  font-family: 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', 'Liberation Mono', monospace;
+  color: $color-primary;
+  font-family: $font-family-mono;
 }
 
 .highlight pre {
@@ -135,9 +135,9 @@ pre code {
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
-  background: #23272a;
-  color: #39ff14;
-  border: 1px solid #39ff14;
+  background: $color-bg-container;
+  color: $color-primary;
+  border: 1px solid $color-primary;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.8rem;
@@ -149,5 +149,5 @@ pre code {
 
 .copy-code-button:hover {
   opacity: 1;
-  background: #181c1f;
+  background: $color-bg-body;
 }

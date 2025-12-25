@@ -1,27 +1,29 @@
 ---
 ---
 
+@import "variables";
+
 /* Base styles for the blog */
 * {
   box-sizing: border-box;
 }
 
 body {
-  font-family: 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', 'Liberation Mono', monospace;
-  background: #181c1f;
-  color: #e0e0e0;
+  font-family: $font-family-mono;
+  background: $color-bg-body;
+  color: $color-text-main;
   margin: 0;
   padding: 0;
 }
 
 a {
-  color: #39ff14;
+  color: $color-primary;
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 a:hover {
-  color: #fff;
+  color: $color-white;
   text-decoration: none;
 }
 
@@ -32,19 +34,19 @@ a:hover {
 }
 
 .page-content .wrapper {
-  background: #23272a;
+  background: $color-bg-container;
   border-radius: 8px;
   padding: 2rem 1rem;
-  border: 2px solid #39ff14;
-  box-shadow: 0 0 8px #39ff14;
+  border: 2px solid $color-primary;
+  box-shadow: 0 0 8px $color-primary;
 }
 
 /* Header styles */
 .site-header {
-  background: #23272a;
-  border-bottom: 2px solid #222;
+  background: $color-bg-container;
+  border-bottom: 2px solid $color-border-dark;
   padding: 1rem 0;
-  box-shadow: 0 2px 0 #111;
+  box-shadow: 0 2px 0 $color-shadow-dark;
 }
 
 .site-header .wrapper {
@@ -56,7 +58,7 @@ a:hover {
 .site-title {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #333;
+  color: $color-text-dark;
   text-decoration: none;
 }
 
@@ -67,7 +69,7 @@ a:hover {
 }
 
 .page-link {
-  color: #333;
+  color: $color-text-dark;
   text-decoration: none;
   font-weight: 500;
   padding: 0.5rem 1rem;
@@ -76,17 +78,17 @@ a:hover {
 }
 
 .page-link:hover {
-  color: #667eea;
-  background-color: #f8f9fa;
+  color: $color-accent-blue;
+  background-color: $color-bg-light;
 }
 
 /* Footer styles */
 .site-footer {
-  background: #23272a;
+  background: $color-bg-container;
   padding: 2rem 0;
   margin-top: 0;
-  border-top: 2px solid #222;
-  color: #39ff14;
+  border-top: 2px solid $color-border-dark;
+  color: $color-primary;
   font-family: inherit;
   text-align: center;
 }
@@ -123,7 +125,7 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #39ff14;
+  color: $color-primary;
   text-decoration: none;
   padding: 0.5rem;
   border-radius: 4px;
@@ -131,8 +133,8 @@ a:hover {
 }
 
 .social-media-list a:hover {
-  color: #181c1f;
-  background-color: #39ff14;
+  color: $color-bg-body;
+  background-color: $color-primary;
 }
 
 .social-media-list .svg-icon {
@@ -153,8 +155,8 @@ a:hover {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  border: 1px solid #39ff14;
-  background-color: #181c1f;
+  border: 1px solid $color-primary;
+  background-color: $color-bg-body;
 }
 
 .post-featured-image img {
@@ -168,23 +170,23 @@ a:hover {
   font-size: 2.5rem;
   font-weight: bold;
   margin-bottom: 0.5rem;
-  color: #39ff14;
+  color: $color-primary;
 }
 
 .post-item {
   margin-bottom: 2rem;
   padding: 0;
-  border: 1px solid #39ff14;
+  border: 1px solid $color-primary;
   border-radius: 8px;
   transition: box-shadow 0.3s ease;
   overflow: hidden;
   display: flex;
   flex-direction: row;
   min-height: 200px;
-  background: #23272a;
+  background: $color-bg-container;
 }
 .post-item:hover {
-  box-shadow: 0 0 8px #39ff14;
+  box-shadow: 0 0 8px $color-primary;
 }
 
 .post-content h1 { font-size: 2rem; }
@@ -202,11 +204,11 @@ a:hover {
 }
 
 .post-content blockquote {
-  border-left: 4px solid #667eea;
+  border-left: 4px solid $color-accent-blue;
   padding-left: 1rem;
   margin: 1rem 0;
   font-style: italic;
-  color: #666;
+  color: $color-text-grey;
 }
 
 .post-content table {
@@ -217,13 +219,13 @@ a:hover {
 
 .post-content table th,
 .post-content table td {
-  border: 1px solid #e1e5e9;
+  border: 1px solid $color-border-light;
   padding: 0.75rem;
   text-align: left;
 }
 
 .post-content table th {
-  background: #f8f9fa;
+  background: $color-bg-light;
   font-weight: bold;
 }
 
@@ -231,19 +233,19 @@ a:hover {
 .hero-section {
   text-align: center;
   padding: 2rem 0;
-  background: #23272a;
-  color: #39ff14;
+  background: $color-bg-container;
+  color: $color-primary;
   margin-bottom: 3rem;
   border-radius: 8px;
-  border: 1px solid #39ff14;
+  border: 1px solid $color-primary;
 }
 
 .site-title {
   font-size: 2.5rem;
   font-weight: bold;
   margin-bottom: 0.5rem;
-  color: #39ff14;
-  text-shadow: 0 0 8px #39ff14, 0 0 2px #000;
+  color: $color-primary;
+  text-shadow: 0 0 8px $color-primary, 0 0 2px $color-black;
   text-decoration: none;
   font-family: inherit;
 }
@@ -251,7 +253,7 @@ a:hover {
 .site-description {
   font-size: 1.2rem;
   opacity: 0.9;
-  color: #e0e0e0;
+  color: $color-text-main;
   font-family: inherit;
 }
 
@@ -271,7 +273,7 @@ a:hover {
   flex: 0 0 250px;
   min-height: 200px;
   overflow: hidden;
-  background-color: #181c1f;
+  background-color: $color-bg-body;
 }
 
 .post-image a {
@@ -304,37 +306,37 @@ a:hover {
 }
 
 .post-link {
-  color: #39ff14;
+  color: $color-primary;
   text-decoration: none;
   transition: color 0.3s ease;
 }
 
 .post-link:hover {
-  color: #fff;
+  color: $color-white;
   text-decoration: none;
 }
 
 .post-meta {
-  color: #666;
+  color: $color-text-grey;
   font-size: 0.9rem;
   margin-bottom: 0.5rem;
   display: block;
 }
 
 .page-link {
-  color: #39ff14;
+  color: $color-primary;
   text-decoration: none;
   font-weight: 500;
   padding: 0.5rem 1rem;
   border-radius: 4px;
   transition: all 0.3s ease;
-  background: #23272a;
-  border: 2px solid #39ff14;
-  box-shadow: 0 0 8px #39ff14;
+  background: $color-bg-container;
+  border: 2px solid $color-primary;
+  box-shadow: 0 0 8px $color-primary;
 }
 .page-link:hover {
-  color: #181c1f;
-  background-color: #39ff14;
+  color: $color-bg-body;
+  background-color: $color-primary;
 }
 
 @import "code-blocks";
@@ -362,11 +364,11 @@ a:hover {
   align-items: center;
   gap: 1rem;
   padding: 1.5rem;
-  background: #23272a;
-  border: 1px solid #39ff14;
+  background: $color-bg-container;
+  border: 1px solid $color-primary;
   border-radius: 12px;
   text-decoration: none;
-  color: #39ff14;
+  color: $color-primary;
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
@@ -375,16 +377,16 @@ a:hover {
   transform: translateY(-2px);
   box-shadow: 0 0 12px rgba(57, 255, 20, 0.3);
   text-decoration: none;
-  color: #39ff14;
-  background: #181c1f;
+  color: $color-primary;
+  background: $color-bg-body;
 }
 
 .contact-link.github:hover {
-  border-color: #39ff14;
+  border-color: $color-primary;
 }
 
 .contact-link.linkedin:hover {
-  border-color: #39ff14;
+  border-color: $color-primary;
 }
 
 .contact-icon {
@@ -395,11 +397,11 @@ a:hover {
 }
 
 .contact-link .github .contact-icon {
-  color: #39ff14;
+  color: $color-primary;
 }
 
 .contact-link.linkedin .contact-icon {
-  color: #39ff14;
+  color: $color-primary;
 }
 
 .contact-link > div {
@@ -424,10 +426,10 @@ a:hover {
 #visitor-info, .visitor-info {
   margin-top: 1rem;
   padding: 0.75rem 1.5rem;
-  background: #23272a;
+  background: $color-bg-container;
   border-radius: 8px;
-  border: 1px solid #39ff14;
-  color: #39ff14;
+  border: 1px solid $color-primary;
+  color: $color-primary;
   font-family: inherit;
   display: inline-block;
   max-width: 100%;
@@ -436,7 +438,7 @@ a:hover {
 #visitor-greeting {
   font-size: 1rem;
   font-weight: 500;
-  color: #39ff14;
+  color: $color-primary;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;

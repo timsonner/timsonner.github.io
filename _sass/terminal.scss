@@ -2,15 +2,15 @@
 .terminal-section {
   max-width: 800px;
   margin: 0 auto 3rem auto;
-  font-family: 'Fira Mono', 'Consolas', monospace;
+  font-family: $font-family-mono;
 }
 
 .terminal-header {
-  background: #2c2c2c;
+  background: $color-bg-header;
   padding: 0.5rem 1rem;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
-  border: 1px solid #39ff14;
+  border: 1px solid $color-primary;
   border-bottom: none;
   display: flex;
   align-items: center;
@@ -24,26 +24,26 @@
   display: inline-block;
 }
 
-.terminal-button.red { background: #ff5f56; }
-.terminal-button.yellow { background: #ffbd2e; }
-.terminal-button.green { background: #27c93f; }
+.terminal-button.red { background: $color-accent-red; }
+.terminal-button.yellow { background: $color-accent-yellow; }
+.terminal-button.green { background: $color-accent-green; }
 
 .terminal-title {
   margin-left: 1rem;
-  color: #ccc;
+  color: $color-text-muted;
   font-size: 0.9rem;
 }
 
 .terminal-window {
-  background: #181c1f; /* Darker background for terminal content */
-  border: 1px solid #39ff14;
+  background: $color-bg-body; /* Darker background for terminal content */
+  border: 1px solid $color-primary;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
   padding: 1rem;
   height: 300px;
   overflow-y: auto;
   font-size: 0.9rem;
-  color: #e0e0e0;
+  color: $color-text-main;
   box-shadow: 0 0 10px rgba(57, 255, 20, 0.1);
 }
 
@@ -62,7 +62,7 @@
 }
 
 .terminal-prompt {
-  color: #39ff14;
+  color: $color-primary;
   margin-right: 0.5rem;
   white-space: nowrap;
 }
@@ -70,7 +70,7 @@
 .terminal-input {
   background: transparent;
   border: none;
-  color: #e0e0e0;
+  color: $color-text-main;
   font-family: inherit;
   font-size: inherit;
   flex-grow: 1;
@@ -79,7 +79,7 @@
   margin: 0;
 }
 
-.command-success { color: #e0e0e0; }
-.command-error { color: #ff5f56; }
-.directory { color: #667eea; font-weight: bold; }
-.executable { color: #27c93f; font-weight: bold; }
+.command-success { color: $color-text-main; }
+.command-error { color: $color-accent-red; }
+.directory { color: $color-accent-blue; font-weight: bold; }
+.executable { color: $color-accent-green; font-weight: bold; }
