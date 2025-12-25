@@ -3,6 +3,10 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {%- seo -%}
+  {% if page.featured_image %}
+    <meta property="og:image" content="{{ page.featured_image | absolute_url }}" />
+    <meta name="twitter:image" content="{{ page.featured_image | absolute_url }}" />
+  {% endif %}
   <link rel="stylesheet" href="{{ "/assets/main.css" | relative_url }}">
   <link rel="stylesheet" href="{{ "/assets/syntax-highlighting.css" | relative_url }}">
   {%- feed_meta -%}

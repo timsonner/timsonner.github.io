@@ -29,9 +29,14 @@ a:hover {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1rem;
+}
+
+.page-content .wrapper {
   background: #23272a;
   border-radius: 8px;
-  box-shadow: 0 0 0 2px #222, 0 2px 16px rgba(0,0,0,0.4);
+  padding: 2rem 1rem;
+  border: 2px solid #39ff14;
+  box-shadow: 0 0 8px #39ff14;
 }
 
 /* Header styles */
@@ -79,16 +84,25 @@ a:hover {
 .site-footer {
   background: #23272a;
   padding: 2rem 0;
-  margin-top: 3rem;
+  margin-top: 0;
   border-top: 2px solid #222;
   color: #39ff14;
   font-family: inherit;
+  text-align: center;
+}
+
+.footer-heading {
+  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
 }
 
 .footer-col-wrapper {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
 }
 
 /* Footer social media styling */
@@ -137,6 +151,8 @@ a:hover {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border: 1px solid #39ff14;
+  background-color: #181c1f;
 }
 
 .post-featured-image img {
@@ -213,12 +229,11 @@ a:hover {
 .hero-section {
   text-align: center;
   padding: 2rem 0;
-  background: #181c1f;
+  background: #23272a;
   color: #39ff14;
   margin-bottom: 3rem;
   border-radius: 8px;
-  border: 2px solid #39ff14;
-  box-shadow: 0 0 8px #39ff14;
+  border: 1px solid #39ff14;
 }
 
 .site-title {
@@ -252,8 +267,15 @@ a:hover {
 
 .post-image {
   flex: 0 0 250px;
-  height: 200px;
+  min-height: 200px;
   overflow: hidden;
+  background-color: #181c1f;
+}
+
+.post-image a {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .post-image img {
@@ -304,8 +326,9 @@ a:hover {
   padding: 0.5rem 1rem;
   border-radius: 4px;
   transition: all 0.3s ease;
-  background: #181c1f;
-  border: 1px solid #333;
+  background: #23272a;
+  border: 2px solid #39ff14;
+  box-shadow: 0 0 8px #39ff14;
 }
 .page-link:hover {
   color: #181c1f;
@@ -423,10 +446,11 @@ pre code {
   margin-top: 1rem;
   padding: 0.75rem 1.5rem;
   background: #23272a;
-  border-radius: 20px;
+  border-radius: 8px;
   border: 1px solid #39ff14;
   color: #39ff14;
   font-family: inherit;
+  display: inline-block;
 }
 
 #visitor-greeting {

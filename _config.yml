@@ -8,6 +8,9 @@ author:
   name: Tim Sonner
   email: tim@timsonner.com
 
+# Default social image
+image: /assets/images/hero-image-1240x620.jpg
+
 # Build settings
 markdown: kramdown
 highlighter: rouge
