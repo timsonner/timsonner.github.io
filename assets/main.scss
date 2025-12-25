@@ -111,6 +111,8 @@ a:hover {
   padding: 0;
   display: flex;
   gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .social-media-list li {
@@ -372,13 +374,14 @@ pre code {
 
 /* Contact page styles */
 .contact-links {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 2rem;
   margin: 2rem 0;
 }
 
 .contact-link {
+  flex: 1 1 250px;
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -451,15 +454,40 @@ pre code {
   color: #39ff14;
   font-family: inherit;
   display: inline-block;
+  max-width: 100%;
 }
 
 #visitor-greeting {
   font-size: 1rem;
   font-weight: 500;
   color: #39ff14;
-  display: inline-block;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
   animation: fadeIn 0.8s ease-in;
   font-family: inherit;
+}
+
+.info-item {
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  #visitor-greeting {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .info-separator {
+    display: none;
+  }
+  
+  .info-item {
+    white-space: normal;
+    word-break: break-word;
+  }
 }
 
 @keyframes fadeIn {
