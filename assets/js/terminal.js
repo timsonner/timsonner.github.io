@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     switch(command) {
       case 'help':
-        addToOutput('Available commands: help, date, clear, whois, dig, osint, subdomains, headers, cve, mac');
+        addToOutput('Available commands: help, clear, date, whois, dig, osint, subdomains, headers, mac, cve');
         break;
       case 'date':
         addToOutput(new Date().toString());
@@ -106,10 +106,14 @@ document.addEventListener('DOMContentLoaded', function() {
     terminalWindow.scrollTop = terminalWindow.scrollHeight;
   }
 
-  function addToOutput(text, className = '') {
+  function addToOutput(text, className = '', isHtml = false) {
     const div = document.createElement('div');
     div.className = `terminal-line ${className}`;
-    div.textContent = text;
+    if (isHtml) {
+      div.innerHTML = text;
+    } else {
+      div.textContent = text;
+    }
     terminalOutput.appendChild(div);
   }
 
@@ -411,6 +415,51 @@ document.addEventListener('DOMContentLoaded', function() {
     
     addToOutput('----------------------------------------');
     addToOutput('Data provided by ipwho.is, onionoo.torproject.org, and stopforumspam.org');
+    addToOutput('----------------------------------------');
+    addToOutput(`[External Links]`);
+    
+    const target = args[0];
+    const targetIsIpv4 = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(target);
+    const targetIsIpv6 = target.includes(':');
+    const targetIsIp = targetIsIpv4 || targetIsIpv6;
+
+    const links = [];
+    
+    // Universal (IP & Domain)
+    links.push({ name: 'VirusTotal', url: `https://www.virustotal.com/gui/search/${target}` });
+    links.push({ name: 'AlienVault OTX', url: `https://otx.alienvault.com/indicator/${targetIsIp ? 'ip' : 'domain'}/${target}` });
+    links.push({ name: 'Talos Intelligence', url: `https://talosintelligence.com/reputation_center/lookup?search=${target}` });
+    links.push({ name: 'FortiGuard', url: `https://www.fortiguard.com/search?q=${target}&engine=1` });
+    links.push({ name: 'Google Safe Browsing', url: `https://transparencyreport.google.com/safe-browsing/search?url=${target}` });
+    links.push({ name: 'Sucuri SiteCheck', url: `https://sitecheck.sucuri.net/results/${target}` });
+    links.push({ name: 'IPInfo', url: `https://ipinfo.io/${target}` });
+    links.push({ name: 'Spamhaus', url: `https://check.spamhaus.org/listed/?searchterm=${target}` });
+    
+    if (targetIsIp) {
+        // IP Only
+        links.push({ name: 'Shodan', url: `https://www.shodan.io/host/${target}` });
+        links.push({ name: 'Censys', url: `https://search.censys.io/hosts/${target}` });
+        links.push({ name: 'Criminal IP', url: `https://www.criminalip.io/asset/search?query=${target}` });
+        links.push({ name: 'AbuseIPDB', url: `https://www.abuseipdb.com/check/${target}` });
+        links.push({ name: 'GreyNoise', url: `https://viz.greynoise.io/ip/${target}` });
+        links.push({ name: 'IBM X-Force', url: `https://exchange.xforce.ibmcloud.com/ip/${target}` });
+        links.push({ name: 'Spur', url: `https://spur.us/context/${target}` });
+        links.push({ name: 'ViewDNS', url: `https://viewdns.info/reverseip/?host=${target}&t=1` });
+        links.push({ name: 'ip-api.com', url: `https://ip-api.com/#${target}` });
+    } else {
+        // Domain Only
+        links.push({ name: 'URLhaus', url: `https://urlhaus.abuse.ch/browse/search/${target}/` });
+        links.push({ name: 'Urlscan.io', url: `https://urlscan.io/search/#${target}` });
+        links.push({ name: 'CRT.sh', url: `https://crt.sh/?q=${target}` });
+        links.push({ name: 'IBM X-Force', url: `https://exchange.xforce.ibmcloud.com/url/${target}` });
+        links.push({ name: 'DomainTools', url: `https://whois.domaintools.com/${target}` });
+        links.push({ name: 'ViewDNS (Whois)', url: `https://viewdns.info/whois/?domain=${target}` });
+    }
+    
+    links.forEach(link => {
+        const anchor = `<a href="${link.url}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">${link.name}</a>`;
+        addToOutput(anchor, '', true);
+    });
     terminalWindow.scrollTop = terminalWindow.scrollHeight;
   }
 
