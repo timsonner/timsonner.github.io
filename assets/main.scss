@@ -337,31 +337,7 @@ a:hover {
   background-color: #39ff14;
 }
 
-/* Code block styling */
-pre, code {
-  background-color: #181c1f;
-  color: #39ff14;
-  border-radius: 4px;
-  font-family: inherit;
-}
-
-pre {
-  padding: 1rem;
-  overflow-x: auto;
-  border-left: 4px solid #39ff14;
-  background: #181c1f;
-}
-
-code {
-  padding: 0.2rem 0.4rem;
-  font-size: 0.95em;
-  background: #181c1f;
-}
-
-pre code {
-  padding: 0;
-  background: transparent;
-}
+@import "code-blocks";
 
 /* Image styling */
 .post-content img {
