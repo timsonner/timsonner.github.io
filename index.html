@@ -105,6 +105,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const terminalOutput = document.getElementById('terminal-output');
   const terminalWindow = document.getElementById('terminal-window');
 
+  let commandHistory = [];
+  let historyIndex = -1;
+
   // Copy Terminal Button Logic
   const copyBtn = document.getElementById('copy-terminal-btn');
   if (copyBtn) {
@@ -121,8 +124,29 @@ document.addEventListener('DOMContentLoaded', function() {
   terminalInput.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
       const input = terminalInput.value;
+      
+      if (input.trim() !== '') {
+        commandHistory.push(input);
+        historyIndex = commandHistory.length;
+      }
+      
       processCommand(input);
       terminalInput.value = '';
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (historyIndex > 0) {
+        historyIndex--;
+        terminalInput.value = commandHistory[historyIndex];
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (historyIndex < commandHistory.length - 1) {
+        historyIndex++;
+        terminalInput.value = commandHistory[historyIndex];
+      } else {
+        historyIndex = commandHistory.length;
+        terminalInput.value = '';
+      }
     }
   });
 
@@ -138,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     switch(command) {
       case 'help':
-        addToOutput('Available commands: help, date, clear, whois, dig, osint');
+        addToOutput('Available commands: help, date, clear, whois, dig, osint, subdomains, headers');
         break;
       case 'date':
         addToOutput(new Date().toString());
@@ -154,6 +178,12 @@ document.addEventListener('DOMContentLoaded', function() {
         break;
       case 'osint':
         handleOsint(args);
+        break;
+      case 'subdomains':
+        handleSubdomains(args);
+        break;
+      case 'headers':
+        handleHeaders(args);
         break;
       default:
         addToOutput(`Command not found: ${command}`, 'command-error');
@@ -468,6 +498,109 @@ document.addEventListener('DOMContentLoaded', function() {
     
     addToOutput('----------------------------------------');
     addToOutput('Data provided by ipwho.is, onionoo.torproject.org, and stopforumspam.org');
+    terminalWindow.scrollTop = terminalWindow.scrollHeight;
+  }
+
+  async function handleSubdomains(args) {
+    if (args.length === 0) {
+      addToOutput('Usage: subdomains <domain>');
+      return;
+    }
+    
+    const domain = args[0];
+    addToOutput(`Searching for subdomains of ${domain} via crt.sh...`);
+    
+    try {
+      // Encode the query to ensure special characters like % are handled correctly
+      const query = `%.${domain}`;
+      const response = await fetch(`https://crt.sh/?q=${encodeURIComponent(query)}&output=json`);
+      
+      if (!response.ok) {
+        addToOutput(`Error fetching subdomains: ${response.status} ${response.statusText}`, 'command-error');
+        return;
+      }
+      
+      const data = await response.json();
+      
+      if (!data || data.length === 0) {
+        addToOutput(`No subdomains found for ${domain}.`);
+        return;
+      }
+      
+      // Extract and deduplicate subdomains
+      const subdomains = new Set();
+      data.forEach(entry => {
+        const nameValue = entry.name_value;
+        const names = nameValue.split('\n');
+        names.forEach(name => {
+            if (!name.includes('*')) { // Filter out wildcards
+                subdomains.add(name.toLowerCase());
+            }
+        });
+      });
+      
+      const sortedSubdomains = Array.from(subdomains).sort();
+      
+      addToOutput(`Found ${sortedSubdomains.length} unique subdomains:`);
+      addToOutput('----------------------------------------');
+      
+      if (sortedSubdomains.length > 1000) {
+          addToOutput(`(Warning: Rendering ${sortedSubdomains.length} items. This may freeze your browser briefly.)`);
+      }
+      
+      sortedSubdomains.forEach(sub => addToOutput(sub));
+      
+      addToOutput('----------------------------------------');
+      addToOutput('Data provided by crt.sh (Certificate Transparency)');
+      
+    } catch (error) {
+      addToOutput(`Network error: ${error.message}`, 'command-error');
+      addToOutput(`(This might be caused by AdBlockers, Privacy Extensions, or crt.sh being down)`, 'command-error');
+    }
+    terminalWindow.scrollTop = terminalWindow.scrollHeight;
+  }
+
+  async function handleHeaders(args) {
+    if (args.length === 0) {
+      addToOutput('Usage: headers <url>');
+      return;
+    }
+    
+    let url = args[0];
+    // Strip protocol if present for cleaner display, but API handles it either way
+    url = url.replace(/^https?:\/\//, '');
+    
+    addToOutput(`Fetching HTTP headers for ${url}...`);
+    
+    try {
+      const response = await fetch(`https://api.hackertarget.com/httpheaders/?q=${url}`);
+      
+      if (!response.ok) {
+        addToOutput(`Error fetching headers: ${response.status}`, 'command-error');
+        return;
+      }
+      
+      const text = await response.text();
+      
+      if (text.trim() === '') {
+        addToOutput('No headers returned. Host might be down or blocking the scanner.', 'command-error');
+        return;
+      }
+      
+      addToOutput('----------------------------------------');
+      // Split by lines and display
+      const lines = text.split('\n');
+      lines.forEach(line => {
+          if (line.trim() !== '') {
+              addToOutput(line);
+          }
+      });
+      addToOutput('----------------------------------------');
+      addToOutput('Data provided by hackertarget.com');
+      
+    } catch (error) {
+      addToOutput(`Network error: ${error.message}`, 'command-error');
+    }
     terminalWindow.scrollTop = terminalWindow.scrollHeight;
   }
 
