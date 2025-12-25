@@ -471,7 +471,8 @@ pre code {
 }
 
 .info-item {
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
 }
 
 @media (max-width: 600px) {
@@ -482,11 +483,6 @@ pre code {
   
   .info-separator {
     display: none;
-  }
-  
-  .info-item {
-    white-space: normal;
-    word-break: break-word;
   }
 }
 

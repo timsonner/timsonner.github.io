@@ -52,6 +52,7 @@ async function fetchVisitorInfo() {
     
     if (data.ip && data.city && data.region) {
       const location = `${data.city}, ${data.region}`;
+      const userAgent = navigator.userAgent;
 
       greetingElement.innerHTML = `
         <span class="info-item">Visitor: ${data.ip}</span>
@@ -59,6 +60,7 @@ async function fetchVisitorInfo() {
         <span class="info-item">Location: ${location}</span>
         <span class="info-separator">|</span>
         <span class="info-item">Data: <a href="https://ipapi.co" target="_blank">ipapi.co</a></span>
+        <span class="info-item">UA: ${userAgent}</span>
       `;
 
     } else {
