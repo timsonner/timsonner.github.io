@@ -446,6 +446,7 @@ document.addEventListener('DOMContentLoaded', function() {
         links.push({ name: 'Spur', url: `https://spur.us/context/${target}` });
         links.push({ name: 'ViewDNS', url: `https://viewdns.info/reverseip/?host=${target}&t=1` });
         links.push({ name: 'ip-api.com', url: `https://ip-api.com/#${target}` });
+        links.push({ name: 'ProxyCheck', url: `https://proxycheck.io/v3/${target}` });
     } else {
         // Domain Only
         links.push({ name: 'URLhaus', url: `https://urlhaus.abuse.ch/browse/search/${target}/` });
