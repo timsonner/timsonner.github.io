@@ -426,26 +426,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const links = [];
     
     // Universal (IP & Domain)
-    links.push({ name: 'VirusTotal', url: `https://www.virustotal.com/gui/search/${target}` });
-    links.push({ name: 'AlienVault OTX', url: `https://otx.alienvault.com/indicator/${targetIsIp ? 'ip' : 'domain'}/${target}` });
     links.push({ name: 'Talos Intelligence', url: `https://talosintelligence.com/reputation_center/lookup?search=${target}` });
     links.push({ name: 'FortiGuard', url: `https://www.fortiguard.com/search?q=${target}&engine=1` });
     links.push({ name: 'Google Safe Browsing', url: `https://transparencyreport.google.com/safe-browsing/search?url=${target}` });
     links.push({ name: 'Sucuri SiteCheck', url: `https://sitecheck.sucuri.net/results/${target}` });
-    links.push({ name: 'IPInfo', url: `https://ipinfo.io/${target}` });
     links.push({ name: 'Spamhaus', url: `https://check.spamhaus.org/listed/?searchterm=${target}` });
-    
+    links.push({ name: 'DomainTools', url: `https://whois.domaintools.com/${target}` });
+    links.push({ name: 'IBM X-Force', url: `https://exchange.xforce.ibmcloud.com/url/${target}` });
+    links.push({ name: 'CRT.sh', url: `https://crt.sh/?q=${target}` });
+    links.push({ name: 'VirusTotal', url: `https://www.virustotal.com/gui/search/${target}` });
+    links.push({ name: 'AlienVault OTX', url: `https://otx.alienvault.com/indicator/${targetIsIp ? 'ip' : 'domain'}/${target}` });
+    links.push({ name: 'IBM X-Force', url: `https://exchange.xforce.ibmcloud.com/ip/${target}` });
+
     if (targetIsIp) {
         // IP Only
+        links.push({ name: 'IPInfo', url: `https://ipinfo.io/${target}` });
         links.push({ name: 'Shodan', url: `https://www.shodan.io/host/${target}` });
         links.push({ name: 'Censys', url: `https://search.censys.io/hosts/${target}` });
         links.push({ name: 'Criminal IP', url: `https://www.criminalip.io/asset/search?query=${target}` });
         links.push({ name: 'AbuseIPDB', url: `https://www.abuseipdb.com/check/${target}` });
         links.push({ name: 'GreyNoise', url: `https://viz.greynoise.io/ip/${target}` });
-        links.push({ name: 'IBM X-Force', url: `https://exchange.xforce.ibmcloud.com/ip/${target}` });
         links.push({ name: 'Spur', url: `https://spur.us/context/${target}` });
-        links.push({ name: 'ViewDNS', url: `https://viewdns.info/reverseip/?host=${target}&t=1` });
-        links.push({ name: 'ip-api.com', url: `https://ip-api.com/#${target}` });
+        links.push({ name: 'ip-api', url: `https://ip-api.com/#${target}` });
         links.push({ name: 'ProxyCheck', url: `https://proxycheck.io/v3/${target}` });
         links.push({ name: 'IPQualityScore', url: `https://www.ipqualityscore.com/free-ip-lookup-proxy-vpn-test/lookup/${target}` });
         links.push({ name: 'IP2Location', url: `https://www.ip2location.io/${target}` });
@@ -453,10 +455,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Domain Only
         links.push({ name: 'URLhaus', url: `https://urlhaus.abuse.ch/browse/search/${target}/` });
         links.push({ name: 'Urlscan.io', url: `https://urlscan.io/search/#${target}` });
-        links.push({ name: 'CRT.sh', url: `https://crt.sh/?q=${target}` });
-        links.push({ name: 'IBM X-Force', url: `https://exchange.xforce.ibmcloud.com/url/${target}` });
-        links.push({ name: 'DomainTools', url: `https://whois.domaintools.com/${target}` });
-        links.push({ name: 'ViewDNS (Whois)', url: `https://viewdns.info/whois/?domain=${target}` });
     }
     
     links.forEach(link => {
