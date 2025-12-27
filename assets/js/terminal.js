@@ -448,6 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
         links.push({ name: 'ip-api.com', url: `https://ip-api.com/#${target}` });
         links.push({ name: 'ProxyCheck', url: `https://proxycheck.io/v3/${target}` });
         links.push({ name: 'IPQualityScore', url: `https://www.ipqualityscore.com/free-ip-lookup-proxy-vpn-test/lookup/${target}` });
+        links.push({ name: 'IP2Location', url: `https://www.ip2location.io/${target}` });
     } else {
         // Domain Only
         links.push({ name: 'URLhaus', url: `https://urlhaus.abuse.ch/browse/search/${target}/` });
