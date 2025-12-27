@@ -447,6 +447,7 @@ document.addEventListener('DOMContentLoaded', function() {
         links.push({ name: 'ViewDNS', url: `https://viewdns.info/reverseip/?host=${target}&t=1` });
         links.push({ name: 'ip-api.com', url: `https://ip-api.com/#${target}` });
         links.push({ name: 'ProxyCheck', url: `https://proxycheck.io/v3/${target}` });
+        links.push({ name: 'IPQualityScore', url: `https://www.ipqualityscore.com/free-ip-lookup-proxy-vpn-test/lookup/${target}` });
     } else {
         // Domain Only
         links.push({ name: 'URLhaus', url: `https://urlhaus.abuse.ch/browse/search/${target}/` });
