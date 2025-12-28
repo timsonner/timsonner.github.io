@@ -1,42 +1,64 @@
 # Copilot Instructions for AI Agents
 
 ## Project Overview
-This is a Jekyll-powered static blog hosted on GitHub Pages. The site uses Markdown for content, with layouts and includes for templating, and supports syntax highlighting and image embedding. The project is organized for clarity and ease of content management.
+This is a Jekyll-powered static blog hosted on GitHub Pages, featuring a custom terminal emulator and cybersecurity-focused content. The site uses the Minima theme as a base but includes significant custom JavaScript and SCSS for interactive features.
 
-## Key Structure & Conventions
-- **Posts:** Markdown files in `_posts/` named `YYYY-MM-DD-title.md`.
-- **Layouts:** HTML templates in `_layouts/` (e.g., `default.html`, `post.html`).
-- **Includes:** Reusable HTML snippets in `_includes/` (e.g., `header.html`, `footer.html`).
-- **Assets:** Images in `assets/images/`, styles in `assets/main.scss` and `assets/syntax-highlighting.css`.
-- **Config:** Site-wide settings in `_config.yml` (title, author, social, etc.).
-- **Pages:** Add new pages by creating `.md` files in the root with front matter.
+## Architecture & Core Components
+- **Engine:** Jekyll (Ruby) via `github-pages` gem.
+- **Theme:** Minima (customized).
+- **Templating:** Liquid templates in `_layouts/` and `_includes/`.
+- **Styling:** SCSS in `assets/main.scss` importing from `_sass/`.
+- **Scripts:** Vanilla JavaScript in `assets/js/` for interactive features.
+
+## Key Directories & Files
+- `_posts/`: Content files. Naming: `YYYY-MM-DD-title.md`.
+- `_includes/`: Reusable components.
+  - `terminal.html`: Structure for the interactive terminal.
+  - `head.html`, `header.html`, `footer.html`: Standard site partials.
+- `assets/js/`:
+  - `terminal.js`: Logic for the terminal emulator (command processing, history).
+  - `copy-code.js`: Functionality for code block copy buttons.
+  - `visitor.js`: Visitor tracking logic.
+- `_sass/`:
+  - `terminal.scss`: Styles for the terminal emulator.
+  - `code-blocks.scss`: Custom syntax highlighting styles.
+  - `variables.scss`: Site-wide variables (colors, fonts).
+- `_config.yml`: Site configuration, including permalink structure `/:categories/:year/:month/:day/:title/`.
 
 ## Developer Workflows
-- **Local Development:**
-  1. Install Ruby and Bundler
-  2. Run `bundle install`
-  3. Start server: `bundle exec jekyll serve` (site at http://localhost:4000)
-- **Deployment:**
-  - Push to `main` branch; GitHub Pages auto-deploys.
+- **Setup:** `bundle install`
+- **Run Local Server:** `bundle exec jekyll serve` (Access at `http://localhost:4000`)
+- **Deployment:** Push to `main` branch triggers GitHub Pages build.
 
-## Project-Specific Patterns
-- **Front Matter:** All posts/pages require YAML front matter (layout, title, date, etc.).
-- **Images:** Place in `assets/images/` and reference with `{{ site.baseurl }}/assets/images/...`.
-- **Code Blocks:** Use triple backticks with language for syntax highlighting.
-- **Styling:** Edit `assets/main.scss` for site-wide styles; `assets/syntax-highlighting.css` for code.
-- **SEO:** Meta tags and sitemap are auto-generated via Jekyll plugins.
+## Project-Specific Conventions
+- **Front Matter:**
+  - Posts must include `layout: post`, `title`, `date`, `categories`.
+  - Example:
+    ```yaml
+    layout: post
+    title: "My Post"
+    date: 2025-01-01 12:00:00 -0000
+    categories: [security, tutorial]
+    ```
+- **Terminal Feature:**
+  - The terminal is a key feature. Modifications to terminal behavior go in `assets/js/terminal.js`.
+  - Styles are in `_sass/terminal.scss`.
+  - The terminal HTML structure is defined in `_includes/terminal.html`.
+- **Images:**
+  - Store in `assets/images/<post-slug>/` for organization.
+  - Reference: `{{ site.baseurl }}/assets/images/<post-slug>/image.png`.
+- **Code Blocks:**
+  - Use standard markdown fences.
+  - `copy-code.js` automatically adds copy buttons to these blocks.
+  - Syntax highlighting is handled by Rouge (configured in `_config.yml`).
 
-## Examples
-- **Post Example:** See `_posts/2023-07-11-golang-malware-rc4.md` for structure.
-- **Layout Example:** See `_layouts/post.html` for blog post HTML structure.
-- **Image Example:** See `assets/images/thm-blue/` for image organization.
+## Integration Points
+- **Plugins:** `jekyll-feed`, `jekyll-sitemap`, `jekyll-seo-tag` are enabled in `_config.yml`.
+- **External Assets:** No heavy external frameworks (Bootstrap/Tailwind) detected; styles are custom SCSS.
 
 ## Tips for AI Agents
-- Follow the naming and directory conventions strictly.
-- Always include required front matter in new posts/pages.
-- Reference images and assets using the correct base URL pattern.
-- For new features, prefer Jekyll/Liquid patterns over custom scripts.
-- Review `_config.yml` for site-wide settings before making global changes.
-
----
-For more, see the project [README.md](../README.md) and Jekyll documentation.
+- When adding posts, ensure the filename date matches the front matter date.
+- If modifying the terminal, check `processCommand` in `terminal.js` for command handling logic.
+- Respect the `_sass` modular structure; don't dump everything in `main.scss`.
+- Use `{{ site.baseurl }}` for all internal links to ensure compatibility with GitHub Pages subpath deployment if applicable.
+- Always check `_config.yml` for site-wide settings before making global changes.

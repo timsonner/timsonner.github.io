@@ -458,6 +458,10 @@ a:hover {
   word-break: break-word;
 }
 
+.visitor-label {
+  color: $color-white;
+}
+
 @media (max-width: 600px) {
   #visitor-greeting {
     flex-direction: column;

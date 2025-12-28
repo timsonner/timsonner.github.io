@@ -11,12 +11,12 @@ async function fetchVisitorInfo() {
       const userAgent = navigator.userAgent;
 
       greetingElement.innerHTML = `
-        <span class="info-item">Visitor: ${data.ip}</span>
+        <span class="info-item"><span class="visitor-label">Visitor:</span> ${data.ip}</span>
         <span class="info-separator">|</span>
-        <span class="info-item">Location: ${location}</span>
+        <span class="info-item"><span class="visitor-label">Location:</span> ${location}</span>
         <span class="info-separator">|</span>
-        <span class="info-item">Data: <a href="https://ipapi.co" target="_blank">ipapi.co</a></span>
-        <span class="info-item">UA: ${userAgent}</span>
+        <span class="info-item"><span class="visitor-label">Data:</span> <a href="https://ipapi.co" target="_blank">ipapi.co</a></span>
+        <span class="info-item"><span class="visitor-label">UA:</span> ${userAgent}</span>
       `;
 
     } else {
