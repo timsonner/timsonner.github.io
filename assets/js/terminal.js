@@ -28,6 +28,37 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  // Terminal Window Controls
+  const btnYellow = document.getElementById('terminal-btn-yellow');
+  const btnGreen = document.getElementById('terminal-btn-green');
+  
+  if (btnYellow && terminalWindow) {
+    btnYellow.addEventListener('click', function() {
+      terminalWindow.style.display = 'none';
+      // Remove bottom border radius from header when minimized
+      const header = document.querySelector('.terminal-header');
+      if (header) {
+        header.style.borderBottomLeftRadius = '8px';
+        header.style.borderBottomRightRadius = '8px';
+        header.style.borderBottom = '1px solid #39ff14';
+      }
+    });
+  }
+
+  if (btnGreen && terminalWindow) {
+    btnGreen.addEventListener('click', function() {
+      terminalWindow.style.display = 'block';
+      // Restore header styles
+      const header = document.querySelector('.terminal-header');
+      if (header) {
+        header.style.borderBottomLeftRadius = '0';
+        header.style.borderBottomRightRadius = '0';
+        header.style.borderBottom = 'none';
+      }
+      terminalInput.focus();
+    });
+  }
+
   terminalInput.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
       const input = terminalInput.value;

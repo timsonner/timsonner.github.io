@@ -1,11 +1,11 @@
 <div class="email-parser-section" style="max-width: 800px; margin: 2rem auto 3rem auto; font-family: 'Fira Mono', monospace;">
-  <div class="terminal-header">
+  <div class="terminal-header" id="email-parser-header">
     <span class="terminal-button red"></span>
-    <span class="terminal-button yellow"></span>
-    <span class="terminal-button green"></span>
+    <span class="terminal-button yellow" id="email-parser-btn-yellow" style="cursor: pointer;" title="Minimize"></span>
+    <span class="terminal-button green" id="email-parser-btn-green" style="cursor: pointer;" title="Restore"></span>
     <span class="terminal-title">Email Header Analyzer</span>
   </div>
-  <div class="terminal-window" style="min-height: auto; height: auto;">
+  <div class="terminal-window" id="email-parser-window" style="min-height: auto; height: auto;">
     <div style="padding: 1.5rem; color: #e0e0e0;">
       <p style="margin-top: 0;">Upload a .eml file or paste raw email headers to analyze authentication results (SPF, DKIM, DMARC) and sender info. All processing is done locally in your browser.</p>
       
@@ -27,6 +27,34 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Window Controls
+    const parserWindow = document.getElementById('email-parser-window');
+    const parserHeader = document.getElementById('email-parser-header');
+    const btnYellow = document.getElementById('email-parser-btn-yellow');
+    const btnGreen = document.getElementById('email-parser-btn-green');
+
+    if (btnYellow && parserWindow) {
+        btnYellow.addEventListener('click', function() {
+            parserWindow.style.display = 'none';
+            if (parserHeader) {
+                parserHeader.style.borderBottomLeftRadius = '8px';
+                parserHeader.style.borderBottomRightRadius = '8px';
+                parserHeader.style.borderBottom = '1px solid #39ff14';
+            }
+        });
+    }
+
+    if (btnGreen && parserWindow) {
+        btnGreen.addEventListener('click', function() {
+            parserWindow.style.display = 'block';
+            if (parserHeader) {
+                parserHeader.style.borderBottomLeftRadius = '0';
+                parserHeader.style.borderBottomRightRadius = '0';
+                parserHeader.style.borderBottom = 'none';
+            }
+        });
+    }
+
     const analyzeBtn = document.getElementById('analyze-btn');
     const fileInput = document.getElementById('email-file-input');
     const textInput = document.getElementById('email-raw-input');
