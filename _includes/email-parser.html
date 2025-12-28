@@ -1,0 +1,156 @@
+<div class="email-parser-section" style="max-width: 800px; margin: 2rem auto 3rem auto; font-family: 'Fira Mono', monospace;">
+  <div class="terminal-header">
+    <span class="terminal-button red"></span>
+    <span class="terminal-button yellow"></span>
+    <span class="terminal-button green"></span>
+    <span class="terminal-title">Email Header Analyzer</span>
+  </div>
+  <div class="terminal-window" style="min-height: auto; height: auto;">
+    <div style="padding: 1.5rem; color: #e0e0e0;">
+      <p style="margin-top: 0;">Upload a .eml file or paste raw email headers to analyze authentication results (SPF, DKIM, DMARC) and sender info. All processing is done locally in your browser.</p>
+      
+      <div style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+        <input type="file" id="email-file-input" accept=".eml,.txt" style="color: #e0e0e0; background: #2c2c2c; padding: 0.5rem; border-radius: 4px; border: 1px solid #444;">
+      </div>
+      
+      <textarea id="email-raw-input" placeholder="Or paste raw email headers here..." style="width: 100%; height: 150px; background: #0c0c0c; color: #39ff14; border: 1px solid #444; padding: 0.5rem; font-family: 'Fira Mono', monospace; border-radius: 4px; resize: vertical;"></textarea>
+      
+      <button id="analyze-btn" style="margin-top: 1rem; background: #39ff14; color: #000; border: none; padding: 0.5rem 1.5rem; cursor: pointer; font-weight: bold; border-radius: 4px; font-family: inherit; transition: opacity 0.2s;">Analyze Headers</button>
+      
+      <div id="analysis-results" style="margin-top: 2rem; display: none; border-top: 1px solid #444; padding-top: 1rem;">
+        <h3 style="color: #39ff14; margin-bottom: 1rem;">Analysis Report</h3>
+        <div id="report-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const fileInput = document.getElementById('email-file-input');
+    const textInput = document.getElementById('email-raw-input');
+
+    analyzeBtn.addEventListener('click', function() {
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                analyzeEmail(e.target.result);
+            };
+            reader.readAsText(file);
+        } else if (textInput.value.trim() !== '') {
+            analyzeEmail(textInput.value);
+        } else {
+            alert('Please upload a file or paste headers.');
+        }
+    });
+
+    function analyzeEmail(rawEmail) {
+        // Normalize newlines
+        rawEmail = rawEmail.replace(/\r\n/g, '\n');
+        
+        // Find end of headers (double newline)
+        const headerEnd = rawEmail.indexOf('\n\n');
+        const headerText = headerEnd !== -1 ? rawEmail.substring(0, headerEnd) : rawEmail;
+        
+        // Unfold headers (lines starting with whitespace continue previous line)
+        const unfolded = headerText.replace(/\n\s+/g, ' ');
+        const lines = unfolded.split('\n');
+        
+        const headers = {};
+        const received = [];
+        const authResults = [];
+        
+        lines.forEach(line => {
+            const colonIndex = line.indexOf(':');
+            if (colonIndex !== -1) {
+                const key = line.substring(0, colonIndex).trim().toLowerCase();
+                const value = line.substring(colonIndex + 1).trim();
+                
+                if (key === 'received') {
+                    received.push(value);
+                } else if (key === 'authentication-results') {
+                    authResults.push(value);
+                } else {
+                    // Only keep the first occurrence of other headers
+                    if (!headers[key]) {
+                        headers[key] = value;
+                    }
+                }
+            }
+        });
+        
+        // Extract Data
+        const subject = headers['subject'] || 'N/A';
+        const from = headers['from'] || 'N/A';
+        const to = headers['to'] || 'N/A';
+        const returnPath = headers['return-path'] || 'N/A';
+        const date = headers['date'] || 'N/A';
+        const messageId = headers['message-id'] || 'N/A';
+        const xMailer = headers['x-mailer'] || headers['user-agent'] || 'N/A';
+        
+        // Display Results
+        const reportDiv = document.getElementById('report-content');
+        const resultsDiv = document.getElementById('analysis-results');
+        
+        let html = `
+            <table style="width: 100%; border-collapse: collapse; color: #e0e0e0; margin-bottom: 1.5rem;">
+                <tr><td style="padding: 8px; border-bottom: 1px solid #444; color: #888; width: 120px;">Subject:</td><td style="padding: 8px; border-bottom: 1px solid #444; font-weight: bold;">${escapeHtml(subject)}</td></tr>
+                <tr><td style="padding: 8px; border-bottom: 1px solid #444; color: #888;">From:</td><td style="padding: 8px; border-bottom: 1px solid #444;">${escapeHtml(from)}</td></tr>
+                <tr><td style="padding: 8px; border-bottom: 1px solid #444; color: #888;">To:</td><td style="padding: 8px; border-bottom: 1px solid #444;">${escapeHtml(to)}</td></tr>
+                <tr><td style="padding: 8px; border-bottom: 1px solid #444; color: #888;">Return-Path:</td><td style="padding: 8px; border-bottom: 1px solid #444;">${escapeHtml(returnPath)}</td></tr>
+                <tr><td style="padding: 8px; border-bottom: 1px solid #444; color: #888;">Date:</td><td style="padding: 8px; border-bottom: 1px solid #444;">${escapeHtml(date)}</td></tr>
+                <tr><td style="padding: 8px; border-bottom: 1px solid #444; color: #888;">Message-ID:</td><td style="padding: 8px; border-bottom: 1px solid #444;">${escapeHtml(messageId)}</td></tr>
+                <tr><td style="padding: 8px; border-bottom: 1px solid #444; color: #888;">Mailer/UA:</td><td style="padding: 8px; border-bottom: 1px solid #444;">${escapeHtml(xMailer)}</td></tr>
+            </table>
+        `;
+        
+        // Authentication Results
+        html += `<h4 style="color: #39ff14; margin-bottom: 0.5rem;">Authentication Results</h4>`;
+        if (authResults.length > 0) {
+            authResults.forEach(result => {
+                // Highlight pass/fail
+                let highlighted = escapeHtml(result)
+                    .replace(/\b(pass)\b/gi, '<span style="color: #39ff14; font-weight: bold;">$1</span>')
+                    .replace(/\b(fail|softfail|neutral|none)\b/gi, '<span style="color: #ff5555; font-weight: bold;">$1</span>');
+                    
+                html += `<div style="background: #0c0c0c; padding: 10px; border: 1px solid #444; font-family: 'Fira Mono', monospace; white-space: pre-wrap; margin-bottom: 0.5rem; border-radius: 4px;">${highlighted}</div>`;
+            });
+        } else {
+            html += `<div style="color: #888; font-style: italic; margin-bottom: 1rem;">No Authentication-Results header found.</div>`;
+        }
+        
+        // Received Chain
+        html += `<h4 style="color: #39ff14; margin-top: 1.5rem; margin-bottom: 0.5rem;">Received Chain (Newest First)</h4>`;
+        html += `<div style="background: #0c0c0c; padding: 10px; border: 1px solid #444; font-family: 'Fira Mono', monospace; font-size: 0.9em; border-radius: 4px; max-height: 300px; overflow-y: auto;">`;
+        
+        if (received.length > 0) {
+            received.forEach((hop, index) => {
+                html += `<div style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #333;">
+                    <strong style="color: #888;">Hop ${index + 1}:</strong> ${escapeHtml(hop)}
+                </div>`;
+            });
+        } else {
+            html += `<div style="color: #888; font-style: italic;">No Received headers found.</div>`;
+        }
+        html += `</div>`;
+        
+        reportDiv.innerHTML = html;
+        resultsDiv.style.display = 'block';
+        
+        // Scroll to results
+        resultsDiv.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+});
+</script>
