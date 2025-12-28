@@ -1,6 +1,6 @@
 <div class="email-parser-section" style="max-width: 800px; margin: 2rem auto 3rem auto; font-family: 'Fira Mono', monospace;">
   <div class="terminal-header" id="email-parser-header">
-    <span class="terminal-button red"></span>
+    <span class="terminal-button red" id="email-parser-btn-red" style="cursor: pointer;" title="Clear"></span>
     <span class="terminal-button yellow" id="email-parser-btn-yellow" style="cursor: pointer;" title="Minimize"></span>
     <span class="terminal-button green" id="email-parser-btn-green" style="cursor: pointer;" title="Restore"></span>
     <span class="terminal-title">Email Header Analyzer</span>
@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const parserHeader = document.getElementById('email-parser-header');
     const btnYellow = document.getElementById('email-parser-btn-yellow');
     const btnGreen = document.getElementById('email-parser-btn-green');
+    const btnRed = document.getElementById('email-parser-btn-red');
 
     if (btnYellow && parserWindow) {
         btnYellow.addEventListener('click', function() {
@@ -52,6 +53,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 parserHeader.style.borderBottomRightRadius = '0';
                 parserHeader.style.borderBottom = 'none';
             }
+        });
+    }
+
+    if (btnRed) {
+        btnRed.addEventListener('click', function() {
+            const fileInput = document.getElementById('email-file-input');
+            const textInput = document.getElementById('email-raw-input');
+            const resultsDiv = document.getElementById('analysis-results');
+            const reportDiv = document.getElementById('report-content');
+            
+            if (fileInput) fileInput.value = '';
+            if (textInput) textInput.value = '';
+            if (resultsDiv) resultsDiv.style.display = 'none';
+            if (reportDiv) reportDiv.innerHTML = '';
         });
     }
 

@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Terminal Window Controls
   const btnYellow = document.getElementById('terminal-btn-yellow');
   const btnGreen = document.getElementById('terminal-btn-green');
+  const btnRed = document.getElementById('terminal-btn-red');
   
   if (btnYellow && terminalWindow) {
     btnYellow.addEventListener('click', function() {
@@ -55,6 +56,13 @@ document.addEventListener('DOMContentLoaded', function() {
         header.style.borderBottomRightRadius = '0';
         header.style.borderBottom = 'none';
       }
+      terminalInput.focus();
+    });
+  }
+
+  if (btnRed && terminalOutput) {
+    btnRed.addEventListener('click', function() {
+      terminalOutput.innerHTML = '';
       terminalInput.focus();
     });
   }
