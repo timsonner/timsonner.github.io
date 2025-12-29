@@ -64,7 +64,8 @@ This is a Jekyll-powered cybersecurity blog hosted on GitHub Pages. It features 
 - **Terminal Command Example:** See `processCommand` in `assets/js/terminal.js` for how commands are registered and handled
 - **Image Reference Example:**
   ```markdown
-  ![Alt text]({{ site.baseurl }}/assets/images/thm-blue/blue-hero.png)
+  ![TryHackMe Blue team hero illustration showing a confident cybersecurity analyst at a glowing terminal surrounded by digital network graphics in a dark blue command center environment]
+  (\{{ site.baseurl \}}/assets/images/thm-blue/thm-blue-hero.png)
   ```
 - **Code Block Example:**
   ```markdown
