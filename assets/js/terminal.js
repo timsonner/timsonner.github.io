@@ -821,7 +821,6 @@ document.addEventListener('DOMContentLoaded', function() {
     "projectzero": { url: "https://googleprojectzero.blogspot.com/feeds/posts/default", desc: "Project Zero" },
     "krebs": { url: "https://krebsonsecurity.com/feed/", desc: "Krebs on Security" },
     "bleeping": { url: "https://www.bleepingcomputer.com/feed/", desc: "Bleeping Computer" },
-    "threatpost": { url: "https://threatpost.com/feed/", desc: "Threatpost" },
     "wired": { url: "https://www.wired.com/feed/category/security/latest/rss", desc: "Wired Security" },
     "ars": { url: "https://arstechnica.com/security/feed/", desc: "Ars Technica Security" },
     "theregister": { url: "https://www.theregister.com/security/headlines.atom", desc: "The Register Security" },
@@ -848,6 +847,7 @@ document.addEventListener('DOMContentLoaded', function() {
   };
 
   async function handleNews(args) {
+
     if (args.length === 0 || args[0] === 'list') {
       addToOutput('Available News Feeds:');
       addToOutput('---------------------');
@@ -855,12 +855,22 @@ document.addEventListener('DOMContentLoaded', function() {
         addToOutput(`${key.padEnd(15)} - ${rssFeeds[key].desc}`);
       });
       addToOutput('---------------------');
-      addToOutput('Usage: news <feed_name>');
+      addToOutput('Usage: news <feed_name> <number of articles (optional, default 5, max 50)>');
+      addToOutput('Example: news thehackernews 10');
       return;
     }
 
     const feedKey = args[0].toLowerCase();
     const feed = rssFeeds[feedKey];
+
+    // Parse count argument (optional, default 5)
+    let count = 5;
+    if (args.length > 1) {
+      const n = parseInt(args[1], 10);
+      if (!isNaN(n) && n > 0 && n <= 50) {
+        count = n;
+      }
+    }
 
     if (!feed) {
       addToOutput(`Feed '${feedKey}' not found. Type 'news list' for available feeds.`, 'command-error');
@@ -983,7 +993,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       addToOutput(`Latest from ${feedTitle}:`);
       addToOutput('----------------------------------------');
-      items.slice(0, 5).forEach(item => {
+      items.slice(0, count).forEach(item => {
         // Format date
         let dateStr = item.pubDate;
         try {
