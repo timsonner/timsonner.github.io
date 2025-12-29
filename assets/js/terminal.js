@@ -108,7 +108,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     switch(command) {
       case 'help':
-        addToOutput('Available commands: help, clear, date, whois, dig, osint, subdomains, headers, mac, cve');
+        addToOutput('Available commands: help, clear, date, whois, dig, osint, subdomains, headers, mac, cve, news');
+        break;
+      case 'news':
+        handleNews(args);
         break;
       case 'date':
         addToOutput(new Date().toString());
@@ -802,6 +805,160 @@ document.addEventListener('DOMContentLoaded', function() {
       addToOutput('(Note: This feature relies on a public proxy which may be blocked by some networks)', 'command-error');
     }
     terminalWindow.scrollTop = terminalWindow.scrollHeight;
+  }
+
+  const rssFeeds = {
+    "netsec": { url: "https://www.reddit.com/r/netsec/.rss", desc: "/r/netsec" },
+    "sysadmin": { url: "https://www.reddit.com/r/sysadmin/.rss", desc: "/r/sysadmin" },
+    "cybersecurity": { url: "https://www.reddit.com/r/cybersecurity/.rss", desc: "/r/cybersecurity" },
+    "security-se": { url: "https://security.stackexchange.com/feeds/week", desc: "IT Security Stack Exchange" },
+    "cis": { url: "https://www.cisecurity.org/feed/advisories", desc: "CIS Advisories" },
+    "securitymagazine": { url: "https://www.securitymagazine.com/rss/15", desc: "Security Magazine" },
+    "darkreading": { url: "https://www.darkreading.com/rss.xml", desc: "Dark Reading" },
+    "schneier": { url: "https://feeds.feedburner.com/schneier/fulltext", desc: "Schneier on Security" },
+    "trailofbits": { url: "https://blog.trailofbits.com/feed/", desc: "Trail of Bits" },
+    "malwaretech": { url: "https://www.malwaretech.com/feed/", desc: "MalwareTech" },
+    "projectzero": { url: "https://googleprojectzero.blogspot.com/feeds/posts/default", desc: "Project Zero" },
+    "krebs": { url: "https://krebsonsecurity.com/feed/", desc: "Krebs on Security" },
+    "bleeping": { url: "https://www.bleepingcomputer.com/feed/", desc: "Bleeping Computer" },
+    "threatpost": { url: "https://threatpost.com/feed/", desc: "Threatpost" },
+    "wired": { url: "https://www.wired.com/feed/category/security/latest/rss", desc: "Wired Security" },
+    "ars": { url: "https://arstechnica.com/security/feed/", desc: "Ars Technica Security" },
+    "theregister": { url: "https://www.theregister.com/security/headlines.atom", desc: "The Register Security" },
+    "errata": { url: "http://blog.erratasec.com/feeds/posts/default", desc: "Errata Security" },
+    "imperialviolet": { url: "https://www.imperialviolet.org/iv-rss.xml", desc: "ImperialViolet" },
+    "cisa": { url: "https://www.cisa.gov/cybersecurity-advisories/all.xml", desc: "CISA Advisories" },
+    "thehackernews": { url: "https://feeds.feedburner.com/TheHackersNews", desc: "The Hacker News" },
+    "sans": { url: "https://isc.sans.edu/rssfeed.xml", desc: "SANS ISC" },
+    "unit42": { url: "https://unit42.paloaltonetworks.com/feed/", desc: "Unit 42" },
+    "troyhunt": { url: "https://www.troyhunt.com/rss/", desc: "Troy Hunt" },
+    "securityweek": { url: "https://www.securityweek.com/feed/", desc: "SecurityWeek" },
+    "helpnetsec": { url: "https://www.helpnetsecurity.com/feed/", desc: "Help Net Security" },
+    "msrc": { url: "https://api.msrc.microsoft.com/update-guide/rss", desc: "Microsoft Security" },
+    "daemon": { url: "http://www.daemonology.net/blog/index.rss", desc: "Daemonic Dispatches" },
+    "irongeek": { url: "http://feeds.feedburner.com/IrongeeksSecuritySite", desc: "Irongeek's Security Site" },
+    "techanarchy": { url: "https://techanarchy.net/feed/", desc: "Tech Anarchy" },
+    "nixcraft": { url: "http://feeds.cyberciti.biz/Nixcraft-LinuxFreebsdSolarisTipsTricks", desc: "nixCraft" },
+    "doublepulsar": { url: "https://doublepulsar.com/feed", desc: "doublepulsar" }
+  };
+
+  async function handleNews(args) {
+    if (args.length === 0 || args[0] === 'list') {
+      addToOutput('Available News Feeds:');
+      addToOutput('---------------------');
+      Object.keys(rssFeeds).sort().forEach(key => {
+        addToOutput(`${key.padEnd(15)} - ${rssFeeds[key].desc}`);
+      });
+      addToOutput('---------------------');
+      addToOutput('Usage: news <feed_name>');
+      return;
+    }
+
+    const feedKey = args[0].toLowerCase();
+    const feed = rssFeeds[feedKey];
+
+    if (!feed) {
+      addToOutput(`Feed '${feedKey}' not found. Type 'news list' for available feeds.`, 'command-error');
+      return;
+    }
+
+    addToOutput(`Fetching ${feed.desc}...`);
+
+    try {
+      // Use a CORS proxy to fetch the raw RSS/Atom XML
+      // Using corsproxy.io to bypass CORS (api.allorigins.win was blocked by Reddit)
+      const proxyUrl = `https://corsproxy.io/?${feed.url}`;
+      const response = await fetch(proxyUrl);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const str = await response.text();
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(str, "text/xml");
+      
+      // Check for parser errors
+      const parserError = xmlDoc.querySelector('parsererror');
+      if (parserError) {
+        throw new Error('Failed to parse feed XML');
+      }
+
+      let items = [];
+      let feedTitle = feed.desc;
+
+      // Try RSS <item>
+      const rssItems = xmlDoc.querySelectorAll("item");
+      if (rssItems.length > 0) {
+        const channelTitle = xmlDoc.querySelector("channel > title");
+        if (channelTitle) feedTitle = channelTitle.textContent;
+        
+        rssItems.forEach(item => {
+          items.push({
+            title: item.querySelector("title")?.textContent || "No Title",
+            link: item.querySelector("link")?.textContent || "#",
+            pubDate: item.querySelector("pubDate")?.textContent || ""
+          });
+        });
+      } else {
+        // Try Atom <entry>
+        const atomEntries = xmlDoc.querySelectorAll("entry");
+        if (atomEntries.length > 0) {
+          const feedTitleElem = xmlDoc.querySelector("feed > title");
+          if (feedTitleElem) feedTitle = feedTitleElem.textContent;
+
+          atomEntries.forEach(entry => {
+            // Find the correct link (rel="alternate" or no rel)
+            const links = entry.querySelectorAll("link");
+            let href = "#";
+            for (let i = 0; i < links.length; i++) {
+                const rel = links[i].getAttribute("rel");
+                if (!rel || rel === "alternate") {
+                    href = links[i].getAttribute("href");
+                    break;
+                }
+            }
+            
+            items.push({
+              title: entry.querySelector("title")?.textContent || "No Title",
+              link: href,
+              pubDate: entry.querySelector("updated")?.textContent || entry.querySelector("published")?.textContent || ""
+            });
+          });
+        }
+      }
+
+      if (items.length === 0) {
+        addToOutput('No items found in feed.', 'command-error');
+        return;
+      }
+
+      addToOutput(`Latest from ${feedTitle}:`);
+      addToOutput('----------------------------------------');
+      
+      items.slice(0, 5).forEach(item => {
+        // Format date
+        let dateStr = item.pubDate;
+        try {
+            const date = new Date(item.pubDate);
+            if (!isNaN(date.getTime())) {
+                dateStr = date.toISOString().split('T')[0];
+            }
+        } catch (e) {
+            // keep original string if parsing fails
+        }
+
+        // Create a clickable link
+        const link = `<a href="${item.link}" target="_blank" style="color: inherit; text-decoration: underline;">${item.title}</a>`;
+        addToOutput(`* ${link}`, '', true);
+        addToOutput(`  ${dateStr}`);
+        addToOutput('');
+      });
+
+    } catch (error) {
+      addToOutput(`Error fetching news: ${error.message}`, 'command-error');
+      addToOutput(`Try visiting: ${feed.url}`, 'command-error');
+    }
   }
 
   function processEntities(entities, indent = '') {
