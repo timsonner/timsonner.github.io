@@ -839,7 +839,12 @@ document.addEventListener('DOMContentLoaded', function() {
     "irongeek": { url: "http://feeds.feedburner.com/IrongeeksSecuritySite", desc: "Irongeek's Security Site" },
     "techanarchy": { url: "https://techanarchy.net/feed/", desc: "Tech Anarchy" },
     "nixcraft": { url: "http://feeds.cyberciti.biz/Nixcraft-LinuxFreebsdSolarisTipsTricks", desc: "nixCraft" },
-    "doublepulsar": { url: "https://doublepulsar.com/feed", desc: "doublepulsar" }
+    "doublepulsar": { url: "https://doublepulsar.com/feed", desc: "doublepulsar" },
+    "blackhills": { url: "https://www.blackhillsinfosec.com/feed/", desc: "Black Hills InfoSec" },
+    "dfirreport": { url: "https://thedfirreport.com/feed/", desc: "The DFIR Report" },
+    "redcanary": { url: "https://redcanary.com/feed/", desc: "Red Canary" },
+    "mandiant": { url: "https://cloudblog.withgoogle.com/topics/threat-intelligence/rss/", desc: "Mandiant (Google)" },
+    "trustedsec": { url: "https://trustedsec.com/feed/", desc: "TrustedSec" }
   };
 
   async function handleNews(args) {
@@ -864,78 +869,120 @@ document.addEventListener('DOMContentLoaded', function() {
 
     addToOutput(`Fetching ${feed.desc}...`);
 
-    try {
-      // Use a CORS proxy to fetch the raw RSS/Atom XML
-      // Using corsproxy.io to bypass CORS (api.allorigins.win was blocked by Reddit)
-      const proxyUrl = `https://corsproxy.io/?${feed.url}`;
-      const response = await fetch(proxyUrl);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    let str = null;
+    let fetchError = null;
+
+    // Proxy strategies to try in order
+
+    const proxies = [
+      // Primary: corsproxy.io
+      (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+      // Fallback 1: api.allorigins.win
+      (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+      // Fallback 2: thingproxy.freeboard.io
+      (url) => `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(url)}`
+    ];
+
+    for (const getProxyUrl of proxies) {
+      try {
+        const proxyUrl = getProxyUrl(feed.url);
+        const response = await fetch(proxyUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP status: ${response.status}`);
+        }
+        
+        str = await response.text();
+        // If we got here, we have content, so break the loop
+        break;
+      } catch (e) {
+        // console.warn(`Proxy attempt failed: ${e.message}`);
+        fetchError = e;
+        // Continue to next proxy
       }
-      
-      const str = await response.text();
+    }
+
+    if (!str) {
+      addToOutput(`Failed to fetch feed after multiple attempts. Last error: ${fetchError?.message || 'Unknown error'}`, 'command-error');
+      return;
+    }
+
+    try {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(str, "text/xml");
-      
       // Check for parser errors
       const parserError = xmlDoc.querySelector('parsererror');
-      if (parserError) {
-        throw new Error('Failed to parse feed XML');
-      }
-
       let items = [];
       let feedTitle = feed.desc;
-
-      // Try RSS <item>
-      const rssItems = xmlDoc.querySelectorAll("item");
-      if (rssItems.length > 0) {
-        const channelTitle = xmlDoc.querySelector("channel > title");
-        if (channelTitle) feedTitle = channelTitle.textContent;
-        
-        rssItems.forEach(item => {
-          items.push({
-            title: item.querySelector("title")?.textContent || "No Title",
-            link: item.querySelector("link")?.textContent || "#",
-            pubDate: item.querySelector("pubDate")?.textContent || ""
-          });
-        });
-      } else {
-        // Try Atom <entry>
-        const atomEntries = xmlDoc.querySelectorAll("entry");
-        if (atomEntries.length > 0) {
-          const feedTitleElem = xmlDoc.querySelector("feed > title");
-          if (feedTitleElem) feedTitle = feedTitleElem.textContent;
-
-          atomEntries.forEach(entry => {
-            // Find the correct link (rel="alternate" or no rel)
-            const links = entry.querySelectorAll("link");
-            let href = "#";
-            for (let i = 0; i < links.length; i++) {
-                const rel = links[i].getAttribute("rel");
-                if (!rel || rel === "alternate") {
-                    href = links[i].getAttribute("href");
-                    break;
-                }
-            }
-            
+      let parsed = false;
+      if (!parserError) {
+        // Try RSS <item>
+        const rssItems = xmlDoc.querySelectorAll("item");
+        if (rssItems.length > 0) {
+          const channelTitle = xmlDoc.querySelector("channel > title");
+          if (channelTitle) feedTitle = channelTitle.textContent;
+          rssItems.forEach(item => {
             items.push({
-              title: entry.querySelector("title")?.textContent || "No Title",
-              link: href,
-              pubDate: entry.querySelector("updated")?.textContent || entry.querySelector("published")?.textContent || ""
+              title: item.querySelector("title")?.textContent || "No Title",
+              link: item.querySelector("link")?.textContent || "#",
+              pubDate: item.querySelector("pubDate")?.textContent || ""
             });
           });
+          parsed = true;
+        } else {
+          // Try Atom <entry>
+          const atomEntries = xmlDoc.querySelectorAll("entry");
+          if (atomEntries.length > 0) {
+            const feedTitleElem = xmlDoc.querySelector("feed > title");
+            if (feedTitleElem) feedTitle = feedTitleElem.textContent;
+            atomEntries.forEach(entry => {
+              // Find the correct link (rel="alternate" or no rel)
+              const links = entry.querySelectorAll("link");
+              let href = "#";
+              for (let i = 0; i < links.length; i++) {
+                  const rel = links[i].getAttribute("rel");
+                  if (!rel || rel === "alternate") {
+                      href = links[i].getAttribute("href");
+                      break;
+                  }
+              }
+              items.push({
+                title: entry.querySelector("title")?.textContent || "No Title",
+                link: href,
+                pubDate: entry.querySelector("updated")?.textContent || entry.querySelector("published")?.textContent || ""
+              });
+            });
+            parsed = true;
+          }
         }
       }
-
+      // Fallback: try to extract <item> blocks manually if XML parse failed
+      if (!parsed) {
+        // Try to extract <item>...</item> blocks from the raw string
+        const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
+        let match;
+        while ((match = itemRegex.exec(str)) !== null) {
+          const itemXml = match[1];
+          // Extract <title>, <link>, <pubDate>
+          const titleMatch = /<title>([\s\S]*?)<\/title>/i.exec(itemXml);
+          const linkMatch = /<link>([\s\S]*?)<\/link>/i.exec(itemXml);
+          const pubDateMatch = /<pubDate>([\s\S]*?)<\/pubDate>/i.exec(itemXml);
+          items.push({
+            title: titleMatch ? titleMatch[1].trim() : "No Title",
+            link: linkMatch ? linkMatch[1].trim() : "#",
+            pubDate: pubDateMatch ? pubDateMatch[1].trim() : ""
+          });
+        }
+        // Try to extract <title> from <channel>
+        const channelTitleMatch = /<channel>[\s\S]*?<title>([\s\S]*?)<\/title>/i.exec(str);
+        if (channelTitleMatch) feedTitle = channelTitleMatch[1].trim();
+      }
       if (items.length === 0) {
         addToOutput('No items found in feed.', 'command-error');
         return;
       }
-
       addToOutput(`Latest from ${feedTitle}:`);
       addToOutput('----------------------------------------');
-      
       items.slice(0, 5).forEach(item => {
         // Format date
         let dateStr = item.pubDate;
@@ -947,14 +994,12 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (e) {
             // keep original string if parsing fails
         }
-
         // Create a clickable link
         const link = `<a href="${item.link}" target="_blank" style="color: inherit; text-decoration: underline;">${item.title}</a>`;
         addToOutput(`* ${link}`, '', true);
         addToOutput(`  ${dateStr}`);
         addToOutput('');
       });
-
     } catch (error) {
       addToOutput(`Error fetching news: ${error.message}`, 'command-error');
       addToOutput(`Try visiting: ${feed.url}`, 'command-error');
