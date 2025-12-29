@@ -1,39 +1,38 @@
 <!-- X-Frame Bypass Demo Include -->
-<section style="max-width: 800px; margin: 2rem auto 3rem auto; font-family: 'Fira Mono', monospace; background: #23272a; border-radius: 8px; color: #e0e0e0; border: 1px solid #39ff14;">
+<div class="tool-section">
   <div class="terminal-header" id="xframe-header">
     <span class="terminal-button red" id="xframe-btn-red" style="cursor: pointer;" title="Reset"></span>
     <span class="terminal-button yellow" id="xframe-btn-yellow" style="cursor: pointer;" title="Minimize"></span>
     <span class="terminal-button green" id="xframe-btn-green" style="cursor: pointer;" title="Maximize"></span>
     <span class="terminal-title">X-Frame Bypass Demo</span>
   </div>
-  <div class="terminal-window" id="xframe-window" style="padding: 1.5rem; color: #e0e0e0; min-height: auto; height: auto;">
+  <div class="terminal-window" id="xframe-window" style="padding: 1.5rem; height: auto;">
     <form id="xframe-form" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-    <input type="url" id="xframe-url" placeholder="Enter a URL (https://...)" style="flex: 1; padding: 0.5rem; border-radius: 4px; border: 1px solid #444; background: #0c0c0c; color: #39ff14;" required>
-    <select id="xframe-method" style="padding: 0.5rem; border-radius: 4px; border: 1px solid #444; background: #0c0c0c; color: #39ff14;">
-      <option value="html">Render HTML (proxy fetch)</option>
-      <option value="plain">Plain iframe</option>
-    </select>
-    <button type="submit" style="background: #39ff14; color: #000; border: none; padding: 0.5rem 1.5rem; border-radius: 4px; font-weight: bold; cursor: pointer;">Load</button>
-  </form>
-  <div id="xframe-container" style="min-height: 300px; border: 1px solid #39ff14; border-radius: 4px; background: #0c0c0c; display: flex; align-items: center; justify-content: center; width: 100%; max-width: 100%; margin: 0 auto; font-family: 'Fira Mono', monospace;">
-    <span style="color: #888;">Enter a URL and click Load to attempt to display it below.</span>
-  </div>
-
-  <p style="color: #888; font-size: 0.95em; margin: 2rem 0 2rem 0;">Note: Most modern sites set <code>X-Frame-Options</code> or <code>Content-Security-Policy</code> to prevent embedding in iframes.</p>
-
-  <details style="margin: 2rem 0 2rem 0;">
-    <summary style="color:#39ff14;cursor:pointer;">How does this X-Frame bypass work?</summary>
-    <div style="margin-top:1em; color:#e0e0e0;">
-      <strong>Proxy-based X-Frame-Options Bypass</strong>
-      <p>
-        When you use the <b>Render HTML (proxy fetch)</b> method, the demo fetches the target page's HTML using a public proxy service. Instead of setting the iframe <code>src</code> to the remote site (which would trigger browser restrictions), it writes the fetched HTML directly into a blank iframe using JavaScript. This makes the content appear as same-origin, so the browser does not enforce <code>X-Frame-Options</code> or <code>Content-Security-Policy</code> headers from the remote site.<br><br>
-        <b>Limitations:</b> Some resources (images, scripts, styles) may still be blocked by CORS or not work as expected, and interactive features may break. This technique is useful for static content or basic page previews.
-      </p>
+      <input type="url" id="xframe-url" placeholder="Enter a URL (https://...)" style="flex: 1; padding: 0.5rem; border-radius: 4px; border: 1px solid #444; background: #0c0c0c; color: #39ff14;" required>
+      <select id="xframe-method" style="padding: 0.5rem; border-radius: 4px; border: 1px solid #444; background: #0c0c0c; color: #39ff14;">
+        <option value="html">Render HTML (proxy fetch)</option>
+        <option value="plain">Plain iframe</option>
+      </select>
+      <button type="submit" style="background: #39ff14; color: #000; border: none; padding: 0.5rem 1.5rem; border-radius: 4px; font-weight: bold; cursor: pointer;">Load</button>
+    </form>
+    <div id="xframe-container" style="min-height: 300px; border: 1px solid #39ff14; border-radius: 4px; background: #0c0c0c; display: flex; align-items: center; justify-content: center; width: 100%; max-width: 100%; margin: 0 auto; font-family: 'Fira Mono', monospace;">
+      <span style="color: #888;">Enter a URL and click Load to attempt to display it below.</span>
     </div>
-  </details>
 
+    <p style="color: #888; font-size: 0.95em; margin: 2rem 0 2rem 0;">Note: Most modern sites set <code>X-Frame-Options</code> or <code>Content-Security-Policy</code> to prevent embedding in iframes.</p>
+
+    <details style="margin: 1rem 0 1rem 0;">
+      <summary style="color:#39ff14;cursor:pointer;">How does this X-Frame bypass work?</summary>
+      <div style="margin-top:1em; color:#e0e0e0;">
+        <strong>Proxy-based X-Frame-Options Bypass</strong>
+        <p>
+          When you use the <b>Render HTML (proxy fetch)</b> method, the demo fetches the target page's HTML using a public proxy service. Instead of setting the iframe <code>src</code> to the remote site (which would trigger browser restrictions), it writes the fetched HTML directly into a blank iframe using JavaScript. This makes the content appear as same-origin, so the browser does not enforce <code>X-Frame-Options</code> or <code>Content-Security-Policy</code> headers from the remote site.<br><br>
+          <b>Limitations:</b> Some resources (images, scripts, styles) may still be blocked by CORS or not work as expected, and interactive features may break. This technique is useful for static content or basic page previews.
+        </p>
+      </div>
+    </details>
   </div>
-</section>
+</div>
 
 <script>
 // X-Frame Bypass Demo Window Controls

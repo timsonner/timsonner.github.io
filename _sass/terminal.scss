@@ -1,5 +1,5 @@
 /* Terminal Emulator Styles */
-.terminal-section {
+.terminal-section, .tool-section {
   max-width: 800px;
   margin: 0 auto 3rem auto;
   font-family: $font-family-mono;
@@ -40,11 +40,16 @@
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
   padding: 1rem;
-  height: 300px;
+  min-height: 100px;
   overflow-y: auto;
   font-size: 0.9rem;
   color: $color-text-main;
   box-shadow: 0 0 10px rgba(57, 255, 20, 0.1);
+}
+
+/* Specific height for the terminal emulator */
+.terminal-section .terminal-window {
+  height: 300px;
 }
 
 .terminal-output {
