@@ -1,0 +1,196 @@
+<!-- X-Frame Bypass Demo Include -->
+<section style="max-width: 800px; margin: 2rem auto 3rem auto; font-family: 'Fira Mono', monospace; background: #23272a; border-radius: 8px; color: #e0e0e0; border: 1px solid #39ff14;">
+  <div class="terminal-header" id="xframe-header">
+    <span class="terminal-button red" id="xframe-btn-red" style="cursor: pointer;" title="Reset"></span>
+    <span class="terminal-button yellow" id="xframe-btn-yellow" style="cursor: pointer;" title="Minimize"></span>
+    <span class="terminal-button green" id="xframe-btn-green" style="cursor: pointer;" title="Maximize"></span>
+    <span class="terminal-title">X-Frame Bypass Demo</span>
+  </div>
+  <div class="terminal-window" id="xframe-window" style="padding: 1.5rem; color: #e0e0e0; min-height: auto; height: auto;">
+    <form id="xframe-form" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+    <input type="url" id="xframe-url" placeholder="Enter a URL (https://...)" style="flex: 1; padding: 0.5rem; border-radius: 4px; border: 1px solid #444; background: #0c0c0c; color: #39ff14;" required>
+    <select id="xframe-method" style="padding: 0.5rem; border-radius: 4px; border: 1px solid #444; background: #0c0c0c; color: #39ff14;">
+      <option value="html">Render HTML (proxy fetch)</option>
+      <option value="plain">Plain iframe</option>
+    </select>
+    <button type="submit" style="background: #39ff14; color: #000; border: none; padding: 0.5rem 1.5rem; border-radius: 4px; font-weight: bold; cursor: pointer;">Load</button>
+  </form>
+  <div id="xframe-container" style="min-height: 300px; border: 1px solid #39ff14; border-radius: 4px; background: #0c0c0c; display: flex; align-items: center; justify-content: center; width: 100%; max-width: 100%; margin: 0 auto; font-family: 'Fira Mono', monospace;">
+    <span style="color: #888;">Enter a URL and click Load to attempt to display it below.</span>
+  </div>
+
+  <p style="color: #888; font-size: 0.95em; margin: 2rem 0 2rem 0;">Note: Most modern sites set <code>X-Frame-Options</code> or <code>Content-Security-Policy</code> to prevent embedding in iframes.</p>
+
+  <details style="margin: 2rem 0 2rem 0;">
+    <summary style="color:#39ff14;cursor:pointer;">How does this X-Frame bypass work?</summary>
+    <div style="margin-top:1em; color:#e0e0e0;">
+      <strong>Proxy-based X-Frame-Options Bypass</strong>
+      <p>
+        When you use the <b>Render HTML (proxy fetch)</b> method, the demo fetches the target page's HTML using a public proxy service. Instead of setting the iframe <code>src</code> to the remote site (which would trigger browser restrictions), it writes the fetched HTML directly into a blank iframe using JavaScript. This makes the content appear as same-origin, so the browser does not enforce <code>X-Frame-Options</code> or <code>Content-Security-Policy</code> headers from the remote site.<br><br>
+        <b>Limitations:</b> Some resources (images, scripts, styles) may still be blocked by CORS or not work as expected, and interactive features may break. This technique is useful for static content or basic page previews.
+      </p>
+    </div>
+  </details>
+
+  </div>
+</section>
+
+<script>
+// X-Frame Bypass Demo Window Controls
+document.addEventListener('DOMContentLoaded', function() {
+  const xframeWindow = document.getElementById('xframe-window');
+  const xframeHeader = document.getElementById('xframe-header');
+  const btnRed = document.getElementById('xframe-btn-red');
+  const btnYellow = document.getElementById('xframe-btn-yellow');
+  const btnGreen = document.getElementById('xframe-btn-green');
+  const xframeForm = document.getElementById('xframe-form');
+  const xframeUrl = document.getElementById('xframe-url');
+  const xframeContainer = document.getElementById('xframe-container');
+
+  if (btnYellow && xframeWindow) {
+    btnYellow.addEventListener('click', function() {
+      xframeWindow.style.display = 'none';
+      if (xframeHeader) {
+        xframeHeader.style.borderBottomLeftRadius = '8px';
+        xframeHeader.style.borderBottomRightRadius = '8px';
+        xframeHeader.style.borderBottom = '1px solid #39ff14';
+      }
+    });
+  }
+
+  if (btnGreen && xframeWindow) {
+    btnGreen.addEventListener('click', function() {
+      xframeWindow.style.display = 'block';
+      if (xframeHeader) {
+        xframeHeader.style.borderBottomLeftRadius = '0';
+        xframeHeader.style.borderBottomRightRadius = '0';
+        xframeHeader.style.borderBottom = 'none';
+      }
+    });
+  }
+
+  if (btnRed) {
+    btnRed.addEventListener('click', function() {
+      if (xframeForm) xframeForm.reset();
+      if (xframeUrl) xframeUrl.value = '';
+      if (xframeContainer) {
+        xframeContainer.innerHTML = '<span style="color: #888;">Enter a URL and click Load to attempt to display it below.</span>';
+      }
+    });
+  }
+});
+  document.getElementById('xframe-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const url = document.getElementById('xframe-url').value.trim();
+    const method = document.getElementById('xframe-method').value;
+    const container = document.getElementById('xframe-container');
+    if (!url) return;
+    container.innerHTML = '';
+    container.style.flexDirection = 'column';
+    container.style.alignItems = 'stretch';
+    container.style.justifyContent = 'flex-start';
+    container.style.minHeight = '400px';
+
+    function addMsg(msg) {
+      const m = document.createElement('div');
+      m.style.color = '#888';
+      m.style.marginTop = '0.5em';
+      m.style.fontSize = '0.95em';
+      m.textContent = msg;
+      container.appendChild(m);
+    }
+
+    function addIframe(src, isBypass) {
+      const iframe = isBypass
+        ? document.createElement('iframe', { is: 'x-frame-bypass' })
+        : document.createElement('iframe');
+      if (isBypass) iframe.setAttribute('is', 'x-frame-bypass');
+      iframe.src = src;
+      iframe.style.width = '100%';
+      iframe.style.height = 'calc(100% - 2.2em)';
+      iframe.style.minHeight = '300px';
+      iframe.style.flex = '1 1 auto';
+      iframe.style.border = 'none';
+      iframe.style.background = '#181c1f';
+      container.appendChild(iframe);
+      return iframe;
+    }
+
+    // Render fetched HTML into an iframe (no sandbox)
+    function injectBaseTag(html, url) {
+      // Try to inject a <base> tag into the <head> for correct relative URL resolution
+      const baseTag = `<base href="${url.replace(/(["'<>])/g, '')}">`;
+      if (/<head[^>]*>/i.test(html)) {
+        return html.replace(/<head([^>]*)>/i, `<head$1>${baseTag}`);
+      } else if (/<html[^>]*>/i.test(html)) {
+        return html.replace(/<html([^>]*)>/i, `<html$1><head>${baseTag}</head>`);
+      } else {
+        return `<head>${baseTag}</head>` + html;
+      }
+    }
+
+    function renderHtmlInIframe(html, url) {
+      // If the response looks like JSON (proxy error), show a styled error instead of rendering in iframe
+      let isJson = false;
+      try {
+        const parsed = JSON.parse(html);
+        if (typeof parsed === 'object' && parsed !== null) isJson = true;
+        if (isJson) {
+          container.innerHTML = '';
+          const errorBox = document.createElement('div');
+          errorBox.style.background = '#2d2323';
+          errorBox.style.color = '#ff5555';
+          errorBox.style.padding = '1em';
+          errorBox.style.borderRadius = '6px';
+          errorBox.style.margin = '1em 0';
+          errorBox.style.fontFamily = 'monospace';
+          errorBox.innerHTML = '<strong>Proxy Error:</strong><br><pre style="white-space:pre-wrap;word-break:break-all;">' +
+            JSON.stringify(parsed, null, 2) + '</pre>';
+          container.appendChild(errorBox);
+          return null;
+        }
+      } catch (e) { /* Not JSON, continue as HTML */ }
+      const iframe = document.createElement('iframe');
+      iframe.style.width = '100%';
+      iframe.style.height = 'calc(100% - 2.2em)';
+      iframe.style.minHeight = '300px';
+      iframe.style.flex = '1 1 auto';
+      iframe.style.border = 'none';
+      iframe.style.background = '#181c1f';
+      container.appendChild(iframe);
+      // Inject <base> tag for relative URLs
+      const htmlWithBase = injectBaseTag(html, url);
+      try {
+        iframe.contentDocument.open();
+        iframe.contentDocument.write(htmlWithBase);
+        iframe.contentDocument.close();
+      } catch (e) {
+        addMsg('Failed to write HTML to iframe: ' + e);
+      }
+      return iframe;
+    }
+
+    // Proxy helper
+    function proxyUrl(u) {
+      // Use allorigins as the proxy
+      return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u);
+    }
+
+    // Main logic with two selected methods
+    if (method === 'html') {
+      addMsg('Fetching HTML via proxy and rendering in an iframe...');
+      fetch(proxyUrl(url))
+        .then(resp => resp.text())
+        .then(html => {
+          renderHtmlInIframe(html, url);
+          addMsg('Rendered fetched HTML in an iframe. Relative resources should now resolve.');
+        })
+        .catch(err => {
+          addMsg('Failed to fetch or render HTML: ' + err);
+        });
+    } else if (method === 'plain') {
+      addIframe(url, false);
+      addMsg('Using a plain <iframe>. If the site does not display, it is likely protected by X-Frame-Options, CSP, or browser restrictions.');
+    }
+  });
+</script>
