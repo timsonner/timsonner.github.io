@@ -301,6 +301,7 @@ document.addEventListener('DOMContentLoaded', function() {
           if (record.type === 16) typeName = 'TXT';
           if (record.type === 2) typeName = 'NS';
           if (record.type === 6) typeName = 'SOA';
+          if (record.type === 12) typeName = 'PTR';
           
           // If user requested a specific type, use that label, otherwise guess
           if (type !== 'A' && type !== 'AAAA') typeName = type;
@@ -824,8 +825,6 @@ document.addEventListener('DOMContentLoaded', function() {
     "wired": { url: "https://www.wired.com/feed/category/security/latest/rss", desc: "Wired Security" },
     "ars": { url: "https://arstechnica.com/security/feed/", desc: "Ars Technica Security" },
     "theregister": { url: "https://www.theregister.com/security/headlines.atom", desc: "The Register Security" },
-    "errata": { url: "http://blog.erratasec.com/feeds/posts/default", desc: "Errata Security" },
-    "imperialviolet": { url: "https://www.imperialviolet.org/iv-rss.xml", desc: "ImperialViolet" },
     "cisa": { url: "https://www.cisa.gov/cybersecurity-advisories/all.xml", desc: "CISA Advisories" },
     "thehackernews": { url: "https://feeds.feedburner.com/TheHackersNews", desc: "The Hacker News" },
     "sans": { url: "https://isc.sans.edu/rssfeed.xml", desc: "SANS ISC" },
@@ -835,7 +834,6 @@ document.addEventListener('DOMContentLoaded', function() {
     "helpnetsec": { url: "https://www.helpnetsecurity.com/feed/", desc: "Help Net Security" },
     "msrc": { url: "https://api.msrc.microsoft.com/update-guide/rss", desc: "Microsoft Security" },
     "daemon": { url: "http://www.daemonology.net/blog/index.rss", desc: "Daemonic Dispatches" },
-    "irongeek": { url: "http://feeds.feedburner.com/IrongeeksSecuritySite", desc: "Irongeek's Security Site" },
     "techanarchy": { url: "https://techanarchy.net/feed/", desc: "Tech Anarchy" },
     "nixcraft": { url: "http://feeds.cyberciti.biz/Nixcraft-LinuxFreebsdSolarisTipsTricks", desc: "nixCraft" },
     "doublepulsar": { url: "https://doublepulsar.com/feed", desc: "doublepulsar" },
