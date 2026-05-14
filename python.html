@@ -1,0 +1,701 @@
+---
+layout: default
+title: Python IDE
+permalink: /python/
+---
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+
+<style>
+.py-ide {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 220px);
+  min-height: 560px;
+  border: 1px solid #39ff14;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0c0c0c;
+  box-shadow: 0 0 12px rgba(57,255,20,0.2);
+}
+
+.py-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 0.85rem;
+  background: #111;
+  border-bottom: 1px solid #1e1e1e;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.py-toolbar-title {
+  color: #39ff14;
+  font-weight: bold;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+}
+
+.py-status {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 3px;
+  font-family: inherit;
+  transition: all 0.3s;
+}
+.py-status.loading { color: #888;    border: 1px solid #333; }
+.py-status.ready   { color: #39ff14; border: 1px solid rgba(57,255,20,0.5); }
+.py-status.running { color: #ffc107; border: 1px solid #ffc107; }
+.py-status.err     { color: #ff6b6b; border: 1px solid #ff6b6b; }
+
+.py-toolbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.py-kbd {
+  font-size: 0.72rem;
+  color: #444;
+  font-family: inherit;
+}
+
+.py-btn {
+  background: #39ff14;
+  color: #000;
+  border: none;
+  padding: 0.28rem 0.75rem;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.82rem;
+  transition: all 0.15s;
+}
+.py-btn:hover:not(:disabled) { background: #7fff5a; }
+.py-btn:disabled { background: #222; color: #555; cursor: not-allowed; }
+.py-btn.ghost {
+  background: transparent;
+  color: #555;
+  border: 1px solid #222;
+}
+.py-btn.ghost:hover:not(:disabled) { color: #39ff14; border-color: #39ff14; background: transparent; }
+
+.py-panels {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Editor panel ── */
+.py-editor-panel {
+  flex: 0 0 55%;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #1e1e1e;
+  overflow: hidden;
+}
+
+.py-panel-label {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.7rem;
+  color: #444;
+  background: #0f0f0f;
+  border-bottom: 1px solid #1a1a1a;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+/* CodeMirror */
+.CodeMirror {
+  background: #0c0c0c !important;
+  color: #d4d4d4 !important;
+  font-family: 'Fira Mono', 'Courier New', monospace !important;
+  font-size: 0.87rem !important;
+  height: 100% !important;
+  line-height: 1.55 !important;
+}
+.CodeMirror-scroll     { height: 100%; }
+.CodeMirror-gutters    { background: #0f0f0f !important; border-right: 1px solid #1a1a1a !important; }
+.CodeMirror-linenumber { color: #333 !important; font-size: 0.78rem; }
+.CodeMirror-cursor     { border-left: 2px solid #39ff14 !important; }
+.CodeMirror-selected   { background: rgba(57,255,20,0.08) !important; }
+.CodeMirror-activeline-background { background: #0f0f0f !important; }
+.cm-keyword  { color: #39ff14 !important; font-weight: bold; }
+.cm-builtin  { color: #7fff5a !important; }
+.cm-string   { color: #ce9178 !important; }
+.cm-comment  { color: #3a3a3a !important; font-style: italic; }
+.cm-number   { color: #b5cea8 !important; }
+.cm-def      { color: #dcdcaa !important; }
+.cm-operator { color: #888 !important; }
+.cm-variable { color: #9cdcfe !important; }
+.cm-punctuation { color: #666 !important; }
+.cm-error    { color: #ff6b6b !important; }
+
+/* ── Right panels ── */
+.py-right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* Variables — shrinks when trace panel is visible */
+.py-vars-panel {
+  flex: 0 0 35%;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #1e1e1e;
+  overflow: hidden;
+  transition: flex-basis 0.25s ease;
+}
+.py-vars-panel.expanded { flex-basis: 50%; }
+
+.py-vars-scroll {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.py-var-row {
+  display: grid;
+  grid-template-columns: minmax(80px, 130px) 70px 1fr;
+  gap: 0.4rem;
+  align-items: baseline;
+  padding: 0.3rem 0.65rem;
+  border-bottom: 1px solid #0f0f0f;
+  font-size: 0.8rem;
+  font-family: 'Fira Mono', monospace;
+  transition: background 0.1s;
+}
+.py-var-row:hover { background: #111; }
+
+.py-var-name  { color: #9cdcfe; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.py-var-value { color: #ce9178; word-break: break-all; font-size: 0.78rem; opacity: 0.9; }
+
+.py-badge {
+  font-size: 0.65rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  font-weight: bold;
+  text-align: center;
+  white-space: nowrap;
+}
+.badge-int, .badge-float, .badge-complex { background: #0d2137; color: #4fc3f7; }
+.badge-str                               { background: #0d2010; color: #39ff14; }
+.badge-bool                              { background: #2a1e00; color: #ffc107; }
+.badge-list, .badge-tuple                { background: #2a1400; color: #ff9800; }
+.badge-dict                              { background: #1e0a2a; color: #ce93d8; }
+.badge-set, .badge-frozenset             { background: #00201e; color: #80deea; }
+.badge-NoneType                          { background: #1a1a1a; color: #555; }
+.badge-other                             { background: #181818; color: #888; }
+
+.py-vars-empty {
+  color: #2a2a2a;
+  font-size: 0.78rem;
+  padding: 0.85rem 0.75rem;
+  font-family: monospace;
+}
+
+/* ── Stack trace panel ── */
+.py-trace-panel {
+  display: none;
+  flex-direction: column;
+  flex: 0 0 32%;
+  border-bottom: 1px solid #1e1e1e;
+  overflow: hidden;
+  border-left: 2px solid rgba(255,107,107,0.3);
+  background: #0a0808;
+}
+.py-trace-panel.visible { display: flex; }
+
+.py-panel-label.err-label {
+  color: #ff6b6b;
+  border-bottom-color: rgba(255,107,107,0.2);
+  background: #110a0a;
+}
+
+.py-trace-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem 0;
+}
+
+/* Exception summary at top of trace */
+.py-exc-summary {
+  padding: 0.45rem 0.75rem 0.5rem;
+  border-bottom: 1px solid rgba(255,107,107,0.15);
+  margin-bottom: 0.25rem;
+}
+.py-exc-type {
+  color: #ff6b6b;
+  font-family: 'Fira Mono', monospace;
+  font-size: 0.82rem;
+  font-weight: bold;
+}
+.py-exc-msg {
+  color: #cc8888;
+  font-family: 'Fira Mono', monospace;
+  font-size: 0.76rem;
+  margin-top: 0.2rem;
+  word-break: break-word;
+}
+
+/* Individual frame */
+.py-frame {
+  padding: 0.35rem 0.75rem;
+  border-bottom: 1px solid #120a0a;
+  transition: background 0.1s;
+  cursor: default;
+}
+.py-frame:hover { background: #110a0a; }
+.py-frame.active-frame {
+  border-left: 2px solid #ff6b6b;
+  padding-left: calc(0.75rem - 2px);
+  background: #130808;
+}
+
+.py-frame-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.py-frame-num  {
+  font-size: 0.65rem;
+  color: #3a2020;
+  font-family: monospace;
+  flex-shrink: 0;
+}
+.py-frame-func {
+  color: #dcdcaa;
+  font-family: 'Fira Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: bold;
+}
+.py-frame-loc {
+  color: #3a2a2a;
+  font-family: 'Fira Mono', monospace;
+  font-size: 0.72rem;
+  margin-left: auto;
+}
+.py-frame-loc span { color: #664444; }
+
+.py-frame-code {
+  margin-top: 0.2rem;
+  font-family: 'Fira Mono', monospace;
+  font-size: 0.77rem;
+  color: #886666;
+  padding-left: 0.5rem;
+  border-left: 1px solid #2a1414;
+  white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.py-trace-empty {
+  color: #2a2a2a;
+  font-size: 0.78rem;
+  padding: 0.85rem 0.75rem;
+  font-family: monospace;
+}
+
+/* ── Output panel ── */
+.py-output-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 60px;
+}
+
+.py-output {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.45rem 0.7rem;
+  font-family: 'Fira Mono', 'Courier New', monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #d4d4d4;
+}
+.out-info    { color: #2a2a2a; }
+.out-success { color: #39ff14; }
+.out-stderr  { color: #ff6b6b; }
+</style>
+
+<div class="py-ide">
+
+  <!-- Toolbar -->
+  <div class="py-toolbar">
+    <span class="py-toolbar-title">🐍 Python IDE</span>
+    <span id="py-status" class="py-status loading">loading pyodide…</span>
+    <span class="py-kbd">Ctrl+Enter to run</span>
+    <div class="py-toolbar-right">
+      <button id="py-reset"  class="py-btn ghost" title="Clear variables and restart namespace">Reset</button>
+      <button id="py-clrout" class="py-btn ghost" title="Clear output">Clear Output</button>
+      <button id="py-run"    class="py-btn" disabled>▶ Run</button>
+    </div>
+  </div>
+
+  <div class="py-panels">
+
+    <!-- Editor -->
+    <div class="py-editor-panel">
+      <div class="py-panel-label">editor.py</div>
+      <textarea id="py-editor"></textarea>
+    </div>
+
+    <!-- Right column -->
+    <div class="py-right-panel">
+
+      <!-- Variable inspector -->
+      <div class="py-vars-panel expanded" id="py-vars-panel">
+        <div class="py-panel-label">variables</div>
+        <div class="py-vars-scroll" id="py-vars">
+          <div class="py-vars-empty">// run code to inspect variables</div>
+        </div>
+      </div>
+
+      <!-- Stack trace (hidden until exception) -->
+      <div class="py-trace-panel" id="py-trace-panel">
+        <div class="py-panel-label err-label">stack trace</div>
+        <div class="py-trace-scroll" id="py-trace">
+          <div class="py-trace-empty">// no exceptions</div>
+        </div>
+      </div>
+
+      <!-- Output -->
+      <div class="py-output-panel">
+        <div class="py-panel-label">output</div>
+        <pre class="py-output" id="py-output"><span class="out-info">// output appears here</span></pre>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- CodeMirror -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+
+<script>
+(function () {
+
+  /* ── CodeMirror setup ─────────────────────────────────────── */
+  const editor = CodeMirror.fromTextArea(document.getElementById('py-editor'), {
+    mode: 'python',
+    lineNumbers: true,
+    autoCloseBrackets: true,
+    matchBrackets: true,
+    styleActiveLine: true,
+    indentUnit: 4,
+    tabSize: 4,
+    indentWithTabs: false,
+    extraKeys: {
+      'Ctrl-Enter': runCode,
+      'Cmd-Enter':  runCode,
+      'Tab': function (cm) {
+        if (cm.somethingSelected()) cm.indentSelection('add');
+        else cm.replaceSelection('    ');
+      }
+    }
+  });
+
+  editor.setValue(`# Variables are inspected live — stack trace appears on exceptions
+# Ctrl+Enter to run — namespace persists between runs
+
+x = 42
+name = "timsonner.com"
+numbers = [1, 2, 3, 4, 5]
+lookup = {"site": name, "score": x, "tags": ["python", "cybersec"]}
+
+total = sum(numbers)
+msg   = f"Sum of {numbers} = {total}"
+
+print(msg)
+print(f"Site: {lookup['site']}")
+`);
+
+  /* ── DOM refs ─────────────────────────────────────────────── */
+  const statusEl    = document.getElementById('py-status');
+  const runBtn      = document.getElementById('py-run');
+  const outputEl    = document.getElementById('py-output');
+  const varsEl      = document.getElementById('py-vars');
+  const traceEl     = document.getElementById('py-trace');
+  const tracePanel  = document.getElementById('py-trace-panel');
+  const varsPanel   = document.getElementById('py-vars-panel');
+
+  let pyodide = null;
+
+  function setStatus(text, state) {
+    statusEl.textContent = text;
+    statusEl.className   = 'py-status ' + state;
+  }
+
+  /* ── Output helpers ───────────────────────────────────────── */
+  function clearOutput() {
+    outputEl.innerHTML = '<span class="out-info">// output cleared</span>';
+  }
+
+  function appendOutput(html) {
+    const ph = outputEl.querySelector('.out-info');
+    if (ph) ph.remove();
+    outputEl.innerHTML += html;
+    outputEl.scrollTop  = outputEl.scrollHeight;
+  }
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  /* ── Variable inspector ───────────────────────────────────── */
+  function badgeClass(t) {
+    if (['int','float','complex'].includes(t)) return 'badge-int';
+    if (t === 'str')                           return 'badge-str';
+    if (t === 'bool')                          return 'badge-bool';
+    if (['list','tuple'].includes(t))          return 'badge-list';
+    if (t === 'dict')                          return 'badge-dict';
+    if (['set','frozenset'].includes(t))       return 'badge-set';
+    if (t === 'NoneType')                      return 'badge-NoneType';
+    return 'badge-other';
+  }
+
+  function updateVars() {
+    try {
+      const raw = pyodide.runPython(`
+import json as _j
+_out = {}
+for _k, _v in _user_ns.items():
+    if _k.startswith('_') or _k == '__builtins__':
+        continue
+    try:
+        _t = type(_v).__name__
+        if isinstance(_v, (list, tuple, set, frozenset)):
+            _r = repr(_v)
+            _r = f'({len(_v)}) ' + (_r[:100] + '\\u2026' if len(_r) > 100 else _r)
+        elif isinstance(_v, dict):
+            _r = repr(_v)
+            _r = f'({len(_v)}) ' + (_r[:100] + '\\u2026' if len(_r) > 100 else _r)
+        else:
+            _r = repr(_v)
+            if len(_r) > 120: _r = _r[:117] + '\\u2026'
+        _out[_k] = {'type': _t, 'value': _r}
+    except:
+        pass
+_j.dumps(_out)
+`);
+      const vars = JSON.parse(raw);
+      const keys = Object.keys(vars);
+
+      if (!keys.length) {
+        varsEl.innerHTML = '<div class="py-vars-empty">// no variables defined</div>';
+        return;
+      }
+
+      varsEl.innerHTML = keys.map(k => {
+        const v = vars[k];
+        const bc = badgeClass(v.type);
+        return `<div class="py-var-row">
+          <span class="py-var-name">${esc(k)}</span>
+          <span class="py-badge ${bc}">${esc(v.type)}</span>
+          <span class="py-var-value">${esc(v.value)}</span>
+        </div>`;
+      }).join('');
+    } catch (_) { /* silent */ }
+  }
+
+  /* ── Stack trace ──────────────────────────────────────────── */
+  function showTrace(traceJson) {
+    const data = JSON.parse(traceJson);
+    if (!data) {
+      hideTrace();
+      return;
+    }
+
+    tracePanel.classList.add('visible');
+    varsPanel.classList.remove('expanded');
+
+    const frames = data.frames || [];
+    const lastIdx = frames.length - 1;
+
+    const summaryHtml = `
+      <div class="py-exc-summary">
+        <div class="py-exc-type">${esc(data.type)}</div>
+        <div class="py-exc-msg">${esc(data.message)}</div>
+      </div>`;
+
+    const framesHtml = frames.map((f, i) => {
+      const isActive = i === lastIdx;
+      return `<div class="py-frame${isActive ? ' active-frame' : ''}">
+        <div class="py-frame-header">
+          <span class="py-frame-num">#${i}</span>
+          <span class="py-frame-func">${esc(f.func === '<module>' ? '(module)' : f.func + '()')}</span>
+          <span class="py-frame-loc">line <span>${esc(String(f.lineno))}</span></span>
+        </div>
+        ${f.code ? `<div class="py-frame-code">${esc(f.code.trim())}</div>` : ''}
+      </div>`;
+    }).join('');
+
+    traceEl.innerHTML = summaryHtml + framesHtml;
+
+    // Highlight the error line in the editor
+    if (frames.length) {
+      const errLine = frames[lastIdx].lineno - 1;
+      editor.addLineClass(errLine, 'background', 'cm-error-line');
+      editor.setCursor({ line: errLine, ch: 0 });
+    }
+  }
+
+  function hideTrace() {
+    tracePanel.classList.remove('visible');
+    varsPanel.classList.add('expanded');
+    traceEl.innerHTML = '<div class="py-trace-empty">// no exceptions</div>';
+  }
+
+  function clearErrorLines() {
+    const lineCount = editor.lineCount();
+    for (let i = 0; i < lineCount; i++) {
+      editor.removeLineClass(i, 'background', 'cm-error-line');
+    }
+  }
+
+  /* ── Run code ─────────────────────────────────────────────── */
+  async function runCode() {
+    if (!pyodide || runBtn.disabled) return;
+    const code = editor.getValue().trim();
+    if (!code) return;
+
+    runBtn.disabled    = true;
+    runBtn.textContent = '⟳';
+    setStatus('running…', 'running');
+    clearErrorLines();
+
+    const stdout = [];
+    const stderr = [];
+    pyodide.setStdout({ batched: s => stdout.push(s) });
+    pyodide.setStderr({ batched: s => stderr.push(s) });
+
+    // Run via Python wrapper that captures structured traceback
+    pyodide.globals.set('_user_code', code);
+    const traceJson = await pyodide.runPythonAsync(`
+import json as _j, traceback as _tb, sys as _sys
+
+_trace_out = None
+try:
+    _compiled = compile(_user_code, '<user_code>', 'exec')
+    exec(_compiled, _user_ns)
+except Exception as _exc:
+    _et, _ev, _etb = _sys.exc_info()
+    _frames = _tb.extract_tb(_etb)
+    _user_frames = [f for f in _frames if f.filename == '<user_code>']
+    _module_frames = [f for f in _user_frames if f.name == '<module>']
+    if len(_module_frames) > 1:
+        _user_frames = _user_frames[1:]
+    _trace_out = _j.dumps({
+        'type': type(_exc).__name__,
+        'message': str(_exc),
+        'frames': [
+            {'func': f.name, 'lineno': f.lineno, 'code': f.line or ''}
+            for f in _user_frames
+        ]
+    })
+
+_j.dumps(_trace_out)
+`);
+
+    // traceJson is a JSON-encoded string (or JSON null)
+    const inner = JSON.parse(traceJson);   // either null or a JSON string
+    if (inner) {
+      showTrace(inner);
+      setStatus('exception', 'err');
+    } else {
+      hideTrace();
+      setStatus('ready', 'ready');
+    }
+
+    let out = '';
+    if (stdout.length) out += stdout.map(l => `<span>${esc(l)}\n</span>`).join('');
+    if (stderr.length) out += stderr.map(l => `<span class="out-stderr">${esc(l)}\n</span>`).join('');
+    if (!out && !inner) out = '<span class="out-info">// (no output)\n</span>';
+    if (out) appendOutput(out);
+
+    updateVars();
+    runBtn.disabled    = false;
+    runBtn.textContent = '▶ Run';
+  }
+
+  /* ── Reset namespace ──────────────────────────────────────── */
+  function resetNs() {
+    if (!pyodide) return;
+    pyodide.runPython(`
+import builtins as _bi
+_user_ns.clear()
+_user_ns['__builtins__'] = _bi
+`);
+    varsEl.innerHTML = '<div class="py-vars-empty">// namespace reset</div>';
+    hideTrace();
+    clearErrorLines();
+    clearOutput();
+  }
+
+  /* ── Boot Pyodide ─────────────────────────────────────────── */
+  async function boot() {
+    try {
+      pyodide = await loadPyodide({
+        indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/'
+      });
+
+      pyodide.runPython(`
+import builtins as _bi
+_user_ns = {'__builtins__': _bi}
+`);
+
+      const version = pyodide.runPython(`
+import sys as _sys
+_sys.version.split()[0]
+`);
+
+      setStatus('ready  •  Python ' + version, 'ready');
+      runBtn.disabled = false;
+      appendOutput(`<span class="out-success">✓ Pyodide ready — Python ${esc(version)}\n</span>`);
+      appendOutput(`<span class="out-info">// Ctrl+Enter or ▶ Run to execute\n</span>`);
+    } catch (e) {
+      setStatus('failed to load', 'err');
+      appendOutput(`<span class="out-stderr">✗ ${esc(e.message)}\n</span>`);
+    }
+  }
+
+  /* ── Wiring ───────────────────────────────────────────────── */
+  document.getElementById('py-run').addEventListener('click', runCode);
+  document.getElementById('py-reset').addEventListener('click', resetNs);
+  document.getElementById('py-clrout').addEventListener('click', clearOutput);
+
+  /* ── Load Pyodide from CDN ────────────────────────────────── */
+  const s = document.createElement('script');
+  s.src    = 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js';
+  s.onload  = boot;
+  s.onerror = () => {
+    setStatus('CDN load failed', 'err');
+    outputEl.innerHTML = '<span class="out-stderr">✗ Could not load Pyodide from CDN\n</span>';
+  };
+  document.head.appendChild(s);
+
+})();
+</script>
+
+<style>
+/* Error line highlight in editor */
+.cm-error-line { background: rgba(255,60,60,0.08) !important; }
+</style>

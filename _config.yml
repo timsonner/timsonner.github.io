@@ -11,6 +11,11 @@ author:
 # Default social image
 image: /assets/images/hero-image-1240x620.jpg
 
+header_pages:
+  - about.md
+  - python.html
+  - contact.md
+
 # Build settings
 markdown: kramdown
 highlighter: rouge
