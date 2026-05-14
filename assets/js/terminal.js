@@ -380,30 +380,30 @@ document.addEventListener('DOMContentLoaded', function() {
     addToOutput(`Gathering intelligence for ${ip}...`);
     addToOutput('----------------------------------------');
 
-    // 1. Geo/Network Info (ipwho.is)
+    // 1. Geo/Network Info (ipapi.co)
     try {
-      const geoResponse = await fetch(`https://ipwho.is/${ip}`);
+      const geoResponse = await fetch(`https://ipapi.co/${ip}/json/`);
       const geoData = await geoResponse.json();
 
-      if (geoData.success) {
+      if (!geoData.error) {
+        const flag = geoData.country
+          ? geoData.country.toUpperCase().split('').map(c => String.fromCodePoint(0x1F1E6 - 65 + c.charCodeAt(0))).join('')
+          : '';
+        const continentNames = { AF:'Africa', AN:'Antarctica', AS:'Asia', EU:'Europe', NA:'North America', OC:'Oceania', SA:'South America' };
+        const continent = continentNames[geoData.continent_code] || geoData.continent_code || 'N/A';
+
         addToOutput(`[Network Info]`);
-        addToOutput(`  IP Type: ${geoData.type}`);
-        addToOutput(`  Location: ${geoData.city}, ${geoData.region}, ${geoData.country} ${geoData.flag ? geoData.flag.emoji : ''}`);
-        addToOutput(`  Continent: ${geoData.continent} (${geoData.continent_code})`);
+        addToOutput(`  IP Type: ${ip.includes(':') ? 'IPv6' : 'IPv4'}`);
+        addToOutput(`  Location: ${geoData.city || 'N/A'}, ${geoData.region || 'N/A'}, ${geoData.country_name || 'N/A'} ${flag}`);
+        addToOutput(`  Continent: ${continent} (${geoData.continent_code || 'N/A'})`);
         addToOutput(`  Coordinates: ${geoData.latitude}, ${geoData.longitude}`);
         if (geoData.postal) addToOutput(`  Postal Code: ${geoData.postal}`);
-        if (geoData.calling_code) addToOutput(`  Calling Code: +${geoData.calling_code}`);
-        
-        addToOutput(`  ISP: ${geoData.connection.isp}`);
-        addToOutput(`  ASN: AS${geoData.connection.asn} (${geoData.connection.org})`);
-        if (geoData.connection.domain) addToOutput(`  Domain: ${geoData.connection.domain}`);
-        
-        if (geoData.timezone) {
-            addToOutput(`  Timezone: ${geoData.timezone.id} (${geoData.timezone.utc})`);
-            addToOutput(`  Local Time: ${geoData.timezone.current_time}`);
-        }
+        if (geoData.country_calling_code) addToOutput(`  Calling Code: ${geoData.country_calling_code}`);
+        if (geoData.asn) addToOutput(`  ASN: ${geoData.asn}`);
+        if (geoData.org) addToOutput(`  Org: ${geoData.org}`);
+        if (geoData.timezone) addToOutput(`  Timezone: ${geoData.timezone} (UTC${geoData.utc_offset || ''})`);
       } else {
-        addToOutput(`[Network Info] Failed: ${geoData.message}`, 'command-error');
+        addToOutput(`[Network Info] Failed: ${geoData.reason || geoData.message || 'Unknown error'}`, 'command-error');
       }
     } catch (e) {
       addToOutput(`[Network Info] Error: ${e.message}`, 'command-error');
@@ -457,7 +457,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     addToOutput('----------------------------------------');
-    addToOutput('Data provided by ipwho.is, onionoo.torproject.org, and stopforumspam.org');
+    addToOutput('Data provided by ipapi.co, onionoo.torproject.org, and stopforumspam.org');
     addToOutput('----------------------------------------');
     addToOutput(`[External Links]`);
     
