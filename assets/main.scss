@@ -548,14 +548,39 @@ body::after {
   );
 }
 
-// Title glow pulse — slow breathing glow on the site title
-@keyframes glow-pulse {
-  0%, 100% { text-shadow: 0 0 8px $color-primary, 0 0 2px $color-black; }
-  50%       { text-shadow: 0 0 24px $color-primary, 0 0 48px rgba(57,255,20,0.4), 0 0 2px $color-black; }
+// Scan line sweep across the site title
+@keyframes scan-sweep {
+  0%   { top: -20%; }
+  100% { top: 120%; }
 }
 
 .site-title {
-  animation: glow-pulse 3s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+  text-shadow: 0 0 10px $color-primary, 0 0 2px $color-black;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(to bottom, transparent, rgba(57, 255, 20, 0.55), transparent);
+    animation: scan-sweep 2.4s linear infinite;
+    pointer-events: none;
+  }
+}
+
+// Scroll-in fade-up for sections and cards
+.fade-up {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+
+  &.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 // ── Medium: Hero dot-grid, date badges, section header ───────────────────────
