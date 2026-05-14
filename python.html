@@ -343,7 +343,14 @@ permalink: /python/
     </div>
   </div>
 
-  <div class="py-panels">
+  <div class="py-panels" style="position:relative;">
+
+    <!-- Loading overlay -->
+    <div class="py-loading-overlay" id="py-overlay">
+      <div class="py-loading-text">initializing python runtime</div>
+      <div class="py-loading-bar"><div class="py-loading-bar-fill"></div></div>
+      <div class="py-loading-sub">loading pyodide · this takes a moment</div>
+    </div>
 
     <!-- Editor -->
     <div class="py-editor-panel">
@@ -669,6 +676,11 @@ _sys.version.split()[0]
 
       setStatus('ready  •  Python ' + version, 'ready');
       runBtn.disabled = false;
+
+      const overlay = document.getElementById('py-overlay');
+      overlay.classList.add('hidden');
+      setTimeout(() => overlay.style.display = 'none', 420);
+
       appendOutput(`<span class="out-success">✓ Pyodide ready — Python ${esc(version)}\n</span>`);
       appendOutput(`<span class="out-info">// Ctrl+Enter or ▶ Run to execute\n</span>`);
     } catch (e) {
@@ -698,4 +710,53 @@ _sys.version.split()[0]
 <style>
 /* Error line highlight in editor */
 .cm-error-line { background: rgba(255,60,60,0.08) !important; }
+
+/* Loading overlay */
+.py-loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(12,12,12,0.93);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  z-index: 100;
+  transition: opacity 0.4s ease;
+}
+.py-loading-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.py-loading-text {
+  font-family: 'Fira Mono', monospace;
+  font-size: 0.85rem;
+  color: #39ff14;
+  letter-spacing: 0.05em;
+}
+.py-loading-bar {
+  width: 200px;
+  height: 2px;
+  background: #1a1a1a;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.py-loading-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: #39ff14;
+  box-shadow: 0 0 6px #39ff14;
+  animation: py-bar-sweep 1.8s ease-in-out infinite;
+}
+@keyframes py-bar-sweep {
+  0%   { width: 0%;   margin-left: 0%; }
+  50%  { width: 60%;  margin-left: 20%; }
+  100% { width: 0%;   margin-left: 100%; }
+}
+.py-loading-sub {
+  font-family: 'Fira Mono', monospace;
+  font-size: 0.72rem;
+  color: #2a2a2a;
+  letter-spacing: 0.08em;
+}
 </style>
