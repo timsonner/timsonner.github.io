@@ -1,3 +1,6 @@
+# Claude Code internals
+.claude/
+
 # Jekyll build outputs
 _site/
 .sass-cache/
