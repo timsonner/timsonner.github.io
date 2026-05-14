@@ -35,7 +35,7 @@
     </div>
 
     <!-- Viewport -->
-    <div id="xf-viewport" style="position:relative;min-height:520px;background:#0c0c0c;display:flex;align-items:center;justify-content:center;">
+    <div id="xf-viewport" style="position:relative;z-index:10000;min-height:520px;background:#0c0c0c;display:flex;align-items:center;justify-content:center;">
       <div id="xf-placeholder" style="color:#444;font-family:'Fira Mono',monospace;text-align:center;padding:2rem;pointer-events:none;">
         Enter a URL above to begin
       </div>
@@ -44,7 +44,7 @@
       </div>
       <iframe id="xf-iframe"
               sandbox="allow-scripts allow-forms allow-popups allow-modals allow-pointer-lock"
-              style="width:100%;height:600px;border:none;background:#fff;display:none;">
+              style="width:100%;height:600px;border:none;background:#fff;display:none;position:relative;z-index:10000;">
       </iframe>
     </div>
 
