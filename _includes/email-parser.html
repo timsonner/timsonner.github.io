@@ -3,22 +3,21 @@
     <span class="terminal-button red" id="email-parser-btn-red" style="cursor: pointer;" title="Clear"></span>
     <span class="terminal-button yellow" id="email-parser-btn-yellow" style="cursor: pointer;" title="Minimize"></span>
     <span class="terminal-button green" id="email-parser-btn-green" style="cursor: pointer;" title="Restore"></span>
-    <span class="terminal-title">Email Header Analyzer</span>
+    <span class="terminal-title">Email Parser</span>
   </div>
   <div class="terminal-window" id="email-parser-window" style="height: auto;">
     <div style="padding: 1.5rem; color: #e0e0e0;">
-      <p style="margin-top: 0;">Upload a .eml file or paste raw email headers to analyze authentication results (SPF, DKIM, DMARC) and sender info. All processing is done locally in your browser.</p>
-      
+      <p style="margin-top: 0;">Upload a .eml file or paste raw email content to parse headers, body, and extract attachments. All processing is done locally in your browser.</p>
+
       <div style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
         <input type="file" id="email-file-input" accept=".eml,.txt" style="color: #e0e0e0; background: #2c2c2c; padding: 0.5rem; border-radius: 4px; border: 1px solid #444;">
       </div>
-      
-      <textarea id="email-raw-input" placeholder="Or paste raw email headers here..." style="width: 100%; height: 150px; background: #0c0c0c; color: #39ff14; border: 1px solid #444; padding: 0.5rem; font-family: 'Fira Mono', monospace; border-radius: 4px; resize: vertical;"></textarea>
-      
-      <button id="analyze-btn" style="margin-top: 1rem; background: #39ff14; color: #000; border: none; padding: 0.5rem 1.5rem; cursor: pointer; font-weight: bold; border-radius: 4px; font-family: inherit; transition: opacity 0.2s;">Analyze Headers</button>
-      
+
+      <textarea id="email-raw-input" placeholder="Or paste raw email here..." style="width: 100%; height: 150px; background: #0c0c0c; color: #39ff14; border: 1px solid #444; padding: 0.5rem; font-family: 'Fira Mono', monospace; border-radius: 4px; resize: vertical; box-sizing: border-box;"></textarea>
+
+      <button id="analyze-btn" style="margin-top: 1rem; background: #39ff14; color: #000; border: none; padding: 0.5rem 1.5rem; cursor: pointer; font-weight: bold; border-radius: 4px; font-family: inherit; transition: opacity 0.2s;">Parse Email</button>
+
       <div id="analysis-results" style="margin-top: 2rem; display: none; border-top: 1px solid #444; padding-top: 1rem;">
-        <h3 style="color: #39ff14; margin-bottom: 1rem;">Analysis Report</h3>
         <div id="report-content"></div>
       </div>
     </div>
@@ -27,173 +26,419 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Window Controls
-    const parserWindow = document.getElementById('email-parser-window');
-    const parserHeader = document.getElementById('email-parser-header');
-    const btnYellow = document.getElementById('email-parser-btn-yellow');
-    const btnGreen = document.getElementById('email-parser-btn-green');
-    const btnRed = document.getElementById('email-parser-btn-red');
 
-    if (btnYellow && parserWindow) {
-        btnYellow.addEventListener('click', function() {
-            parserWindow.style.display = 'none';
-            if (parserHeader) {
-                parserHeader.style.borderBottomLeftRadius = '8px';
-                parserHeader.style.borderBottomRightRadius = '8px';
-                parserHeader.style.borderBottom = '1px solid #39ff14';
-            }
-        });
+  // ── Window controls ──────────────────────────────────────────────────────
+  const parserWindow = document.getElementById('email-parser-window');
+  const parserHeader = document.getElementById('email-parser-header');
+  const btnYellow    = document.getElementById('email-parser-btn-yellow');
+  const btnGreen     = document.getElementById('email-parser-btn-green');
+  const btnRed       = document.getElementById('email-parser-btn-red');
+
+  btnYellow && btnYellow.addEventListener('click', function() {
+    parserWindow.style.display = 'none';
+    parserHeader.style.borderBottomLeftRadius  = '8px';
+    parserHeader.style.borderBottomRightRadius = '8px';
+    parserHeader.style.borderBottom = '1px solid #39ff14';
+  });
+
+  btnGreen && btnGreen.addEventListener('click', function() {
+    parserWindow.style.display = 'block';
+    parserHeader.style.borderBottomLeftRadius  = '0';
+    parserHeader.style.borderBottomRightRadius = '0';
+    parserHeader.style.borderBottom = 'none';
+  });
+
+  btnRed && btnRed.addEventListener('click', function() {
+    document.getElementById('email-file-input').value = '';
+    document.getElementById('email-raw-input').value  = '';
+    const results = document.getElementById('analysis-results');
+    results.style.display = 'none';
+    document.getElementById('report-content').innerHTML = '';
+  });
+
+  // ── MIME parser ───────────────────────────────────────────────────────────
+
+  function parseHeaderBlock(text) {
+    const unfolded = text.replace(/\n[ \t]+/g, ' ');
+    const headers  = {};
+    const received = [];
+    const authResults = [];
+
+    for (const line of unfolded.split('\n')) {
+      if (!line.trim()) continue;
+      const ci = line.indexOf(':');
+      if (ci === -1) continue;
+      const key = line.substring(0, ci).trim().toLowerCase();
+      const val = line.substring(ci + 1).trim();
+      if (key === 'received') {
+        received.push(val);
+      } else if (key === 'authentication-results') {
+        authResults.push(val);
+      } else if (!headers[key]) {
+        headers[key] = val;
+      }
     }
+    return { headers, received, authResults };
+  }
 
-    if (btnGreen && parserWindow) {
-        btnGreen.addEventListener('click', function() {
-            parserWindow.style.display = 'block';
-            if (parserHeader) {
-                parserHeader.style.borderBottomLeftRadius = '0';
-                parserHeader.style.borderBottomRightRadius = '0';
-                parserHeader.style.borderBottom = 'none';
-            }
-        });
+  function parseContentType(str) {
+    if (!str) return { type: 'text/plain', params: {} };
+    const parts  = str.split(';');
+    const type   = parts[0].trim().toLowerCase();
+    const params = {};
+    for (let i = 1; i < parts.length; i++) {
+      const p  = parts[i].trim();
+      const ei = p.indexOf('=');
+      if (ei === -1) continue;
+      const k = p.substring(0, ei).trim().toLowerCase();
+      let   v = p.substring(ei + 1).trim();
+      if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+        v = v.slice(1, -1);
+      }
+      params[k] = v;
     }
+    return { type, params };
+  }
 
-    if (btnRed) {
-        btnRed.addEventListener('click', function() {
-            const fileInput = document.getElementById('email-file-input');
-            const textInput = document.getElementById('email-raw-input');
-            const resultsDiv = document.getElementById('analysis-results');
-            const reportDiv = document.getElementById('report-content');
-            
-            if (fileInput) fileInput.value = '';
-            if (textInput) textInput.value = '';
-            if (resultsDiv) resultsDiv.style.display = 'none';
-            if (reportDiv) reportDiv.innerHTML = '';
-        });
-    }
-
-    const analyzeBtn = document.getElementById('analyze-btn');
-    const fileInput = document.getElementById('email-file-input');
-    const textInput = document.getElementById('email-raw-input');
-
-    analyzeBtn.addEventListener('click', function() {
-        if (fileInput.files.length > 0) {
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                analyzeEmail(e.target.result);
-            };
-            reader.readAsText(file);
-        } else if (textInput.value.trim() !== '') {
-            analyzeEmail(textInput.value);
+  function decodeRfc2047(str) {
+    if (!str) return str;
+    return str.replace(/=\?([^?]+)\?([BbQq])\?([^?]*)\?=/g, (match, charset, enc, text) => {
+      try {
+        if (enc.toLowerCase() === 'b') {
+          const raw = atob(text.replace(/\s/g, ''));
+          const arr = new Uint8Array(raw.length);
+          for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+          return new TextDecoder(charset).decode(arr);
         } else {
-            alert('Please upload a file or paste headers.');
+          return text.replace(/_/g, ' ')
+                     .replace(/=([0-9A-Fa-f]{2})/g, (m, h) => String.fromCharCode(parseInt(h, 16)));
         }
+      } catch (e) { return match; }
+    });
+  }
+
+  function decodeQuotedPrintable(str) {
+    return str.replace(/=\n/g, '')
+              .replace(/=([0-9A-Fa-f]{2})/g, (m, h) => String.fromCharCode(parseInt(h, 16)));
+  }
+
+  function decodeBody(bodyText, te, charset) {
+    charset = charset || 'utf-8';
+    if (te === 'base64') {
+      try {
+        const raw = atob(bodyText.replace(/\s/g, ''));
+        const arr = new Uint8Array(raw.length);
+        for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+        return new TextDecoder(charset).decode(arr);
+      } catch (e) { return bodyText; }
+    }
+    if (te === 'quoted-printable') {
+      const decoded = decodeQuotedPrintable(bodyText);
+      if (!charset.match(/^utf-?8$/i) && !charset.match(/^us-ascii$/i)) {
+        try {
+          const arr = new Uint8Array(decoded.length);
+          for (let i = 0; i < decoded.length; i++) arr[i] = decoded.charCodeAt(i);
+          return new TextDecoder(charset).decode(arr);
+        } catch (e) {}
+      }
+      return decoded;
+    }
+    return bodyText;
+  }
+
+  function splitMultipart(body, boundary) {
+    const parts   = [];
+    const delim   = '--' + boundary;
+    const closing = '--' + boundary + '--';
+
+    // find first delimiter
+    let pos = body.indexOf(delim);
+    if (pos === -1) return parts;
+
+    while (true) {
+      // move past the delimiter line
+      const lineEnd = body.indexOf('\n', pos);
+      if (lineEnd === -1) break;
+      pos = lineEnd + 1;
+
+      // find next delimiter
+      const next = body.indexOf('\n' + delim, pos);
+      if (next === -1) break;
+
+      parts.push(body.substring(pos, next));
+
+      // check for closing boundary
+      const afterNL = body.substring(next + 1);
+      if (afterNL.startsWith(closing)) break;
+
+      pos = next + 1;
+    }
+    return parts;
+  }
+
+  function parseMimePart(text) {
+    const split      = text.indexOf('\n\n');
+    const headerText = split !== -1 ? text.substring(0, split) : text;
+    const bodyText   = split !== -1 ? text.substring(split + 2) : '';
+
+    const { headers } = parseHeaderBlock(headerText);
+    const ct   = parseContentType(headers['content-type']);
+    const te   = (headers['content-transfer-encoding'] || '7bit').toLowerCase().trim();
+    const disp = parseContentType(headers['content-disposition'] || '');
+
+    let filename = disp.params['filename'] || ct.params['name'] || null;
+    if (filename) filename = decodeRfc2047(filename);
+
+    const isAttachment = (headers['content-disposition'] || '').toLowerCase().startsWith('attachment') ||
+                         (filename && !ct.type.startsWith('text/') && !ct.type.startsWith('multipart/'));
+
+    const part = { headers, ct, te, filename, isAttachment, body: null, rawBase64: null, parts: [] };
+
+    if (ct.type.startsWith('multipart/')) {
+      const boundary = ct.params['boundary'];
+      if (boundary) {
+        part.parts = splitMultipart(bodyText, boundary).map(p => parseMimePart(p));
+      }
+    } else if (isAttachment) {
+      part.rawBase64 = bodyText.replace(/\s/g, '');
+    } else {
+      part.body = decodeBody(bodyText, te, ct.params['charset']);
+    }
+
+    return part;
+  }
+
+  function collectContent(part, acc) {
+    if (part.parts.length > 0) {
+      for (const sub of part.parts) collectContent(sub, acc);
+      return;
+    }
+    if (part.isAttachment && part.rawBase64 !== null) {
+      acc.attachments.push({
+        filename:    part.filename || 'attachment',
+        contentType: part.ct.type,
+        data:        part.rawBase64
+      });
+    } else if (part.ct.type === 'text/plain' && acc.textBody === null) {
+      acc.textBody = part.body;
+    } else if (part.ct.type === 'text/html' && acc.htmlBody === null) {
+      acc.htmlBody = part.body;
+    }
+  }
+
+  function parseEmail(raw) {
+    raw = raw.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+    const split      = raw.indexOf('\n\n');
+    const headerText = split !== -1 ? raw.substring(0, split) : raw;
+    const bodyText   = split !== -1 ? raw.substring(split + 2) : '';
+
+    const { headers, received, authResults } = parseHeaderBlock(headerText);
+    const ct = parseContentType(headers['content-type']);
+    const te = (headers['content-transfer-encoding'] || '7bit').toLowerCase().trim();
+
+    const acc = { textBody: null, htmlBody: null, attachments: [] };
+
+    if (ct.type.startsWith('multipart/')) {
+      const boundary = ct.params['boundary'];
+      if (boundary) {
+        for (const part of splitMultipart(bodyText, boundary).map(p => parseMimePart(p))) {
+          collectContent(part, acc);
+        }
+      }
+    } else {
+      const decoded = decodeBody(bodyText, te, ct.params['charset']);
+      if (ct.type === 'text/html') acc.htmlBody = decoded;
+      else acc.textBody = decoded;
+    }
+
+    return { headers, received, authResults, ...acc };
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+  }
+
+  function downloadAttachment(filename, contentType, base64Data) {
+    const raw  = atob(base64Data);
+    const arr  = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+    const blob = new Blob([arr], { type: contentType });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function sectionHead(label) {
+    return `<h4 style="color:#39ff14;margin:1.5rem 0 0.5rem;">${label}</h4>`;
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  function renderResults(parsed) {
+    const { headers, received, authResults, textBody, htmlBody, attachments } = parsed;
+
+    const get  = k => decodeRfc2047(headers[k] || '') || 'N/A';
+    const rows = [
+      ['Subject',    get('subject')],
+      ['From',       get('from')],
+      ['To',         get('to')],
+      headers['cc']       ? ['CC',         decodeRfc2047(headers['cc'])]       : null,
+      headers['reply-to'] ? ['Reply-To',   decodeRfc2047(headers['reply-to'])] : null,
+      ['Return-Path', headers['return-path']  || 'N/A'],
+      ['Date',        headers['date']          || 'N/A'],
+      ['Message-ID',  headers['message-id']    || 'N/A'],
+      ['Mailer / UA', headers['x-mailer'] || headers['user-agent'] || 'N/A'],
+    ].filter(Boolean);
+
+    let html = sectionHead('Email Info');
+    html += `<table style="width:100%;border-collapse:collapse;color:#e0e0e0;margin-bottom:0.5rem;">`;
+    for (const [label, value] of rows) {
+      html += `<tr>
+        <td style="padding:7px 8px;border-bottom:1px solid #333;color:#888;white-space:nowrap;vertical-align:top;width:110px;">${label}:</td>
+        <td style="padding:7px 8px;border-bottom:1px solid #333;word-break:break-all;">${escapeHtml(value)}</td>
+      </tr>`;
+    }
+    html += `</table>`;
+
+    // ── Authentication ──
+    html += sectionHead('Authentication Results');
+    if (authResults.length > 0) {
+      for (const r of authResults) {
+        let hi = escapeHtml(r)
+          .replace(/\b(pass)\b/gi,                          '<span style="color:#39ff14;font-weight:bold;">$1</span>')
+          .replace(/\b(fail|softfail|neutral|none|permerror|temperror)\b/gi, '<span style="color:#ff5555;font-weight:bold;">$1</span>');
+        html += `<div style="background:#0c0c0c;padding:10px;border:1px solid #444;font-family:'Fira Mono',monospace;white-space:pre-wrap;margin-bottom:0.5rem;border-radius:4px;">${hi}</div>`;
+      }
+    } else {
+      html += `<div style="color:#888;font-style:italic;margin-bottom:0.5rem;">No Authentication-Results header found.</div>`;
+    }
+
+    // ── Body ──
+    html += sectionHead('Message Body');
+    if (textBody !== null || htmlBody !== null) {
+      if (textBody !== null) {
+        html += `<div id="ep-text-body" style="background:#0c0c0c;padding:10px;border:1px solid #444;font-family:'Fira Mono',monospace;font-size:0.9em;border-radius:4px;max-height:400px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">${escapeHtml(textBody)}</div>`;
+      }
+      if (htmlBody !== null) {
+        html += `<div style="margin-top:0.6rem;display:flex;align-items:center;gap:0.75rem;">
+          <button id="ep-html-toggle" style="background:#1a1a1a;color:#39ff14;border:1px solid #39ff14;padding:4px 14px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:0.85em;">
+            ${textBody ? 'Show HTML version' : 'Show rendered HTML'}
+          </button>
+          <span style="color:#555;font-size:0.8em;">sandboxed — no scripts execute</span>
+        </div>
+        <div id="ep-html-container" style="display:none;margin-top:0.5rem;border:1px solid #444;border-radius:4px;overflow:hidden;">
+          <iframe id="ep-html-iframe" sandbox="" style="width:100%;height:500px;border:none;background:#fff;"></iframe>
+        </div>`;
+      }
+    } else {
+      html += `<div style="color:#888;font-style:italic;">No body content found.</div>`;
+    }
+
+    // ── Attachments ──
+    if (attachments.length > 0) {
+      html += sectionHead(`Attachments (${attachments.length})`);
+      html += `<div id="ep-attachments" style="display:flex;flex-wrap:wrap;gap:0.5rem;">`;
+      for (let i = 0; i < attachments.length; i++) {
+        const att = attachments[i];
+        const kb  = att.data ? Math.round(att.data.length * 0.75 / 1024) : 0;
+        html += `<button class="ep-att-btn" data-index="${i}"
+          style="background:#1a1a1a;color:#e0e0e0;border:1px solid #444;padding:8px 14px;border-radius:4px;cursor:pointer;font-family:'Fira Mono',monospace;font-size:0.85em;display:flex;align-items:center;gap:6px;transition:border-color 0.2s;">
+          <span style="color:#39ff14;font-size:1em;">&#x2B07;</span>
+          ${escapeHtml(att.filename)}
+          <span style="color:#555;font-size:0.8em;">${att.contentType} &middot; ~${kb} KB</span>
+        </button>`;
+      }
+      html += `</div>`;
+    }
+
+    // ── Received chain ──
+    html += sectionHead('Received Chain');
+    if (received.length > 0) {
+      html += `<div style="background:#0c0c0c;padding:10px;border:1px solid #444;font-family:'Fira Mono',monospace;font-size:0.85em;border-radius:4px;max-height:260px;overflow-y:auto;">`;
+      received.forEach((hop, i) => {
+        html += `<div style="margin-bottom:8px;padding-bottom:8px;border-bottom:1px dashed #2a2a2a;">
+          <strong style="color:#888;">Hop ${i + 1}:</strong> ${escapeHtml(hop)}
+        </div>`;
+      });
+      html += `</div>`;
+    } else {
+      html += `<div style="color:#888;font-style:italic;">No Received headers found.</div>`;
+    }
+
+    // ── All headers (collapsible) ──
+    html += `<details style="margin-top:1.5rem;">
+      <summary style="color:#39ff14;cursor:pointer;user-select:none;">All Headers</summary>
+      <div style="background:#0c0c0c;padding:10px;border:1px solid #444;font-family:'Fira Mono',monospace;font-size:0.8em;border-radius:4px;margin-top:0.5rem;max-height:300px;overflow-y:auto;">`;
+    for (const [k, v] of Object.entries(headers)) {
+      html += `<div style="margin-bottom:4px;"><span style="color:#888;">${escapeHtml(k)}:</span> ${escapeHtml(v)}</div>`;
+    }
+    for (const r of received) {
+      html += `<div style="margin-bottom:4px;"><span style="color:#888;">received:</span> ${escapeHtml(r)}</div>`;
+    }
+    html += `</div></details>`;
+
+    const reportDiv  = document.getElementById('report-content');
+    const resultsDiv = document.getElementById('analysis-results');
+    reportDiv.innerHTML = html;
+    resultsDiv.style.display = 'block';
+
+    // Wire up HTML toggle (closure over htmlBody)
+    const htmlToggle    = document.getElementById('ep-html-toggle');
+    const htmlContainer = document.getElementById('ep-html-container');
+    const htmlIframe    = document.getElementById('ep-html-iframe');
+    if (htmlToggle) {
+      htmlToggle.addEventListener('click', function() {
+        if (htmlContainer.style.display === 'none') {
+          htmlContainer.style.display = 'block';
+          htmlIframe.srcdoc = htmlBody;
+          htmlToggle.textContent = textBody ? 'Hide HTML version' : 'Hide rendered HTML';
+        } else {
+          htmlContainer.style.display = 'none';
+          htmlToggle.textContent = textBody ? 'Show HTML version' : 'Show rendered HTML';
+        }
+      });
+    }
+
+    // Wire up attachment download buttons (closure over attachments array)
+    reportDiv.querySelectorAll('.ep-att-btn').forEach(btn => {
+      btn.addEventListener('mouseenter', () => btn.style.borderColor = '#39ff14');
+      btn.addEventListener('mouseleave', () => btn.style.borderColor = '#444');
+      btn.addEventListener('click', function() {
+        const att = attachments[parseInt(this.getAttribute('data-index'))];
+        downloadAttachment(att.filename, att.contentType, att.data);
+      });
     });
 
-    function analyzeEmail(rawEmail) {
-        // Normalize newlines
-        rawEmail = rawEmail.replace(/\r\n/g, '\n');
-        
-        // Find end of headers (double newline)
-        const headerEnd = rawEmail.indexOf('\n\n');
-        const headerText = headerEnd !== -1 ? rawEmail.substring(0, headerEnd) : rawEmail;
-        
-        // Unfold headers (lines starting with whitespace continue previous line)
-        const unfolded = headerText.replace(/\n\s+/g, ' ');
-        const lines = unfolded.split('\n');
-        
-        const headers = {};
-        const received = [];
-        const authResults = [];
-        
-        lines.forEach(line => {
-            const colonIndex = line.indexOf(':');
-            if (colonIndex !== -1) {
-                const key = line.substring(0, colonIndex).trim().toLowerCase();
-                const value = line.substring(colonIndex + 1).trim();
-                
-                if (key === 'received') {
-                    received.push(value);
-                } else if (key === 'authentication-results') {
-                    authResults.push(value);
-                } else {
-                    // Only keep the first occurrence of other headers
-                    if (!headers[key]) {
-                        headers[key] = value;
-                    }
-                }
-            }
-        });
-        
-        // Extract Data
-        const subject = headers['subject'] || 'N/A';
-        const from = headers['from'] || 'N/A';
-        const to = headers['to'] || 'N/A';
-        const returnPath = headers['return-path'] || 'N/A';
-        const date = headers['date'] || 'N/A';
-        const messageId = headers['message-id'] || 'N/A';
-        const xMailer = headers['x-mailer'] || headers['user-agent'] || 'N/A';
-        
-        // Display Results
-        const reportDiv = document.getElementById('report-content');
-        const resultsDiv = document.getElementById('analysis-results');
-        
-        let html = `
-            <table style="width: 100%; border-collapse: collapse; color: #e0e0e0; margin-bottom: 1.5rem;">
-                <tr><td style="padding: 8px; border-bottom: 1px solid #444; color: #888; width: 120px;">Subject:</td><td style="padding: 8px; border-bottom: 1px solid #444; font-weight: bold;">${escapeHtml(subject)}</td></tr>
-                <tr><td style="padding: 8px; border-bottom: 1px solid #444; color: #888;">From:</td><td style="padding: 8px; border-bottom: 1px solid #444;">${escapeHtml(from)}</td></tr>
-                <tr><td style="padding: 8px; border-bottom: 1px solid #444; color: #888;">To:</td><td style="padding: 8px; border-bottom: 1px solid #444;">${escapeHtml(to)}</td></tr>
-                <tr><td style="padding: 8px; border-bottom: 1px solid #444; color: #888;">Return-Path:</td><td style="padding: 8px; border-bottom: 1px solid #444;">${escapeHtml(returnPath)}</td></tr>
-                <tr><td style="padding: 8px; border-bottom: 1px solid #444; color: #888;">Date:</td><td style="padding: 8px; border-bottom: 1px solid #444;">${escapeHtml(date)}</td></tr>
-                <tr><td style="padding: 8px; border-bottom: 1px solid #444; color: #888;">Message-ID:</td><td style="padding: 8px; border-bottom: 1px solid #444;">${escapeHtml(messageId)}</td></tr>
-                <tr><td style="padding: 8px; border-bottom: 1px solid #444; color: #888;">Mailer/UA:</td><td style="padding: 8px; border-bottom: 1px solid #444;">${escapeHtml(xMailer)}</td></tr>
-            </table>
-        `;
-        
-        // Authentication Results
-        html += `<h4 style="color: #39ff14; margin-bottom: 0.5rem;">Authentication Results</h4>`;
-        if (authResults.length > 0) {
-            authResults.forEach(result => {
-                // Highlight pass/fail
-                let highlighted = escapeHtml(result)
-                    .replace(/\b(pass)\b/gi, '<span style="color: #39ff14; font-weight: bold;">$1</span>')
-                    .replace(/\b(fail|softfail|neutral|none)\b/gi, '<span style="color: #ff5555; font-weight: bold;">$1</span>');
-                    
-                html += `<div style="background: #0c0c0c; padding: 10px; border: 1px solid #444; font-family: 'Fira Mono', monospace; white-space: pre-wrap; margin-bottom: 0.5rem; border-radius: 4px;">${highlighted}</div>`;
-            });
-        } else {
-            html += `<div style="color: #888; font-style: italic; margin-bottom: 1rem;">No Authentication-Results header found.</div>`;
-        }
-        
-        // Received Chain
-        html += `<h4 style="color: #39ff14; margin-top: 1.5rem; margin-bottom: 0.5rem;">Received Chain (Newest First)</h4>`;
-        html += `<div style="background: #0c0c0c; padding: 10px; border: 1px solid #444; font-family: 'Fira Mono', monospace; font-size: 0.9em; border-radius: 4px; max-height: 300px; overflow-y: auto;">`;
-        
-        if (received.length > 0) {
-            received.forEach((hop, index) => {
-                html += `<div style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #333;">
-                    <strong style="color: #888;">Hop ${index + 1}:</strong> ${escapeHtml(hop)}
-                </div>`;
-            });
-        } else {
-            html += `<div style="color: #888; font-style: italic;">No Received headers found.</div>`;
-        }
-        html += `</div>`;
-        
-        reportDiv.innerHTML = html;
-        resultsDiv.style.display = 'block';
-        
-        // Scroll to results
-        resultsDiv.scrollIntoView({ behavior: 'smooth' });
-    }
+    resultsDiv.scrollIntoView({ behavior: 'smooth' });
+  }
 
-    function escapeHtml(text) {
-        if (!text) return '';
-        return text
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+  // ── Entry point ───────────────────────────────────────────────────────────
+
+  const analyzeBtn = document.getElementById('analyze-btn');
+  const fileInput  = document.getElementById('email-file-input');
+  const textInput  = document.getElementById('email-raw-input');
+
+  analyzeBtn.addEventListener('click', function() {
+    if (fileInput.files.length > 0) {
+      const reader = new FileReader();
+      reader.onload = e => renderResults(parseEmail(e.target.result));
+      reader.readAsText(fileInput.files[0]);
+    } else if (textInput.value.trim()) {
+      renderResults(parseEmail(textInput.value));
+    } else {
+      alert('Please upload a .eml file or paste email content.');
     }
+  });
+
 });
 </script>
