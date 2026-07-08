@@ -783,8 +783,10 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
       const apiUrl = `https://api.maclookup.app/v2/macs/${mac}`;
       const proxies = [
+        (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
         (url) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-        (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`
+        (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+        (url) => `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(url)}`
       ];
 
       let data = null;
@@ -799,10 +801,19 @@ document.addEventListener('DOMContentLoaded', function() {
             throw new Error(`HTTP status: ${response.status}`);
           }
 
-          const proxyData = await response.json();
-          // allorigins returns { contents: "..." }, corsproxy returns direct json
-          data = proxyData.contents ? JSON.parse(proxyData.contents) : proxyData;
-          if (data && typeof data === 'object') {
+          const text = await response.text();
+          let proxyData;
+          try {
+             proxyData = JSON.parse(text);
+          } catch(e) {
+             continue; // ignore parse errors (e.g. 502 html responses from proxies)
+          }
+
+          // allorigins returns { contents: "..." }, corsproxy/raw returns direct json
+          let parsedData = proxyData.contents ? JSON.parse(proxyData.contents) : proxyData;
+
+          if (parsedData && typeof parsedData === 'object' && parsedData.hasOwnProperty('found')) {
+             data = parsedData;
              break;
           }
         } catch (e) {
