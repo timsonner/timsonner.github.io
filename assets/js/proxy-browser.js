@@ -725,17 +725,41 @@
     });
 
     // ── Window chrome ───────────────────────────────────────────────────────
+    const xfSection = xfWindow ? xfWindow.closest('.tool-section') : null;
+
+    function restoreProxyWindow() {
+      if (!xfWindow) return;
+      xfWindow.style.display = 'block';
+      if (xfHeader) {
+        xfHeader.style.borderBottomLeftRadius = '0';
+        xfHeader.style.borderBottomRightRadius = '0';
+        xfHeader.style.borderBottom = 'none';
+      }
+    }
+
+    function setProxyMaximized(on) {
+      if (!xfSection) return;
+      xfSection.classList.toggle('is-maximized', on);
+      if (btnGreen) btnGreen.title = on ? 'Restore size' : 'Maximize';
+    }
+
     btnYellow.addEventListener('click', () => {
+      setProxyMaximized(false);
       xfWindow.style.display = 'none';
       xfHeader.style.borderBottomLeftRadius = '8px';
       xfHeader.style.borderBottomRightRadius = '8px';
       xfHeader.style.borderBottom = '1px solid #39ff14';
     });
     btnGreen.addEventListener('click', () => {
-      xfWindow.style.display = 'block';
-      xfHeader.style.borderBottomLeftRadius = '0';
-      xfHeader.style.borderBottomRightRadius = '0';
-      xfHeader.style.borderBottom = 'none';
+      const wasMinimized = xfWindow && xfWindow.style.display === 'none';
+      if (wasMinimized) {
+        restoreProxyWindow();
+        if (xfSection && !xfSection.classList.contains('is-maximized')) {
+          setProxyMaximized(true);
+        }
+      } else {
+        setProxyMaximized(!(xfSection && xfSection.classList.contains('is-maximized')));
+      }
     });
     btnRed.addEventListener('click', reset);
 

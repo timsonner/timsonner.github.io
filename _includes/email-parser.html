@@ -2,7 +2,7 @@
   <div class="terminal-header" id="email-parser-header">
     <span class="terminal-button red" id="email-parser-btn-red" style="cursor: pointer;" title="Clear"></span>
     <span class="terminal-button yellow" id="email-parser-btn-yellow" style="cursor: pointer;" title="Minimize"></span>
-    <span class="terminal-button green" id="email-parser-btn-green" style="cursor: pointer;" title="Restore"></span>
+    <span class="terminal-button green" id="email-parser-btn-green" style="cursor: pointer;" title="Maximize"></span>
     <span class="terminal-title">Email Parser</span>
   </div>
   <div class="terminal-window" id="email-parser-window" style="height: auto; padding: 0;">
@@ -50,8 +50,8 @@
         </p>
 
         <p>
-          <strong>UX</strong> — red traffic light clears the form and results; yellow / green
-          minimize and restore the panel.
+          <strong>UX</strong> — red clears the form and results; yellow minimizes; green
+          maximizes / restores size.
         </p>
 
         <p>
@@ -71,11 +71,29 @@ document.addEventListener('DOMContentLoaded', function() {
   // ── Window controls ──────────────────────────────────────────────────────
   const parserWindow = document.getElementById('email-parser-window');
   const parserHeader = document.getElementById('email-parser-header');
+  const parserSection = parserWindow ? parserWindow.closest('.tool-section') : null;
   const btnYellow    = document.getElementById('email-parser-btn-yellow');
   const btnGreen     = document.getElementById('email-parser-btn-green');
   const btnRed       = document.getElementById('email-parser-btn-red');
 
+  function restoreParserWindow() {
+    if (!parserWindow) return;
+    parserWindow.style.display = 'block';
+    if (parserHeader) {
+      parserHeader.style.borderBottomLeftRadius  = '0';
+      parserHeader.style.borderBottomRightRadius = '0';
+      parserHeader.style.borderBottom = 'none';
+    }
+  }
+
+  function setParserMaximized(on) {
+    if (!parserSection) return;
+    parserSection.classList.toggle('is-maximized', on);
+    if (btnGreen) btnGreen.title = on ? 'Restore size' : 'Maximize';
+  }
+
   btnYellow && btnYellow.addEventListener('click', function() {
+    setParserMaximized(false);
     parserWindow.style.display = 'none';
     parserHeader.style.borderBottomLeftRadius  = '8px';
     parserHeader.style.borderBottomRightRadius = '8px';
@@ -83,10 +101,15 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   btnGreen && btnGreen.addEventListener('click', function() {
-    parserWindow.style.display = 'block';
-    parserHeader.style.borderBottomLeftRadius  = '0';
-    parserHeader.style.borderBottomRightRadius = '0';
-    parserHeader.style.borderBottom = 'none';
+    const wasMinimized = parserWindow && parserWindow.style.display === 'none';
+    if (wasMinimized) {
+      restoreParserWindow();
+      if (parserSection && !parserSection.classList.contains('is-maximized')) {
+        setParserMaximized(true);
+      }
+    } else {
+      setParserMaximized(!(parserSection && parserSection.classList.contains('is-maximized')));
+    }
   });
 
   btnRed && btnRed.addEventListener('click', function() {

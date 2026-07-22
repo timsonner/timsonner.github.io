@@ -37,11 +37,33 @@ document.addEventListener('DOMContentLoaded', function() {
     ? terminalSection.querySelector('.terminal-header')
     : document.querySelector('.terminal-section .terminal-header');
   const terminalHelp = terminalSection
-    ? terminalSection.querySelector('.tool-help')
+    ? terminalSection.querySelector(':scope > .tool-help')
     : null;
+
+  function isTerminalMinimized() {
+    return terminalWindow && terminalWindow.style.display === 'none';
+  }
+
+  function restoreTerminalWindow() {
+    if (!terminalWindow) return;
+    terminalWindow.style.display = 'block';
+    if (terminalHelp) terminalHelp.style.display = '';
+    if (terminalHeader) {
+      terminalHeader.style.borderBottomLeftRadius = '0';
+      terminalHeader.style.borderBottomRightRadius = '0';
+      terminalHeader.style.borderBottom = 'none';
+    }
+  }
+
+  function setTerminalMaximized(on) {
+    if (!terminalSection) return;
+    terminalSection.classList.toggle('is-maximized', on);
+    if (btnGreen) btnGreen.title = on ? 'Restore size' : 'Maximize';
+  }
 
   if (btnYellow && terminalWindow) {
     btnYellow.addEventListener('click', function() {
+      setTerminalMaximized(false);
       terminalWindow.style.display = 'none';
       if (terminalHelp) terminalHelp.style.display = 'none';
       // Remove bottom border radius from header when minimized
@@ -55,13 +77,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
   if (btnGreen && terminalWindow) {
     btnGreen.addEventListener('click', function() {
-      terminalWindow.style.display = 'block';
-      if (terminalHelp) terminalHelp.style.display = '';
-      // Restore header styles
-      if (terminalHeader) {
-        terminalHeader.style.borderBottomLeftRadius = '0';
-        terminalHeader.style.borderBottomRightRadius = '0';
-        terminalHeader.style.borderBottom = 'none';
+      const wasMinimized = isTerminalMinimized();
+      if (wasMinimized) {
+        restoreTerminalWindow();
+        // Coming back from minimize: expand if not already maximized
+        if (terminalSection && !terminalSection.classList.contains('is-maximized')) {
+          setTerminalMaximized(true);
+        }
+      } else {
+        setTerminalMaximized(!(terminalSection && terminalSection.classList.contains('is-maximized')));
       }
       terminalInput.focus();
     });

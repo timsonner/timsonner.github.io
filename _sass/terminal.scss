@@ -3,6 +3,30 @@
   max-width: 800px;
   margin: 0 auto 3rem auto;
   font-family: $font-family-mono;
+  transition: max-width 0.25s ease;
+}
+
+/* Green traffic light: expand tool within the page content */
+.terminal-section.is-maximized,
+.tool-section.is-maximized {
+  max-width: 100%;
+}
+
+.terminal-section.is-maximized .terminal-window {
+  height: min(70vh, 720px);
+}
+
+.tool-section.is-maximized #email-raw-input {
+  height: min(40vh, 320px) !important;
+}
+
+.proxy-browser.is-maximized .xf-iframe,
+.proxy-browser.is-maximized .xf-raw {
+  height: min(75vh, 900px);
+}
+
+.proxy-browser.is-maximized .xf-viewport {
+  min-height: min(75vh, 900px);
 }
 
 .terminal-header {
