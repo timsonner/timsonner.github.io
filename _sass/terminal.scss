@@ -12,7 +12,8 @@
   max-width: 100%;
 }
 
-.terminal-section.is-maximized .terminal-window {
+/* Grow the interactive pane the same way across tools */
+.terminal-section.is-maximized .terminal-body {
   height: min(70vh, 720px);
 }
 
@@ -22,11 +23,11 @@
 
 .proxy-browser.is-maximized .xf-iframe,
 .proxy-browser.is-maximized .xf-raw {
-  height: min(75vh, 900px);
+  height: min(70vh, 720px);
 }
 
 .proxy-browser.is-maximized .xf-viewport {
-  min-height: min(75vh, 900px);
+  min-height: min(70vh, 720px);
 }
 
 .terminal-header {
@@ -71,11 +72,23 @@
   box-shadow: 0 0 10px rgba(57, 255, 20, 0.1);
 }
 
-/* Specific height for the terminal emulator; square bottom when help pane sits under it */
+/* Match email/proxy: window owns chrome; body is the interactive pane */
 .terminal-section .terminal-window {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  padding: 0;
+  overflow: hidden;
+}
+
+.terminal-body {
+  flex: 1 1 auto;
   height: 300px;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
+  min-height: 300px;
+  padding: 1rem;
+  overflow-y: auto;
+  box-sizing: border-box;
+  transition: height 0.25s ease;
 }
 
 .terminal-output {
@@ -279,32 +292,19 @@
 }
 
 /* Shared collapsible "How it works" for homepage tools */
-.terminal-section > .tool-help,
-.tool-section .tool-help,
-.proxy-browser .tool-help {
+.tool-help {
   border-top: 1px solid #1a1a1a;
   background: $color-bg-body;
-  border-left: 1px solid $color-primary;
-  border-right: 1px solid $color-primary;
-  border-bottom: 1px solid $color-primary;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
+  flex: 0 0 auto;
 }
 
 /* When help lives inside a tool window, the window already has the outer border */
-.tool-section .terminal-window > .tool-help,
-.proxy-browser .terminal-window > .tool-help {
+.terminal-window > .tool-help {
   border-left: none;
   border-right: none;
   border-bottom: none;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
-}
-
-/* Terminal keeps its own window; help sits under it as a second pane */
-.terminal-section > .tool-help {
-  border-top: 1px solid #1a1a1a;
-  margin-top: -1px; /* collapse double border with window above */
 }
 
 .tool-help summary {

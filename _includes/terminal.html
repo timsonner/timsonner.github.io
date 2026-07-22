@@ -8,51 +8,53 @@
       <button id="copy-terminal-btn" class="copy-code-button" style="position: static; margin-left: auto; padding: 2px 8px;">Copy</button>
     </div>
     <div class="terminal-window" id="terminal-window">
-      <div class="terminal-output" id="terminal-output">
-        <div class="terminal-line">Welcome to timsonner.com Terminal v1.0.0</div>
-        <div class="terminal-line">Type 'help' to see available commands.</div>
-        <br>
+      <div class="terminal-body">
+        <div class="terminal-output" id="terminal-output">
+          <div class="terminal-line">Welcome to timsonner.com Terminal v1.0.0</div>
+          <div class="terminal-line">Type 'help' to see available commands.</div>
+          <br>
+        </div>
+        <div class="terminal-input-line">
+          <span class="terminal-prompt">guest@timsonner.com:~$</span>
+          <input type="text" id="terminal-input" class="terminal-input" autocomplete="off" spellcheck="false">
+        </div>
       </div>
-      <div class="terminal-input-line">
-        <span class="terminal-prompt">guest@timsonner.com:~$</span>
-        <input type="text" id="terminal-input" class="terminal-input" autocomplete="off" spellcheck="false">
-      </div>
+
+      <details class="tool-help">
+        <summary>How it works</summary>
+        <div class="tool-help-body">
+          <p>
+            Browser-based recon terminal. Commands run entirely in your browser against
+            public APIs and open data sources — nothing is shelled out on this server.
+            Type <code>help</code> in the prompt for the live command list.
+          </p>
+
+          <p><strong>Commands</strong></p>
+          <ul>
+            <li><code>whois &lt;domain&gt;</code> — RDAP lookup via rdap.org (registrar, status, NS, events).</li>
+            <li><code>dig &lt;domain&gt; [type]</code> — DNS via Google Public DNS (<code>A</code>, <code>AAAA</code>, <code>MX</code>, <code>TXT</code>, <code>NS</code>, <code>SOA</code>, plus <code>DMARC</code> / DKIM helpers).</li>
+            <li><code>osint &lt;ip|domain&gt;</code> — geo/ASN snapshot plus quick links (Shodan, Censys, VirusTotal, etc.).</li>
+            <li><code>subdomains &lt;domain&gt;</code> — crt.sh certificate transparency search.</li>
+            <li><code>headers &lt;url&gt;</code> — fetch response headers and flag framing / CSP-related values.</li>
+            <li><code>cve &lt;id&gt;</code> — CVE details from the NVD API.</li>
+            <li><code>mac &lt;address&gt;</code> — MAC OUI / vendor lookup (via public CORS proxies when needed).</li>
+            <li><code>subnet &lt;cidr&gt;</code> — local subnet math (network, broadcast, range, hosts).</li>
+            <li><code>news</code> — recent security headlines pulled through public feed proxies.</li>
+            <li><code>date</code> / <code>clear</code> — clock and wipe the scrollback.</li>
+          </ul>
+
+          <p>
+            <strong>UX</strong> — ↑/↓ walk command history. <strong>Copy</strong> grabs the current
+            output. Traffic lights: red clears and resets size, yellow minimizes, green maximizes / restores size.
+          </p>
+
+          <p>
+            <strong>Limits</strong> — third-party APIs rate-limit, change shape, and sometimes need
+            a CORS proxy hop (<code>news</code>, <code>mac</code>). Results are only as fresh as those
+            sources. This is a convenience shell for demos and quick checks, not a replacement for
+            local <code>dig</code> / RDAP clients or authenticated intel platforms.
+          </p>
+        </div>
+      </details>
     </div>
-
-    <details class="tool-help">
-      <summary>How it works</summary>
-      <div class="tool-help-body">
-        <p>
-          Browser-based recon terminal. Commands run entirely in your browser against
-          public APIs and open data sources — nothing is shelled out on this server.
-          Type <code>help</code> in the prompt for the live command list.
-        </p>
-
-        <p><strong>Commands</strong></p>
-        <ul>
-          <li><code>whois &lt;domain&gt;</code> — RDAP lookup via rdap.org (registrar, status, NS, events).</li>
-          <li><code>dig &lt;domain&gt; [type]</code> — DNS via Google Public DNS (<code>A</code>, <code>AAAA</code>, <code>MX</code>, <code>TXT</code>, <code>NS</code>, <code>SOA</code>, plus <code>DMARC</code> / DKIM helpers).</li>
-          <li><code>osint &lt;ip|domain&gt;</code> — geo/ASN snapshot plus quick links (Shodan, Censys, VirusTotal, etc.).</li>
-          <li><code>subdomains &lt;domain&gt;</code> — crt.sh certificate transparency search.</li>
-          <li><code>headers &lt;url&gt;</code> — fetch response headers and flag framing / CSP-related values.</li>
-          <li><code>cve &lt;id&gt;</code> — CVE details from the NVD API.</li>
-          <li><code>mac &lt;address&gt;</code> — MAC OUI / vendor lookup (via public CORS proxies when needed).</li>
-          <li><code>subnet &lt;cidr&gt;</code> — local subnet math (network, broadcast, range, hosts).</li>
-          <li><code>news</code> — recent security headlines pulled through public feed proxies.</li>
-          <li><code>date</code> / <code>clear</code> — clock and wipe the scrollback.</li>
-        </ul>
-
-        <p>
-          <strong>UX</strong> — ↑/↓ walk command history. <strong>Copy</strong> grabs the current
-          output. Traffic lights: yellow minimizes, green maximizes / restores size.
-        </p>
-
-        <p>
-          <strong>Limits</strong> — third-party APIs rate-limit, change shape, and sometimes need
-          a CORS proxy hop (<code>news</code>, <code>mac</code>). Results are only as fresh as those
-          sources. This is a convenience shell for demos and quick checks, not a replacement for
-          local <code>dig</code> / RDAP clients or authenticated intel platforms.
-        </p>
-      </div>
-    </details>
   </div>

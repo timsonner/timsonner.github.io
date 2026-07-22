@@ -50,8 +50,8 @@
         </p>
 
         <p>
-          <strong>UX</strong> — red clears the form and results; yellow minimizes; green
-          maximizes / restores size.
+          <strong>UX</strong> — red clears the form/results and resets size; yellow minimizes;
+          green maximizes / restores size.
         </p>
 
         <p>
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function restoreParserWindow() {
     if (!parserWindow) return;
-    parserWindow.style.display = 'block';
+    parserWindow.style.display = '';
     if (parserHeader) {
       parserHeader.style.borderBottomLeftRadius  = '0';
       parserHeader.style.borderBottomRightRadius = '0';
@@ -88,8 +88,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function setParserMaximized(on) {
     if (!parserSection) return;
-    parserSection.classList.toggle('is-maximized', on);
+    parserSection.classList.toggle('is-maximized', !!on);
     if (btnGreen) btnGreen.title = on ? 'Restore size' : 'Maximize';
+  }
+
+  function resetParserChrome() {
+    setParserMaximized(false);
+    restoreParserWindow();
   }
 
   btnYellow && btnYellow.addEventListener('click', function() {
@@ -113,6 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   btnRed && btnRed.addEventListener('click', function() {
+    resetParserChrome();
     document.getElementById('email-file-input').value = '';
     document.getElementById('email-raw-input').value  = '';
     const results = document.getElementById('analysis-results');

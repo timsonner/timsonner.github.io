@@ -36,9 +36,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const terminalHeader = terminalSection
     ? terminalSection.querySelector('.terminal-header')
     : document.querySelector('.terminal-section .terminal-header');
-  const terminalHelp = terminalSection
-    ? terminalSection.querySelector(':scope > .tool-help')
-    : null;
 
   function isTerminalMinimized() {
     return terminalWindow && terminalWindow.style.display === 'none';
@@ -46,8 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function restoreTerminalWindow() {
     if (!terminalWindow) return;
-    terminalWindow.style.display = 'block';
-    if (terminalHelp) terminalHelp.style.display = '';
+    terminalWindow.style.display = '';
     if (terminalHeader) {
       terminalHeader.style.borderBottomLeftRadius = '0';
       terminalHeader.style.borderBottomRightRadius = '0';
@@ -57,15 +53,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function setTerminalMaximized(on) {
     if (!terminalSection) return;
-    terminalSection.classList.toggle('is-maximized', on);
+    terminalSection.classList.toggle('is-maximized', !!on);
     if (btnGreen) btnGreen.title = on ? 'Restore size' : 'Maximize';
+  }
+
+  function resetTerminalChrome() {
+    setTerminalMaximized(false);
+    restoreTerminalWindow();
   }
 
   if (btnYellow && terminalWindow) {
     btnYellow.addEventListener('click', function() {
       setTerminalMaximized(false);
       terminalWindow.style.display = 'none';
-      if (terminalHelp) terminalHelp.style.display = 'none';
       // Remove bottom border radius from header when minimized
       if (terminalHeader) {
         terminalHeader.style.borderBottomLeftRadius = '8px';
@@ -93,6 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   if (btnRed && terminalOutput) {
     btnRed.addEventListener('click', function() {
+      resetTerminalChrome();
       terminalOutput.innerHTML = '';
       terminalInput.focus();
     });

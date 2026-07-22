@@ -729,7 +729,7 @@
 
     function restoreProxyWindow() {
       if (!xfWindow) return;
-      xfWindow.style.display = 'block';
+      xfWindow.style.display = '';
       if (xfHeader) {
         xfHeader.style.borderBottomLeftRadius = '0';
         xfHeader.style.borderBottomRightRadius = '0';
@@ -739,8 +739,13 @@
 
     function setProxyMaximized(on) {
       if (!xfSection) return;
-      xfSection.classList.toggle('is-maximized', on);
+      xfSection.classList.toggle('is-maximized', !!on);
       if (btnGreen) btnGreen.title = on ? 'Restore size' : 'Maximize';
+    }
+
+    function resetProxyChrome() {
+      setProxyMaximized(false);
+      restoreProxyWindow();
     }
 
     btnYellow.addEventListener('click', () => {
@@ -761,7 +766,10 @@
         setProxyMaximized(!(xfSection && xfSection.classList.contains('is-maximized')));
       }
     });
-    btnRed.addEventListener('click', reset);
+    btnRed.addEventListener('click', () => {
+      resetProxyChrome();
+      reset();
+    });
 
     methodSel.addEventListener('change', () => {
       const isProxy = methodSel.value === 'proxy';
