@@ -33,9 +33,11 @@ Client-side `.eml` / raw email analyzer (`_includes/email-parser.html`):
 - No server upload — processing stays local
 
 ### Proxy Browser (X-Frame Demo)
-Mini browser for investigating pages in-frame (`_includes/proxy-browser.html`):
+Mini browser for investigating pages in-frame (`_includes/proxy-browser.html` + `assets/js/proxy-browser.js`):
 
-- **Proxy Fetch** — load HTML through a CORS proxy chain, inject a base URL + nav interceptor (handy for phishing page inspection without a full browser session)
+- **Proxy Fetch** — load HTML through public CORS proxies (`cors.eu.org`, `proxy.cors.sh`, `allorigins.win`, …), inject `<base>` + nav interceptor (phishing / framed inspection without a full browser session)
+- **Auto (race)** — first valid proxy response wins; cancel in-flight loads; try-next on failure
+- **Raw HTML** — inspect fetched source when render is broken
 - **Direct iframe** — set `iframe src` directly to demo `X-Frame-Options` / `CSP frame-ancestors` blocking
 - Back / forward / reload chrome and selectable proxy backends
 
@@ -62,7 +64,7 @@ Mini browser for investigating pages in-frame (`_includes/proxy-browser.html`):
 ├── _sass/                   # SCSS partials (terminal, code-blocks, variables)
 ├── assets/
 │   ├── main.scss            # Styles entrypoint
-│   ├── js/                  # terminal.js, copy-code.js, visitor.js, …
+│   ├── js/                  # terminal.js, proxy-browser.js, copy-code.js, visitor.js, …
 │   └── images/              # Per-post image folders
 ├── index.html               # Homepage (tools + latest posts)
 ├── resume.md / about.md (redirect) / python.html
@@ -130,7 +132,7 @@ print("Hello, world!")
 | Global styles | `assets/main.scss` + `_sass/` |
 | Terminal commands | `processCommand` in `assets/js/terminal.js` |
 | Terminal look | `_sass/terminal.scss` |
-| Email parser / proxy browser | `_includes/email-parser.html`, `_includes/proxy-browser.html` |
+| Email parser / proxy browser | `_includes/email-parser.html`, `_includes/proxy-browser.html` + `assets/js/proxy-browser.js` |
 | New pages | Root `.md` / `.html` + add to `header_pages` in `_config.yml` |
 
 ## Stack

@@ -24,6 +24,10 @@ This is a Jekyll-powered cybersecurity blog hosted on GitHub Pages. It features 
   - Logic: `assets/js/visitor.js` (fetches and displays IP/location)
 - **Email Header Analyzer:**
   - Structure and logic: `_includes/email-parser.html` (all processing is client-side)
+- **Proxy Browser:**
+  - Structure: `_includes/proxy-browser.html`
+  - Logic: `assets/js/proxy-browser.js` (CORS proxy race, srcdoc inject, nav interceptor)
+  - Styles: `_sass/terminal.scss` (`.proxy-browser` block)
 
 ## Developer Workflows
 - **Setup:** `bundle install`

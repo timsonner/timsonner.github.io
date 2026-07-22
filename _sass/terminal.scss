@@ -88,3 +88,223 @@
 .command-error { color: $color-accent-red; }
 .directory { color: $color-accent-blue; font-weight: bold; }
 .executable { color: $color-accent-green; font-weight: bold; }
+
+/* ── Proxy Browser ───────────────────────────────────────────────────────── */
+.proxy-browser .xf-chrome {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid #2a2a2a;
+  flex-wrap: wrap;
+}
+
+.proxy-browser .xf-nav-btn,
+.proxy-browser .xf-select,
+.proxy-browser .xf-cancel,
+.proxy-browser .xf-retry,
+.proxy-browser .xf-view-toggle {
+  background: #1a1a1a;
+  color: $color-primary;
+  border: 1px solid #333;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.88em;
+}
+
+.proxy-browser .xf-nav-btn {
+  width: 28px;
+  height: 28px;
+  font-size: 1rem;
+  opacity: 0.3;
+  padding: 0;
+}
+
+.proxy-browser .xf-nav-btn:not(:disabled) {
+  opacity: 1;
+}
+
+.proxy-browser .xf-nav-btn:disabled {
+  cursor: default;
+}
+
+.proxy-browser .xf-urlbar {
+  flex: 1;
+  min-width: 160px;
+  background: #0c0c0c;
+  color: $color-primary;
+  border: 1px solid #444;
+  padding: 0.35rem 0.6rem;
+  border-radius: 4px;
+  font-family: $font-family-mono;
+  font-size: 0.88em;
+}
+
+.proxy-browser .xf-select {
+  background: #0c0c0c;
+  padding: 0.35rem 0.4rem;
+}
+
+.proxy-browser .xf-go {
+  background: $color-primary;
+  color: #000;
+  border: none;
+  padding: 0.35rem 1rem;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.proxy-browser .xf-go:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.proxy-browser .xf-cancel,
+.proxy-browser .xf-retry,
+.proxy-browser .xf-view-toggle {
+  padding: 0.35rem 0.65rem;
+  white-space: nowrap;
+}
+
+.proxy-browser .xf-cancel {
+  border-color: #664444;
+  color: #ff8888;
+}
+
+.proxy-browser .xf-retry {
+  border-color: #556633;
+  color: #c8ff66;
+}
+
+.proxy-browser .xf-view-toggle:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.proxy-browser .xf-status {
+  padding: 0.15rem 0.75rem;
+  font-size: 0.75em;
+  font-family: $font-family-mono;
+  color: #555;
+  border-bottom: 1px solid #1a1a1a;
+  min-height: 1.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.proxy-browser .xf-viewport {
+  position: relative;
+  min-height: 520px;
+  background: #0c0c0c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.proxy-browser .xf-placeholder {
+  color: #444;
+  font-family: $font-family-mono;
+  text-align: center;
+  padding: 2rem;
+  pointer-events: none;
+}
+
+.proxy-browser .xf-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: $color-primary;
+  font-family: $font-family-mono;
+  z-index: 2;
+  background: rgba(12, 12, 12, 0.85);
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  border: 1px solid #333;
+}
+
+.proxy-browser .xf-iframe {
+  width: 100%;
+  height: 600px;
+  border: none;
+  background: #fff;
+  position: relative;
+}
+
+.proxy-browser .xf-raw {
+  margin: 0;
+  width: 100%;
+  height: 600px;
+  overflow: auto;
+  padding: 1rem;
+  background: #0a0a0a;
+  color: #c8c8c8;
+  font-family: $font-family-mono;
+  font-size: 0.78em;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  box-sizing: border-box;
+}
+
+.proxy-browser .xf-help {
+  border-top: 1px solid #1a1a1a;
+}
+
+.proxy-browser .xf-help summary {
+  color: #555;
+  cursor: pointer;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8em;
+  font-family: $font-family-mono;
+  user-select: none;
+}
+
+.proxy-browser .xf-help-body {
+  padding: 0.75rem;
+  color: #888;
+  font-size: 0.85em;
+  border-top: 1px solid #1a1a1a;
+  line-height: 1.55;
+}
+
+.proxy-browser .xf-help-body p {
+  margin: 0 0 0.75rem 0;
+}
+
+.proxy-browser .xf-help-body p:last-child {
+  margin-bottom: 0;
+}
+
+.proxy-browser .xf-help-body ul {
+  margin: 0 0 0.75rem 0;
+  padding-left: 1.25rem;
+}
+
+.proxy-browser .xf-help-body li {
+  margin-bottom: 0.3rem;
+}
+
+.proxy-browser .xf-help-body strong {
+  color: #e0e0e0;
+}
+
+.proxy-browser .xf-help-body code {
+  color: #aaa;
+}
+
+@media (max-width: 600px) {
+  .proxy-browser .xf-iframe,
+  .proxy-browser .xf-raw {
+    height: 420px;
+  }
+
+  .proxy-browser .xf-viewport {
+    min-height: 360px;
+  }
+}

@@ -113,3 +113,4 @@ yarn-error.log
 
 # Local development
 .jekyll-livereload
+.github/copilot-instructions.md

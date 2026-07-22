@@ -1,5 +1,5 @@
 <!-- Proxy Browser -->
-<div class="tool-section">
+<div class="tool-section proxy-browser">
   <div class="terminal-header" id="xframe-header">
     <span class="terminal-button red"    id="xframe-btn-red"    style="cursor:pointer;" title="Reset"></span>
     <span class="terminal-button yellow" id="xframe-btn-yellow" style="cursor:pointer;" title="Minimize"></span>
@@ -10,357 +10,97 @@
   <div class="terminal-window" id="xframe-window" style="padding:0; height:auto;">
 
     <!-- Browser chrome -->
-    <div style="display:flex;gap:0.4rem;align-items:center;padding:0.55rem 0.75rem;border-bottom:1px solid #2a2a2a;flex-wrap:wrap;">
-      <button id="xf-back"    title="Back"    style="background:#1a1a1a;color:#39ff14;border:1px solid #333;width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:1rem;opacity:0.3;" disabled>&#8592;</button>
-      <button id="xf-forward" title="Forward" style="background:#1a1a1a;color:#39ff14;border:1px solid #333;width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:1rem;opacity:0.3;" disabled>&#8594;</button>
-      <button id="xf-reload"  title="Reload"  style="background:#1a1a1a;color:#39ff14;border:1px solid #333;width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:1rem;opacity:0.3;" disabled>&#8635;</button>
+    <div id="xf-chrome" class="xf-chrome">
+      <button type="button" id="xf-back"    title="Back"    class="xf-nav-btn" disabled>&#8592;</button>
+      <button type="button" id="xf-forward" title="Forward" class="xf-nav-btn" disabled>&#8594;</button>
+      <button type="button" id="xf-reload"  title="Reload"  class="xf-nav-btn" disabled>&#8635;</button>
       <input  id="xf-urlbar" type="text" placeholder="Enter URL to investigate (https://...)"
-              style="flex:1;min-width:180px;background:#0c0c0c;color:#39ff14;border:1px solid #444;padding:0.35rem 0.6rem;border-radius:4px;font-family:'Fira Mono',monospace;font-size:0.88em;">
-      <select id="xf-method" style="background:#0c0c0c;color:#39ff14;border:1px solid #444;padding:0.35rem 0.4rem;border-radius:4px;font-family:inherit;font-size:0.88em;">
+              class="xf-urlbar" spellcheck="false" autocomplete="off">
+      <select id="xf-method" class="xf-select" title="Load method">
         <option value="proxy">Proxy Fetch</option>
         <option value="direct">Direct iframe</option>
       </select>
-      <select id="xf-proxy" title="Proxy to use" style="background:#0c0c0c;color:#39ff14;border:1px solid #444;padding:0.35rem 0.4rem;border-radius:4px;font-family:inherit;font-size:0.88em;">
-        <option value="auto">Auto</option>
-        <option value="corsproxy.io">corsproxy.io</option>
+      <select id="xf-proxy" class="xf-select" title="Proxy to use">
+        <option value="auto">Auto (race)</option>
+        <option value="cors.eu.org">cors.eu.org</option>
+        <option value="proxy.cors.sh">proxy.cors.sh</option>
         <option value="allorigins.win">allorigins.win</option>
+        <option value="corsproxy.io">corsproxy.io</option>
         <option value="codetabs.com">codetabs.com</option>
       </select>
-      <button id="xf-go" style="background:#39ff14;color:#000;border:none;padding:0.35rem 1rem;border-radius:4px;font-weight:bold;cursor:pointer;font-family:inherit;white-space:nowrap;">Load</button>
+      <button type="button" id="xf-go" class="xf-go">Load</button>
+      <button type="button" id="xf-cancel" class="xf-cancel" title="Cancel in-flight request" style="display:none;">Cancel</button>
+      <button type="button" id="xf-retry" class="xf-retry" title="Retry with next proxy" style="display:none;">Try next</button>
+      <button type="button" id="xf-view-toggle" class="xf-view-toggle" title="View fetched HTML source" disabled>Raw HTML</button>
     </div>
 
     <!-- Status bar -->
-    <div id="xf-status" style="padding:0.15rem 0.75rem;font-size:0.75em;font-family:'Fira Mono',monospace;color:#555;border-bottom:1px solid #1a1a1a;min-height:1.3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+    <div id="xf-status" class="xf-status">
       Ready — enter a URL above
     </div>
 
     <!-- Viewport -->
-    <div id="xf-viewport" style="position:relative;z-index:10000;min-height:520px;background:#0c0c0c;display:flex;align-items:center;justify-content:center;">
-      <div id="xf-placeholder" style="color:#444;font-family:'Fira Mono',monospace;text-align:center;padding:2rem;pointer-events:none;">
+    <div id="xf-viewport" class="xf-viewport">
+      <div id="xf-placeholder" class="xf-placeholder">
         Enter a URL above to begin
       </div>
-      <div id="xf-spinner" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#39ff14;font-family:'Fira Mono',monospace;">
-        Loading&#8230;
+      <div id="xf-spinner" class="xf-spinner" style="display:none;">
+        <span id="xf-spinner-text">Loading&#8230;</span>
       </div>
+      <pre id="xf-raw" class="xf-raw" style="display:none;" aria-label="Raw HTML"></pre>
       <iframe id="xf-iframe"
+              title="Proxy browser viewport"
               sandbox="allow-scripts allow-forms allow-popups allow-modals allow-pointer-lock"
-              style="width:100%;height:600px;border:none;background:#fff;display:none;position:relative;z-index:10000;">
+              class="xf-iframe"
+              style="display:none;">
       </iframe>
     </div>
 
     <!-- Info strip -->
-    <details style="border-top:1px solid #1a1a1a;">
-      <summary style="color:#555;cursor:pointer;padding:0.4rem 0.75rem;font-size:0.8em;font-family:'Fira Mono',monospace;user-select:none;">How it works</summary>
-      <div style="padding:0.75rem;color:#888;font-size:0.85em;border-top:1px solid #1a1a1a;">
-        <strong style="color:#e0e0e0;">Proxy Fetch mode</strong> — fetches the target page HTML through a CORS proxy chain
-        (<code>corsproxy.io</code> → <code>allorigins.win</code> → <code>thingproxy.freeboard.io</code>).
-        A <code>&lt;base href&gt;</code> tag is injected so relative assets resolve correctly.
-        A nav interceptor script is also injected so link clicks and form submissions are
-        routed back through the proxy rather than breaking out. Useful for inspecting phishing
-        pages without giving them a real browser session.<br><br>
-        <strong style="color:#e0e0e0;">Direct iframe mode</strong> — sets the iframe <code>src</code> directly.
-        Will be blocked by any site that sets <code>X-Frame-Options</code> or <code>CSP: frame-ancestors</code>.
+    <details class="xf-help">
+      <summary>How it works</summary>
+      <div class="xf-help-body">
+        <p>
+          Mini browser for inspecting pages in-frame — phishing kits, clickjacking behavior,
+          and framing headers — without opening a full trusted browser session.
+          Everything runs client-side; there is no first-party proxy on this site.
+        </p>
+
+        <p>
+          <strong>Proxy Fetch</strong> (default) pulls the target HTML through public CORS proxies,
+          then renders it in a sandboxed iframe via <code>srcdoc</code>.
+          Available backends: <code>cors.eu.org</code>, <code>proxy.cors.sh</code>,
+          <code>allorigins.win</code>, <code>corsproxy.io</code>, <code>codetabs.com</code>.
+        </p>
+        <ul>
+          <li><strong>Auto (race)</strong> — tries all proxies in parallel; first valid HTML wins.</li>
+          <li><strong>Pinned proxy</strong> — force one backend from the dropdown.</li>
+          <li><strong>Cancel</strong> — abort an in-flight load.</li>
+          <li><strong>Try next</strong> — after a failure, walk the remaining proxies sequentially.</li>
+          <li><strong>Raw HTML</strong> — show the fetched source when the rendered view is broken.</li>
+        </ul>
+        <p>
+          On each successful fetch the tool injects a <code>&lt;base href&gt;</code> so relative
+          assets resolve against the real origin, plus a nav interceptor that re-routes link clicks,
+          image-map areas, GET form submits, meta-refresh, and simple <code>location</code>
+          changes back through the proxy instead of breaking out of the frame.
+        </p>
+
+        <p>
+          <strong>Direct iframe</strong> sets <code>iframe.src</code> to the URL with no proxy.
+          Use it to demo framing denial. A blank viewport usually means the target sends
+          <code>X-Frame-Options</code> or <code>CSP: frame-ancestors</code>.
+        </p>
+
+        <p>
+          <strong>Limits</strong> — free public proxies rate-limit, time out, and get blocked by WAFs;
+          a failure is often the proxy, not your URL. The sandbox has no real browser session:
+          cookies/auth, many SPAs, and POST bodies will not behave like Chrome/Firefox.
+          Subresources still load from the live origin via <code>&lt;base&gt;</code>.
+          Prefer <strong>Raw HTML</strong> when you only need the markup.
+        </p>
       </div>
     </details>
 
   </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-
-  // ── Elements ──────────────────────────────────────────────────────────────
-  const xfWindow  = document.getElementById('xframe-window');
-  const xfHeader  = document.getElementById('xframe-header');
-  const btnRed    = document.getElementById('xframe-btn-red');
-  const btnYellow = document.getElementById('xframe-btn-yellow');
-  const btnGreen  = document.getElementById('xframe-btn-green');
-
-  const backBtn   = document.getElementById('xf-back');
-  const fwdBtn    = document.getElementById('xf-forward');
-  const reloadBtn = document.getElementById('xf-reload');
-  const urlbar    = document.getElementById('xf-urlbar');
-  const methodSel = document.getElementById('xf-method');
-  const proxySelEl = document.getElementById('xf-proxy');
-  const goBtn     = document.getElementById('xf-go');
-  const status    = document.getElementById('xf-status');
-  const viewport  = document.getElementById('xf-viewport');
-  const spinner   = document.getElementById('xf-spinner');
-  const placeholder = document.getElementById('xf-placeholder');
-  const iframe    = document.getElementById('xf-iframe');
-
-  // Hide proxy selector when Direct iframe is chosen — it's irrelevant there
-  methodSel.addEventListener('change', () => {
-    proxySelEl.style.display = methodSel.value === 'proxy' ? '' : 'none';
-  });
-
-  // ── Window controls ───────────────────────────────────────────────────────
-  btnYellow.addEventListener('click', () => {
-    xfWindow.style.display = 'none';
-    xfHeader.style.borderBottomLeftRadius  = '8px';
-    xfHeader.style.borderBottomRightRadius = '8px';
-    xfHeader.style.borderBottom = '1px solid #39ff14';
-  });
-  btnGreen.addEventListener('click', () => {
-    xfWindow.style.display = 'block';
-    xfHeader.style.borderBottomLeftRadius  = '0';
-    xfHeader.style.borderBottomRightRadius = '0';
-    xfHeader.style.borderBottom = 'none';
-  });
-  btnRed.addEventListener('click', reset);
-
-  // ── State ─────────────────────────────────────────────────────────────────
-  const navHistory = [];
-  let   histIdx    = -1;
-  let   currentUrl = null;
-
-  // ── Proxies (tried in order) ──────────────────────────────────────────────
-  // allorigins uses the /get JSON endpoint so we can recover the post-redirect URL from status.url.
-  // Others use raw endpoints; we fall back to HTML heuristics for their final URL.
-  const PROXIES = [
-    { name: 'corsproxy.io',         raw: true,  fn: u => 'https://corsproxy.io/?' + encodeURIComponent(u) },
-    { name: 'allorigins.win',       raw: false, fn: u => 'https://api.allorigins.win/get?url=' + encodeURIComponent(u) },
-    { name: 'codetabs.com',         raw: true,  fn: u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u) },
-  ];
-
-  // Script injected into every proxied page.
-  // Intercepts clicks + form submits and sends the resolved URL to the parent via postMessage.
-  // Uses <\/script> to avoid breaking the outer HTML parser.
-  const NAV_INTERCEPTOR = [
-    '<scr' + 'ipt>',
-    '(function(){',
-    '  function abs(h){try{return new URL(h,document.baseURI).href}catch(e){return h}}',
-    '  document.addEventListener("click",function(e){',
-    '    var el=e.target;',
-    '    while(el&&el.tagName!=="A")el=el.parentElement;',
-    '    if(el&&el.getAttribute("href")&&!el.href.startsWith("javascript:")&&(!el.target||el.target==="_self"||el.target==="")){',
-    '      e.preventDefault();e.stopPropagation();',
-    '      window.parent.postMessage({type:"xframe-nav",url:abs(el.href)},"*");',
-    '    }',
-    '  },true);',
-    '  document.addEventListener("submit",function(e){',
-    '    e.preventDefault();',
-    '    var f=e.target,action=f.action||document.baseURI;',
-    '    var q=f.method&&f.method.toLowerCase()==="get"?new URLSearchParams(new FormData(f)).toString():"";',
-    '    window.parent.postMessage({type:"xframe-nav",url:abs(action+(q?"?"+q:""))},"*");',
-    '  },true);',
-    '})();',
-    '<\/scr' + 'ipt>',
-  ].join('\n');
-
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
-  function setStatus(msg, color) {
-    status.textContent = msg;
-    status.style.color = color || '#555';
-  }
-
-  function setLoading(on) {
-    spinner.style.display     = on ? 'block' : 'none';
-    placeholder.style.display = 'none';
-    iframe.style.display      = on ? 'none'  : 'block';
-  }
-
-  function updateButtons() {
-    backBtn.disabled   = histIdx <= 0;
-    fwdBtn.disabled    = histIdx >= navHistory.length - 1;
-    reloadBtn.disabled = !currentUrl;
-    [backBtn, fwdBtn, reloadBtn].forEach(b => b.style.opacity = b.disabled ? '0.3' : '1');
-  }
-
-  function pushHistory(url) {
-    navHistory.splice(histIdx + 1);   // drop forward stack
-    navHistory.push(url);
-    histIdx = navHistory.length - 1;
-    updateButtons();
-  }
-
-  function normalise(url) {
-    url = url.trim();
-    if (url && !url.match(/^https?:\/\//i)) url = 'https://' + url;
-    return url;
-  }
-
-  function getBase(targetUrl) {
-    try {
-      const u = new URL(targetUrl);
-      return u.origin + u.pathname.replace(/[^/]*$/, '');
-    } catch(e) { return targetUrl; }
-  }
-
-  // Extract the best-guess final URL from the fetched HTML.
-  // Checks canonical link, og:url, and existing base href in that order.
-  function detectFinalUrl(html, fallback) {
-    const patterns = [
-      /<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i,
-      /<link[^>]+href=["']([^"']+)["'][^>]+rel=["']canonical["']/i,
-      /<meta[^>]+property=["']og:url["'][^>]+content=["']([^"']+)["']/i,
-      /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:url["']/i,
-      /<base[^>]+href=["']([^"']+)["']/i,
-    ];
-    for (const re of patterns) {
-      const m = html.match(re);
-      if (m) {
-        try { return new URL(m[1], fallback).href; } catch(e) {}
-      }
-    }
-    return fallback;
-  }
-
-  function injectIntoHtml(html, finalUrl) {
-    const baseTag = '<base href="' + getBase(finalUrl) + '">';
-
-    // Remove any existing <base> tag — ours takes precedence
-    html = html.replace(/<base[^>]*>/gi, '');
-
-    // Inject our <base> at the top of <head> (or prepend if no <head>)
-    if (/<head[\s>]/i.test(html)) {
-      html = html.replace(/<head([^>]*)>/i, '<head$1>' + baseTag);
-    } else {
-      html = baseTag + html;
-    }
-
-    // Inject nav interceptor before </body> (or append)
-    if (/<\/body>/i.test(html)) {
-      html = html.replace(/<\/body>/i, NAV_INTERCEPTOR + '</body>');
-    } else {
-      html += NAV_INTERCEPTOR;
-    }
-
-    return html;
-  }
-
-  // Returns { html, finalUrl } — finalUrl is the post-redirect destination.
-  // Pass a proxyName to pin to a specific proxy; omit (or 'auto') for the fallback chain.
-  async function fetchWithProxyFallback(url, proxyName) {
-    const pool = (proxyName && proxyName !== 'auto')
-      ? PROXIES.filter(p => p.name === proxyName)
-      : PROXIES;
-    if (pool.length === 0) throw new Error('Unknown proxy: ' + proxyName);
-    let lastErr = null;
-    for (const proxy of pool) {
-      try {
-        setStatus('Trying ' + proxy.name + '…');
-        const resp = await fetch(proxy.fn(url), { signal: AbortSignal.timeout(9000) });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-
-        let html, finalUrl;
-
-        if (!proxy.raw) {
-          // allorigins /get returns JSON with contents + status.url (post-redirect URL)
-          const data = await resp.json();
-          if (!data.contents) throw new Error('Empty response from proxy');
-          html     = data.contents;
-          finalUrl = (data.status && data.status.url) ? data.status.url : url;
-        } else {
-          html     = await resp.text();
-          finalUrl = url;
-        }
-
-        if (html.length < 150 && /{.*"error"/.test(html)) throw new Error('Proxy returned error JSON');
-
-        // Refine finalUrl using HTML heuristics (canonical, og:url, base href)
-        finalUrl = detectFinalUrl(html, finalUrl);
-
-        setStatus('Loaded via ' + proxy.name + (finalUrl !== url ? ' → ' + finalUrl : ' — ' + url), '#39ff14');
-        return { html, finalUrl };
-      } catch(e) {
-        lastErr = e;
-      }
-    }
-    throw new Error('All proxies failed — ' + (lastErr ? lastErr.message : 'unknown'));
-  }
-
-  // ── Core load ─────────────────────────────────────────────────────────────
-
-  async function loadUrl(url, addToHist) {
-    url = normalise(url);
-    if (!url) return;
-
-    urlbar.value = url;
-    currentUrl   = url;
-    if (addToHist !== false) pushHistory(url);
-    updateButtons();
-
-    setLoading(true);
-
-    const mode = methodSel.value;
-
-    try {
-      if (mode === 'proxy') {
-        const { html, finalUrl } = await fetchWithProxyFallback(url, proxySelEl.value);
-        // Update URL bar to reflect where we actually ended up after redirects
-        if (finalUrl && finalUrl !== url) urlbar.value = finalUrl;
-        const injected = injectIntoHtml(html, finalUrl);
-        iframe.removeAttribute('src');
-        iframe.srcdoc = injected;
-        setLoading(false);
-      } else {
-        // Direct iframe — strip srcdoc so src takes effect
-        iframe.removeAttribute('srcdoc');
-        iframe.src = url;
-        setLoading(false);
-        setStatus('Direct iframe — may be blocked by X-Frame-Options / CSP', '#888');
-      }
-    } catch(e) {
-      setLoading(false);
-      setStatus('Error: ' + e.message, '#ff5555');
-      iframe.removeAttribute('src');
-      iframe.srcdoc = [
-        '<html><body style="margin:0;padding:2rem;background:#0c0c0c;color:#ff5555;font-family:monospace;">',
-        '<h3 style="color:#ff5555;">Failed to load</h3>',
-        '<p>' + e.message.replace(/</g,'&lt;') + '</p>',
-        '<p style="color:#888;margin-top:1rem;">Tips:<br>',
-        '&bull; Check the URL is correct and the site is up<br>',
-        '&bull; Try switching to Direct iframe mode<br>',
-        '&bull; Public proxies may be rate-limited — wait a moment and retry</p>',
-        '</body></html>',
-      ].join('');
-      iframe.style.display = 'block';
-      spinner.style.display = 'none';
-    }
-  }
-
-  // ── postMessage navigation from inside the iframe ─────────────────────────
-  window.addEventListener('message', function(e) {
-    if (e.data && e.data.type === 'xframe-nav' && e.data.url) {
-      loadUrl(e.data.url, true);
-    }
-  });
-
-  // ── UI event wiring ───────────────────────────────────────────────────────
-  goBtn.addEventListener('click', () => loadUrl(urlbar.value, true));
-
-  urlbar.addEventListener('keydown', e => {
-    if (e.key === 'Enter') loadUrl(urlbar.value, true);
-  });
-
-  backBtn.addEventListener('click', () => {
-    if (histIdx > 0) { histIdx--; loadUrl(navHistory[histIdx], false); }
-  });
-
-  fwdBtn.addEventListener('click', () => {
-    if (histIdx < navHistory.length - 1) { histIdx++; loadUrl(navHistory[histIdx], false); }
-  });
-
-  reloadBtn.addEventListener('click', () => {
-    if (currentUrl) loadUrl(currentUrl, false);
-  });
-
-  function reset() {
-    iframe.removeAttribute('srcdoc');
-    iframe.removeAttribute('src');
-    iframe.style.display      = 'none';
-    placeholder.style.display = 'block';
-    spinner.style.display     = 'none';
-    urlbar.value  = '';
-    currentUrl    = null;
-    navHistory.length = 0;
-    histIdx = -1;
-    updateButtons();
-    setStatus('Ready — enter a URL above');
-  }
-
-  updateButtons();
-});
-</script>
