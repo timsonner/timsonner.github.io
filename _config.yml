@@ -12,9 +12,8 @@ author:
 image: /assets/images/hero-image-1240x620.jpg
 
 header_pages:
-  - about.md
+  - resume.md
   - python.html
-  - contact.md
 
 # Build settings
 markdown: kramdown
