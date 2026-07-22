@@ -5,7 +5,7 @@
     <span class="terminal-button green" id="email-parser-btn-green" style="cursor: pointer;" title="Restore"></span>
     <span class="terminal-title">Email Parser</span>
   </div>
-  <div class="terminal-window" id="email-parser-window" style="height: auto;">
+  <div class="terminal-window" id="email-parser-window" style="height: auto; padding: 0;">
     <div style="padding: 1.5rem; color: #e0e0e0;">
       <p style="margin-top: 0;">Upload a .eml file or paste raw email content to parse headers, body, and extract attachments. All processing is done locally in your browser.</p>
 
@@ -21,6 +21,47 @@
         <div id="report-content"></div>
       </div>
     </div>
+
+    <details class="tool-help">
+      <summary>How it works</summary>
+      <div class="tool-help-body">
+        <p>
+          Client-side MIME / header analyzer for phishing triage and mail forensics demos.
+          Upload a <code>.eml</code> / <code>.txt</code> file or paste the raw message, then hit
+          <strong>Parse Email</strong>. Nothing is uploaded — the file and paste buffer never leave
+          this browser tab.
+        </p>
+
+        <p><strong>What you get</strong></p>
+        <ul>
+          <li><strong>Email info</strong> — Subject, From, To, CC, Reply-To, Return-Path, Date, Message-ID, mailer/UA (RFC 2047 decoded).</li>
+          <li><strong>Authentication results</strong> — <code>Authentication-Results</code> with pass/fail highlighting (SPF / DKIM / DMARC style tokens when present).</li>
+          <li><strong>Message body</strong> — plain-text part, plus optional HTML preview in a locked-down <code>sandbox=""</code> iframe (no scripts).</li>
+          <li><strong>Attachments</strong> — extracted parts with download buttons (base64 decoded locally).</li>
+          <li><strong>Received chain</strong> — hop-by-hop <code>Received</code> headers for path review.</li>
+          <li><strong>All headers</strong> — full collapsible dump of the header block.</li>
+        </ul>
+
+        <p>
+          <strong>Parser notes</strong> — walks multipart trees, honors
+          <code>Content-Type</code> / <code>Content-Disposition</code>, and decodes
+          <code>quoted-printable</code>, <code>base64</code>, and common charsets best-effort.
+          Nested multiparts are flattened into text, HTML, and attachment buckets.
+        </p>
+
+        <p>
+          <strong>UX</strong> — red traffic light clears the form and results; yellow / green
+          minimize and restore the panel.
+        </p>
+
+        <p>
+          <strong>Limits</strong> — this is a lightweight browser parser, not a full MUA or
+          enterprise mail gateway. Exotic MIME, S/MIME, or broken messages may parse incompletely.
+          HTML preview is intentionally inert (empty sandbox) so active content cannot run.
+          Always treat untrusted mail and attachments as hostile.
+        </p>
+      </div>
+    </details>
   </div>
 </div>
 

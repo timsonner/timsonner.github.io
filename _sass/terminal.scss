@@ -47,9 +47,11 @@
   box-shadow: 0 0 10px rgba(57, 255, 20, 0.1);
 }
 
-/* Specific height for the terminal emulator */
+/* Specific height for the terminal emulator; square bottom when help pane sits under it */
 .terminal-section .terminal-window {
   height: 300px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .terminal-output {
@@ -252,20 +254,59 @@
   box-sizing: border-box;
 }
 
-.proxy-browser .xf-help {
+/* Shared collapsible "How it works" for homepage tools */
+.terminal-section > .tool-help,
+.tool-section .tool-help,
+.proxy-browser .tool-help {
   border-top: 1px solid #1a1a1a;
+  background: $color-bg-body;
+  border-left: 1px solid $color-primary;
+  border-right: 1px solid $color-primary;
+  border-bottom: 1px solid $color-primary;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
 }
 
-.proxy-browser .xf-help summary {
+/* When help lives inside a tool window, the window already has the outer border */
+.tool-section .terminal-window > .tool-help,
+.proxy-browser .terminal-window > .tool-help {
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* Terminal keeps its own window; help sits under it as a second pane */
+.terminal-section > .tool-help {
+  border-top: 1px solid #1a1a1a;
+  margin-top: -1px; /* collapse double border with window above */
+}
+
+.tool-help summary {
   color: #555;
   cursor: pointer;
   padding: 0.4rem 0.75rem;
   font-size: 0.8em;
   font-family: $font-family-mono;
   user-select: none;
+  list-style: none;
 }
 
-.proxy-browser .xf-help-body {
+.tool-help summary::-webkit-details-marker {
+  display: none;
+}
+
+.tool-help summary::before {
+  content: '▸ ';
+  color: #444;
+}
+
+.tool-help[open] summary::before {
+  content: '▾ ';
+}
+
+.tool-help-body {
   padding: 0.75rem;
   color: #888;
   font-size: 0.85em;
@@ -273,28 +314,28 @@
   line-height: 1.55;
 }
 
-.proxy-browser .xf-help-body p {
+.tool-help-body p {
   margin: 0 0 0.75rem 0;
 }
 
-.proxy-browser .xf-help-body p:last-child {
+.tool-help-body p:last-child {
   margin-bottom: 0;
 }
 
-.proxy-browser .xf-help-body ul {
+.tool-help-body ul {
   margin: 0 0 0.75rem 0;
   padding-left: 1.25rem;
 }
 
-.proxy-browser .xf-help-body li {
+.tool-help-body li {
   margin-bottom: 0.3rem;
 }
 
-.proxy-browser .xf-help-body strong {
+.tool-help-body strong {
   color: #e0e0e0;
 }
 
-.proxy-browser .xf-help-body code {
+.tool-help-body code {
   color: #aaa;
 }
 

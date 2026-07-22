@@ -32,16 +32,23 @@ document.addEventListener('DOMContentLoaded', function() {
   const btnYellow = document.getElementById('terminal-btn-yellow');
   const btnGreen = document.getElementById('terminal-btn-green');
   const btnRed = document.getElementById('terminal-btn-red');
-  
+  const terminalSection = terminalWindow ? terminalWindow.closest('.terminal-section') : null;
+  const terminalHeader = terminalSection
+    ? terminalSection.querySelector('.terminal-header')
+    : document.querySelector('.terminal-section .terminal-header');
+  const terminalHelp = terminalSection
+    ? terminalSection.querySelector('.tool-help')
+    : null;
+
   if (btnYellow && terminalWindow) {
     btnYellow.addEventListener('click', function() {
       terminalWindow.style.display = 'none';
+      if (terminalHelp) terminalHelp.style.display = 'none';
       // Remove bottom border radius from header when minimized
-      const header = document.querySelector('.terminal-header');
-      if (header) {
-        header.style.borderBottomLeftRadius = '8px';
-        header.style.borderBottomRightRadius = '8px';
-        header.style.borderBottom = '1px solid #39ff14';
+      if (terminalHeader) {
+        terminalHeader.style.borderBottomLeftRadius = '8px';
+        terminalHeader.style.borderBottomRightRadius = '8px';
+        terminalHeader.style.borderBottom = '1px solid #39ff14';
       }
     });
   }
@@ -49,12 +56,12 @@ document.addEventListener('DOMContentLoaded', function() {
   if (btnGreen && terminalWindow) {
     btnGreen.addEventListener('click', function() {
       terminalWindow.style.display = 'block';
+      if (terminalHelp) terminalHelp.style.display = '';
       // Restore header styles
-      const header = document.querySelector('.terminal-header');
-      if (header) {
-        header.style.borderBottomLeftRadius = '0';
-        header.style.borderBottomRightRadius = '0';
-        header.style.borderBottom = 'none';
+      if (terminalHeader) {
+        terminalHeader.style.borderBottomLeftRadius = '0';
+        terminalHeader.style.borderBottomRightRadius = '0';
+        terminalHeader.style.borderBottom = 'none';
       }
       terminalInput.focus();
     });
