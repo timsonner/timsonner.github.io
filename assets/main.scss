@@ -446,11 +446,11 @@ a:hover {
 }
 
 .timezone-clocks {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
   justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
+  column-gap: 1.5rem;
+  row-gap: 0.35rem;
   width: 100%;
   padding-top: 0.75rem;
   border-top: 1px solid $color-primary;
@@ -483,8 +483,9 @@ a:hover {
   }
 
   .timezone-clocks {
-    flex-direction: column;
-    gap: 0.25rem;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    row-gap: 0.25rem;
   }
   
   .info-separator {
