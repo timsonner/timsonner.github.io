@@ -28,5 +28,39 @@ async function fetchVisitorInfo() {
   }
 }
 
-// Load visitor info when page loads
-document.addEventListener('DOMContentLoaded', fetchVisitorInfo);
+const timeFormatters = {};
+
+function getTimeFormatter(timeZone, format) {
+  const key = `${timeZone}:${format}`;
+  if (!timeFormatters[key]) {
+    const options = format === '24'
+      ? { timeZone, hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }
+      : { timeZone, hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true };
+    timeFormatters[key] = new Intl.DateTimeFormat('en-US', options);
+  }
+  return timeFormatters[key];
+}
+
+function updateTimezoneClocks() {
+  const now = new Date();
+  document.querySelectorAll('.timezone-time[data-tz][data-format]').forEach((el) => {
+    const timeZone = el.dataset.tz;
+    const format = el.dataset.format;
+    el.textContent = getTimeFormatter(timeZone, format).format(now);
+  });
+}
+
+function startTimezoneClocks() {
+  if (!document.getElementById('timezone-clocks')) {
+    return;
+  }
+
+  updateTimezoneClocks();
+  setInterval(updateTimezoneClocks, 1000);
+}
+
+// Load visitor info and US timezone clocks when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+  fetchVisitorInfo();
+  startTimezoneClocks();
+});
