@@ -68,9 +68,9 @@ document.addEventListener('DOMContentLoaded', function() {
       terminalWindow.style.display = 'none';
       // Remove bottom border radius from header when minimized
       if (terminalHeader) {
-        terminalHeader.style.borderBottomLeftRadius = '8px';
-        terminalHeader.style.borderBottomRightRadius = '8px';
-        terminalHeader.style.borderBottom = '1px solid #39ff14';
+        terminalHeader.style.borderBottomLeftRadius = '0';
+        terminalHeader.style.borderBottomRightRadius = '0';
+        terminalHeader.style.borderBottom = '1px solid var(--color-primary)';
       }
     });
   }

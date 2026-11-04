@@ -5,10 +5,19 @@ title: Home
 
 <div class="home">
   <div class="hero-section">
+    <img
+      class="hero-banner"
+      src="{{ '/assets/images/branding/hero.png' | relative_url }}"
+      alt="Pixel-art gothic castle on a cliff above a neon city at night"
+      width="1280"
+      height="720"
+    >
     <!-- <h1 class="site-title">{{ site.title | default: "timsonner.com" }}</h1> -->
-    <p class="site-description">{{ site.description | default: "timsonner.com" }}</p>
-    <div id="visitor-info" class="visitor-info">
-      <span id="visitor-greeting">Welcome, visitor!</span>
+    <div class="hero-copy">
+      <p class="site-description">{{ site.description | default: "timsonner.com" }}</p>
+      <div id="visitor-info" class="visitor-info">
+        <span id="visitor-greeting">Welcome, visitor!</span>
+      </div>
     </div>
   </div>
 

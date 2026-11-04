@@ -154,7 +154,7 @@
 
     function setStatus(msg, color) {
       status.textContent = msg;
-      status.style.color = color || '#555';
+      status.style.color = color || 'var(--color-text-muted)';
       status.title = msg || '';
     }
 
@@ -390,10 +390,10 @@
         .map((t) => '&bull; ' + escapeHtml(t))
         .join('<br>');
       return [
-        '<html><body style="margin:0;padding:2rem;background:#0c0c0c;color:#ff5555;font-family:monospace;">',
-        '<h3 style="color:#ff5555;margin-top:0;">Failed to load</h3>',
+        '<html><body style="margin:0;padding:2rem;background:#16161e;color:#f7768e;font-family:monospace;">',
+        '<h3 style="color:#f7768e;margin-top:0;">Failed to load</h3>',
         '<p>' + escapeHtml(message) + '</p>',
-        '<p style="color:#888;margin-top:1rem;">Tips:<br>' + tipHtml + '</p>',
+        '<p style="color:#9aa5ce;margin-top:1rem;">Tips:<br>' + tipHtml + '</p>',
         '</body></html>',
       ].join('');
     }
@@ -555,7 +555,7 @@
       opts = opts || {};
       url = normalise(url);
       if (!url) {
-        setStatus('Enter a valid http(s) URL', '#ff5555');
+        setStatus('Enter a valid http(s) URL', 'var(--color-danger)');
         return;
       }
 
@@ -645,9 +645,9 @@
             (resolved !== url ? ' → ' + resolved : ' — ' + url);
           if (!htmlOk) {
             msg += ' (non-HTML payload — try Raw HTML)';
-            setStatus(msg, '#ffaa00');
+            setStatus(msg, 'var(--color-warning)');
           } else {
-            setStatus(msg, '#39ff14');
+            setStatus(msg, 'var(--color-success)');
           }
           updateButtons();
         } else {
@@ -660,7 +660,7 @@
 
           setBusy(false);
           showFrame();
-          setStatus('Direct iframe — checking frame…', '#888');
+          setStatus('Direct iframe — checking frame…', 'var(--color-text-dim)');
           updateButtons();
 
           // Heuristic: cross-origin framed pages that block often stay blank.
@@ -671,7 +671,7 @@
             if (myGen !== loadGen) return;
             setStatus(
               'Direct iframe loaded — if blank, target likely sets X-Frame-Options / CSP frame-ancestors',
-              '#888'
+              'var(--color-text-dim)'
             );
           };
           iframe.addEventListener('load', onLoad, { once: true });
@@ -681,7 +681,7 @@
             if (!loadFired) {
               setStatus(
                 'Direct iframe — no load event yet; framing may be blocked or slow',
-                '#ffaa00'
+                'var(--color-warning)'
               );
             }
           }, DIRECT_BLANK_MS);
@@ -690,7 +690,7 @@
         if (myGen !== loadGen) return;
         if (e.name === 'AbortError') {
           setBusy(false);
-          setStatus('Cancelled', '#888');
+          setStatus('Cancelled', 'var(--color-text-dim)');
           if (!iframe.srcdoc && !iframe.getAttribute('src')) showPlaceholder();
           else showFrame();
           updateButtons();
@@ -700,7 +700,7 @@
         lastError = e;
         lastHtml = null;
         setBusy(false);
-        setStatus('Error: ' + e.message, '#ff5555');
+        setStatus('Error: ' + e.message, 'var(--color-danger)');
         iframe.removeAttribute('src');
         iframe.srcdoc = errorPage(e.message);
         viewMode = 'render';
@@ -718,7 +718,7 @@
       if (e.source !== iframe.contentWindow) return;
       const next = normalise(e.data.url);
       if (!next) {
-        setStatus('Blocked non-http(s) navigation from page', '#ffaa00');
+        setStatus('Blocked non-http(s) navigation from page', 'var(--color-warning)');
         return;
       }
       loadUrl(next, true);
@@ -751,9 +751,9 @@
     btnYellow.addEventListener('click', () => {
       setProxyMaximized(false);
       xfWindow.style.display = 'none';
-      xfHeader.style.borderBottomLeftRadius = '8px';
-      xfHeader.style.borderBottomRightRadius = '8px';
-      xfHeader.style.borderBottom = '1px solid #39ff14';
+      xfHeader.style.borderBottomLeftRadius = '0';
+      xfHeader.style.borderBottomRightRadius = '0';
+      xfHeader.style.borderBottom = '1px solid var(--color-primary)';
     });
     btnGreen.addEventListener('click', () => {
       const wasMinimized = xfWindow && xfWindow.style.display === 'none';
@@ -788,7 +788,7 @@
         abortActive();
         loadGen += 1;
         setBusy(false);
-        setStatus('Cancelled', '#888');
+        setStatus('Cancelled', 'var(--color-text-dim)');
         updateButtons();
       });
     }
