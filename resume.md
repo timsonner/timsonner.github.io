@@ -6,7 +6,7 @@ permalink: /resume/
 
 # Tim Sonner
 
-**Cybersecurity · Systems · Security Tooling · AI Agent Integration**
+**IT Support & Cybersecurity | CMMC Compliance**
 
 [GitHub](https://github.com/timsonner) · [Gists](https://gist.github.com/timsonner) · [LinkedIn](https://linkedin.com/in/timsonner) · [Email](mailto:tim@timsonner.com) · [timsonner.com](https://timsonner.com)
 
@@ -14,104 +14,87 @@ permalink: /resume/
 
 ## Summary
 
-Security-focused builder and practitioner working across offensive security research, Windows/Active Directory administration, Linux systems, and practical automation. Comfortable shipping tooling end-to-end — from lab exploit paths and recon utilities to MCP servers that let AI agents operate safely in real environments.
+IT and cybersecurity professional with 4+ years of hands-on support across help desk, systems, and compliance work. Holds CompTIA Security+, Network+, Linux+, and ISC2 CC. Helps clients meet CMMC requirements, secures endpoints, handles Tier 1/2 help desk work, and has used AI tools daily since 2022, including multi-agent and MCP workflows, labs, and write-ups.
 
-Hands-on across Linux and Windows, with a strong bias toward reproducible labs, clear write-ups, and working proofs of concept over slideware.
+---
+
+## Experience
+
+### Compliance Support Technician | Apr 2024 – Present
+
+- Handle help desk and cybersecurity tickets for clients across Windows, Microsoft 365, Linux, and networks, working tickets remotely and on site from intake through resolution.
+- Help clients protect sensitive government data (CUI) with CMMC-oriented change management, security procedures, and Zero Trust.
+- Watch endpoints with security tools, handle alerts, and fix affected devices.
+- Find and fix security weaknesses, then track patches to completion.
+- Write clear documentation and procedures that support compliance audits.
+
+### IT Desktop Support | Jul 2022 – Apr 2024
+
+- Supported PCs, software, and peripherals across multiple sites, including round-the-clock operations.
+- Fixed PCs, printers, and network cabling, and worked with vendors when needed.
+- Ran PCI DSS-related security tests and fixes.
+
+### Install & Repair Technician III | Jan 2022 – Jul 2022
+
+- Installed and activated fiber, broadband, and VoIP service at homes and businesses.
+- Diagnosed and repaired customer equipment (modems, routers, and fiber gear) and line faults on site.
 
 ---
 
 ## Certifications
 
-- **CompTIA Security+**
-- **CompTIA Network+**
-- **CompTIA Linux+**
+- **CompTIA Network+** (Mar 2026)
+- **CompTIA Linux+** (Oct 2025)
+- **CompTIA Security+** (May 2023)
+- **ISC2 Certified in Cybersecurity (CC)** (Feb 2023)
+- **Google Cybersecurity Professional Certificate**, Coursera (May 2023)
+- **Google IT Automation with Python**, Coursera (Jul 2020)
+- **Google IT Support Professional Certificate**, Coursera (Jun 2020)
+- **Title 31 (BSA/AML)** — gaming compliance training
 
 ---
 
-## Core skills
+## Skills
 
-### Security & offensive research
-- Active Directory attack paths: enumeration, Kerberoasting, pass-the-hash, privilege escalation
-- Web/app exploitation labs: LFI, PHP filter chains, RCE, disabled_functions bypasses
-- Malware research & tradecraft notes: process/DLL injection, payload encoding, EDR-aware experiments
-- CVE research and lab PoCs
-- Password spraying / auth testing tooling
-- Client-side recon helpers (DNS, WHOIS/RDAP, headers, framing/CSP checks)
+### Security & compliance
 
-### Linux systems & networking
-- Daily-driver and lab Linux administration, hardening, and troubleshooting
-- Networking fundamentals aligned with **CompTIA Network+** and **Linux+** skill areas
-- Virtualization and homelab ops: Proxmox, KVM/libvirt, networking failover (Ethernet/Wi-Fi)
-- Containers and service isolation (Docker, Kali-in-Docker workflows)
-- Shell automation, package/driver recovery, ZFS and system tuning notes
+CMMC, NIST SP 800-171, Zero Trust, HIPAA, PCI DSS, MFA, EDR, application control, SIEM, vulnerability scanning, incident triage. TryHackMe (top 2% globally).
 
-### Windows & Active Directory
-- AD lab builds and domain administration
-- PowerShell for local/AD account management, diagnostics, and security event work
-- Windows internals exploration: services, injection patterns, admin automation
-- Remote access and tunnel troubleshooting in mixed environments
+### IT support & systems
 
-### AI agents, MCP & automation
-- Model Context Protocol (MCP) servers and VS Code-oriented templates
-- Agent skills / orchestration patterns for security and ops workflows
-- Kali-oriented agent tooling and Docker-backed execution environments
-- Bridges and gateways for agent collaboration (chat/signal-style integrations)
-- Computer-use / desktop-agent prototypes
+Tier 1/2 help desk, ticketing, Windows 10/11, Windows Server 2008–2025, Linux, Microsoft 365, Active Directory, MDM, remote and on-site support.
 
-### Languages & platforms
-- **Languages:** Go, Python, PowerShell, C# / .NET, JavaScript/TypeScript, Shell
-- **Platforms:** Linux, Windows Server / AD, Docker, Proxmox
-- **Web:** Jekyll, vanilla JS, SCSS, small full-stack utilities
-- **Security stack:** Nmap, Metasploit, Impacket-style AD tradecraft, custom PoCs
+### Networking & Linux
+
+TCP/IP, DNS, DHCP, VPN, firewalls, RADIUS Wi-Fi, cabling, fiber and broadband, Linux administration, Proxmox VE.
+
+### Languages
+
+Python, PowerShell, Bash, Swift (iOS), JavaScript, Git/GitHub.
+
+### Automation & AI agents
+
+LLM-assisted troubleshooting, scripting, and documentation. Prompt engineering. Multi-agent and MCP workflows for IT and security work.
 
 ---
 
-## Selected work (from public repos)
+## Selected public work
 
-### Security tooling & research
-- **[autonomous-pentest-agent](https://github.com/timsonner/autonomous-pentest-agent)** — autonomous pentest agent pattern with Kali Docker + MCP / Copilot CLI control plane
-- **[kali-mcp-server](https://github.com/timsonner/kali-mcp-server)** / **[dotnet-docker-kali-mcp-server](https://github.com/timsonner/dotnet-docker-kali-mcp-server)** — run security tooling inside Kali containers via MCP
-- **[React2Shell-CVE-2025-55182](https://github.com/timsonner/React2Shell-CVE-2025-55182)** — CVE lab setup and PoC work
-- **[CVE-2025-49144-Research](https://github.com/timsonner/CVE-2025-49144-Research)** — vulnerability research notes/code
-- **[encode-decode-payloads](https://github.com/timsonner/encode-decode-payloads)** — payload encoding/decoding utilities (PowerShell)
-- **[svg-image-javascript-malware](https://github.com/timsonner/svg-image-javascript-malware)** — SVG/JS payload generation research
-- **[multi-vpn-spray](https://github.com/timsonner/multi-vpn-spray)** — multi-VPN password spray helper
-- **[winring0-research](https://github.com/timsonner/winring0-research)** — low-level Windows research (C#)
-- **[red-team-tools-usage](https://github.com/timsonner/red-team-tools-usage)** — red-team tool usage notes
-
-### AI agents & developer tooling
-- **[mcp-vscode-template](https://github.com/timsonner/mcp-vscode-template)** — reusable MCP server template for VS Code
-- **[agent-skills](https://github.com/timsonner/agent-skills)** — packaged agent skills for security/ops tasks
-- **[docker-mcp-manager](https://github.com/timsonner/docker-mcp-manager)** — Docker-oriented MCP management
-- **[dotnet-mcp-skeleton-project-vscode](https://github.com/timsonner/dotnet-mcp-skeleton-project-vscode)** — .NET MCP skeleton for VS Code
-- **[opencode-plugins](https://github.com/timsonner/opencode-plugins)** / **[opencode-agents](https://github.com/timsonner/opencode-agents)** — OpenCode agent/plugin work
-- **[antigravity-slack-gateway](https://github.com/timsonner/antigravity-slack-gateway)**, **[antigravity-signal-bridge](https://github.com/timsonner/antigravity-signal-bridge)**, **[antigravity-hermes-collab](https://github.com/timsonner/antigravity-hermes-collab)** — agent collaboration bridges
-- **[claude-screen-agent](https://github.com/timsonner/claude-screen-agent)** — Wayland desktop stream prototype for agent computer-use
-
-### Systems, AD & infrastructure
-- **[admin-powershell](https://github.com/timsonner/admin-powershell)** — AD/sysadmin PowerShell: accounts, diagnostics, security events, M365 odds and ends
-- **[proxmox-debian-laptop-install-scripts](https://github.com/timsonner/proxmox-debian-laptop-install-scripts)** — Proxmox on laptop with Ethernet/Wi-Fi switching
-- **[pangolin-proxmox-guacamole-runbook](https://github.com/timsonner/pangolin-proxmox-guacamole-runbook)** — remote access / homelab runbook
-- Blog lab notes: AD DC setup in VirtualBox, TryHackMe AD and Linux privesc paths
-
-### Public site & client-side tools
-- **[timsonner.github.io](https://github.com/timsonner/timsonner.github.io)** — cybersecurity blog plus browser tools:
-  - interactive recon terminal
-  - local email header/body parser
-  - proxy / X-Frame inspection browser
-  - in-browser Python (Pyodide)
+- **[autonomous-pentest-agent](https://github.com/timsonner/autonomous-pentest-agent)** — AI-assisted pentest helper for lab use
+- **[kali-mcp-server](https://github.com/timsonner/kali-mcp-server)** — Kali tooling integrations through MCP
+- **[admin-powershell](https://github.com/timsonner/admin-powershell)** — PowerShell admin scripts
+- **[omamix](https://github.com/timsonner/omamix)** — audio mixer for modern Linux desktops
+- **[t2-touchid-linux](https://github.com/jmurth1234/t2-touchid-linux/pull/2)** — merged fix for Touch ID login on T2 Macs running Linux
+- **[opencode-agents](https://github.com/timsonner/opencode-agents)** — multi-agent workflows for research, IT, and software tasks
+- **[mcp-vscode-template](https://github.com/timsonner/mcp-vscode-template)** — reusable MCP server template
+- **[agent-skills](https://github.com/timsonner/agent-skills)** — packaged agent skills for security and ops tasks
+- **[timsonner.com](https://timsonner.com/)** — public site tools: recon terminal, local email parser, proxy browser, and [in-browser Python](https://timsonner.com/python/)
 
 ---
 
-## Technical writing
+## Writing
 
-Lab and research write-ups covering:
-
-- TryHackMe attack paths (Blue, Ice, Cheese CTF, Soupedecode, and others)
-- Active Directory lab construction
-- Go-based malware/injection research notes
-- Exploit PoC translation and payload development
-- Practical Linux/Windows ops snippets via [Gists](https://gist.github.com/timsonner)
+Lab and research write-ups are on the [blog](https://timsonner.com/). Shorter Linux and Windows notes are on [Gists](https://gist.github.com/timsonner).
 
 ---
 
