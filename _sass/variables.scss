@@ -1,29 +1,59 @@
-// Color Palette
-$color-primary: #39ff14;       // Hacker Green
-$color-bg-body: #181c1f;       // Dark Grey/Blue
-$color-bg-container: #23272a;  // Slightly lighter container
-$color-bg-header: #2c2c2c;     // Header background (Terminal)
-$color-bg-code: #0c0c0c;       // Black for code blocks
-$color-bg-light: #f8f9fa;      // Light background (Tables/Hover)
+// Tokyo Night palette. One set of tokens drives the site.
+$color-primary: #7dcfff;         // cyan
+$color-accent-magenta: #bb9af7;
+$color-accent-blue: #7aa2f7;
+$color-success: #9ece6a;
+$color-accent-red: #f7768e;
+$color-accent-yellow: #e0af68;
+$color-accent-green: #9ece6a;    // success / executable
 
-$color-text-main: #e0e0e0;     // Light Grey text
-$color-text-muted: #ccc;       // Muted text
-$color-text-grey: #666;        // Grey text (Meta/Quotes)
-$color-text-dark: #333;        // Dark text (for light backgrounds if any)
+// Window chrome stays close to real traffic-light colors.
+$color-traffic-red: #ff5f56;
+$color-traffic-yellow: #ffbd2e;
+$color-traffic-green: #27c93f;
+
+$color-bg-body: #1a1b26;
+$color-bg-container: #24283b;    // panel
+$color-bg-header: #1f2335;
+$color-bg-code: #16161e;
+$color-bg-light: #292e42;        // raised row / table head
+
+$color-text-main: #c0caf5;
+$color-text-muted: #565f89;
+$color-text-dim: #9aa5ce;        // secondary copy that still needs to be readable
+$color-text-grey: #565f89;
+// Ink for text sitting on cyan/magenta fills. Not for nav or titles.
+$color-text-dark: #1a1b26;
+$color-ink: #1a1b26;
 
 $color-white: #fff;
 $color-black: #000;
 
-// Borders & Shadows
-$color-border-dark: #222;
-$color-border-light: #e1e5e9;
-$color-shadow-dark: #111;
+$color-border: #3b4261;
+$color-border-dark: #16161e;
+$color-border-light: #3b4261;
+$color-shadow-dark: #000;
 
-// Accents
-$color-accent-blue: #667eea;
-$color-accent-red: #ff5f56;
-$color-accent-yellow: #ffbd2e;
-$color-accent-green: #27c93f;
+$radius-pixel: 0;
 
-// Fonts
-$font-family-mono: 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', 'Liberation Mono', monospace;
+$font-family-pixel: 'Press Start 2P', monospace;
+$font-family-mono: 'IBM Plex Mono', 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', 'Liberation Mono', monospace;
+
+:root {
+  --color-primary: #{$color-primary};
+  --color-accent: #{$color-accent-magenta};
+  --color-accent-blue: #{$color-accent-blue};
+  --color-success: #{$color-success};
+  --color-danger: #{$color-accent-red};
+  --color-warning: #{$color-accent-yellow};
+  --color-bg-body: #{$color-bg-body};
+  --color-bg-panel: #{$color-bg-container};
+  --color-bg-code: #{$color-bg-code};
+  --color-text: #{$color-text-main};
+  --color-text-muted: #{$color-text-muted};
+  --color-text-dim: #{$color-text-dim};
+  --color-border: #{$color-border};
+  --color-ink: #{$color-ink};
+  --font-mono: #{$font-family-mono};
+  --radius-pixel: #{$radius-pixel};
+}

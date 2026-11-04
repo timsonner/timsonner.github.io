@@ -6,18 +6,18 @@
     <span class="terminal-title">Email Parser</span>
   </div>
   <div class="terminal-window" id="email-parser-window" style="height: auto; padding: 0;">
-    <div style="padding: 1.5rem; color: #e0e0e0;">
-      <p style="margin-top: 0;">Upload a .eml file or paste raw email content to parse headers, body, and extract attachments. All processing is done locally in your browser.</p>
+    <div class="ep-pad">
+      <p class="ep-lead">Upload a .eml file or paste raw email content to parse headers, body, and extract attachments. All processing is done locally in your browser.</p>
 
-      <div style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-        <input type="file" id="email-file-input" accept=".eml,.txt" style="color: #e0e0e0; background: #2c2c2c; padding: 0.5rem; border-radius: 4px; border: 1px solid #444;">
+      <div class="ep-file-row">
+        <input type="file" id="email-file-input" class="ep-file" accept=".eml,.txt">
       </div>
 
-      <textarea id="email-raw-input" placeholder="Or paste raw email here..." style="width: 100%; height: 150px; background: #0c0c0c; color: #39ff14; border: 1px solid #444; padding: 0.5rem; font-family: 'Fira Mono', monospace; border-radius: 4px; resize: vertical; box-sizing: border-box;"></textarea>
+      <textarea id="email-raw-input" class="ep-raw" placeholder="Or paste raw email here..."></textarea>
 
-      <button id="analyze-btn" style="margin-top: 1rem; background: #39ff14; color: #000; border: none; padding: 0.5rem 1.5rem; cursor: pointer; font-weight: bold; border-radius: 4px; font-family: inherit; transition: opacity 0.2s;">Parse Email</button>
+      <button id="analyze-btn" class="ep-parse">Parse Email</button>
 
-      <div id="analysis-results" style="margin-top: 2rem; display: none; border-top: 1px solid #444; padding-top: 1rem;">
+      <div id="analysis-results" class="ep-results">
         <div id="report-content"></div>
       </div>
     </div>
@@ -100,9 +100,9 @@ document.addEventListener('DOMContentLoaded', function() {
   btnYellow && btnYellow.addEventListener('click', function() {
     setParserMaximized(false);
     parserWindow.style.display = 'none';
-    parserHeader.style.borderBottomLeftRadius  = '8px';
-    parserHeader.style.borderBottomRightRadius = '8px';
-    parserHeader.style.borderBottom = '1px solid #39ff14';
+    parserHeader.style.borderBottomLeftRadius  = '0';
+    parserHeader.style.borderBottomRightRadius = '0';
+    parserHeader.style.borderBottom = '1px solid var(--color-primary)';
   });
 
   btnGreen && btnGreen.addEventListener('click', function() {
@@ -349,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function sectionHead(label) {
-    return `<h4 style="color:#39ff14;margin:1.5rem 0 0.5rem;">${label}</h4>`;
+    return `<h4 class="ep-section-head">${label}</h4>`;
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -371,11 +371,11 @@ document.addEventListener('DOMContentLoaded', function() {
     ].filter(Boolean);
 
     let html = sectionHead('Email Info');
-    html += `<table style="width:100%;border-collapse:collapse;color:#e0e0e0;margin-bottom:0.5rem;">`;
+    html += `<table class="ep-table">`;
     for (const [label, value] of rows) {
       html += `<tr>
-        <td style="padding:7px 8px;border-bottom:1px solid #333;color:#888;white-space:nowrap;vertical-align:top;width:110px;">${label}:</td>
-        <td style="padding:7px 8px;border-bottom:1px solid #333;word-break:break-all;">${escapeHtml(value)}</td>
+        <td class="ep-table-label">${label}:</td>
+        <td class="ep-table-value">${escapeHtml(value)}</td>
       </tr>`;
     }
     html += `</table>`;
@@ -385,47 +385,46 @@ document.addEventListener('DOMContentLoaded', function() {
     if (authResults.length > 0) {
       for (const r of authResults) {
         let hi = escapeHtml(r)
-          .replace(/\b(pass)\b/gi,                          '<span style="color:#39ff14;font-weight:bold;">$1</span>')
-          .replace(/\b(fail|softfail|neutral|none|permerror|temperror)\b/gi, '<span style="color:#ff5555;font-weight:bold;">$1</span>');
-        html += `<div style="background:#0c0c0c;padding:10px;border:1px solid #444;font-family:'Fira Mono',monospace;white-space:pre-wrap;margin-bottom:0.5rem;border-radius:4px;">${hi}</div>`;
+          .replace(/\b(pass)\b/gi,                          '<span class="ep-pass">$1</span>')
+          .replace(/\b(fail|softfail|neutral|none|permerror|temperror)\b/gi, '<span class="ep-fail">$1</span>');
+        html += `<div class="ep-panel">${hi}</div>`;
       }
     } else {
-      html += `<div style="color:#888;font-style:italic;margin-bottom:0.5rem;">No Authentication-Results header found.</div>`;
+      html += `<div class="ep-note">No Authentication-Results header found.</div>`;
     }
 
     // ── Body ──
     html += sectionHead('Message Body');
     if (textBody !== null || htmlBody !== null) {
       if (textBody !== null) {
-        html += `<div id="ep-text-body" style="background:#0c0c0c;padding:10px;border:1px solid #444;font-family:'Fira Mono',monospace;font-size:0.9em;border-radius:4px;max-height:400px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">${escapeHtml(textBody)}</div>`;
+        html += `<div id="ep-text-body" class="ep-panel">${escapeHtml(textBody)}</div>`;
       }
       if (htmlBody !== null) {
-        html += `<div style="margin-top:0.6rem;display:flex;align-items:center;gap:0.75rem;">
-          <button id="ep-html-toggle" style="background:#1a1a1a;color:#39ff14;border:1px solid #39ff14;padding:4px 14px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:0.85em;">
+        html += `<div class="ep-html-row">
+          <button id="ep-html-toggle" class="ep-ghost-btn">
             ${textBody ? 'Show HTML version' : 'Show rendered HTML'}
           </button>
-          <span style="color:#555;font-size:0.8em;">sandboxed — no scripts execute</span>
+          <span class="ep-hint">sandboxed — no scripts execute</span>
         </div>
-        <div id="ep-html-container" style="display:none;margin-top:0.5rem;border:1px solid #444;border-radius:4px;overflow:hidden;">
-          <iframe id="ep-html-iframe" sandbox="" style="width:100%;height:500px;border:none;background:#fff;"></iframe>
+        <div id="ep-html-container" class="ep-frame" style="display:none;">
+          <iframe id="ep-html-iframe" sandbox="" class="ep-html-frame"></iframe>
         </div>`;
       }
     } else {
-      html += `<div style="color:#888;font-style:italic;">No body content found.</div>`;
+      html += `<div class="ep-note">No body content found.</div>`;
     }
 
     // ── Attachments ──
     if (attachments.length > 0) {
       html += sectionHead(`Attachments (${attachments.length})`);
-      html += `<div id="ep-attachments" style="display:flex;flex-wrap:wrap;gap:0.5rem;">`;
+      html += `<div id="ep-attachments" class="ep-attachments">`;
       for (let i = 0; i < attachments.length; i++) {
         const att = attachments[i];
         const kb  = att.data ? Math.round(att.data.length * 0.75 / 1024) : 0;
-        html += `<button class="ep-att-btn" data-index="${i}"
-          style="background:#1a1a1a;color:#e0e0e0;border:1px solid #444;padding:8px 14px;border-radius:4px;cursor:pointer;font-family:'Fira Mono',monospace;font-size:0.85em;display:flex;align-items:center;gap:6px;transition:border-color 0.2s;">
-          <span style="color:#39ff14;font-size:1em;">&#x2B07;</span>
+        html += `<button class="ep-att-btn" data-index="${i}">
+          <span class="ep-att-icon">&#x2B07;</span>
           ${escapeHtml(att.filename)}
-          <span style="color:#555;font-size:0.8em;">${att.contentType} &middot; ~${kb} KB</span>
+          <span class="ep-att-meta">${att.contentType} &middot; ~${kb} KB</span>
         </button>`;
       }
       html += `</div>`;
@@ -434,26 +433,26 @@ document.addEventListener('DOMContentLoaded', function() {
     // ── Received chain ──
     html += sectionHead('Received Chain');
     if (received.length > 0) {
-      html += `<div style="background:#0c0c0c;padding:10px;border:1px solid #444;font-family:'Fira Mono',monospace;font-size:0.85em;border-radius:4px;max-height:260px;overflow-y:auto;">`;
+      html += `<div class="ep-panel ep-received">`;
       received.forEach((hop, i) => {
-        html += `<div style="margin-bottom:8px;padding-bottom:8px;border-bottom:1px dashed #2a2a2a;">
-          <strong style="color:#888;">Hop ${i + 1}:</strong> ${escapeHtml(hop)}
+        html += `<div class="ep-hop">
+          <strong>Hop ${i + 1}:</strong> ${escapeHtml(hop)}
         </div>`;
       });
       html += `</div>`;
     } else {
-      html += `<div style="color:#888;font-style:italic;">No Received headers found.</div>`;
+      html += `<div class="ep-note">No Received headers found.</div>`;
     }
 
     // ── All headers (collapsible) ──
-    html += `<details style="margin-top:1.5rem;">
-      <summary style="color:#39ff14;cursor:pointer;user-select:none;">All Headers</summary>
-      <div style="background:#0c0c0c;padding:10px;border:1px solid #444;font-family:'Fira Mono',monospace;font-size:0.8em;border-radius:4px;margin-top:0.5rem;max-height:300px;overflow-y:auto;">`;
+    html += `<details class="ep-all-headers">
+      <summary class="ep-details-summary">All Headers</summary>
+      <div class="ep-panel ep-headers">`;
     for (const [k, v] of Object.entries(headers)) {
-      html += `<div style="margin-bottom:4px;"><span style="color:#888;">${escapeHtml(k)}:</span> ${escapeHtml(v)}</div>`;
+      html += `<div class="ep-header-line"><span class="ep-header-key">${escapeHtml(k)}:</span> ${escapeHtml(v)}</div>`;
     }
     for (const r of received) {
-      html += `<div style="margin-bottom:4px;"><span style="color:#888;">received:</span> ${escapeHtml(r)}</div>`;
+      html += `<div class="ep-header-line"><span class="ep-header-key">received:</span> ${escapeHtml(r)}</div>`;
     }
     html += `</div></details>`;
 
@@ -481,8 +480,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Wire up attachment download buttons (closure over attachments array)
     reportDiv.querySelectorAll('.ep-att-btn').forEach(btn => {
-      btn.addEventListener('mouseenter', () => btn.style.borderColor = '#39ff14');
-      btn.addEventListener('mouseleave', () => btn.style.borderColor = '#444');
       btn.addEventListener('click', function() {
         const att = attachments[parseInt(this.getAttribute('data-index'))];
         downloadAttachment(att.filename, att.contentType, att.data);

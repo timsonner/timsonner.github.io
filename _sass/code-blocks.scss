@@ -2,7 +2,7 @@
 pre, code {
   background-color: $color-bg-body;
   color: $color-primary;
-  border-radius: 4px;
+  border-radius: 0;
   font-family: inherit;
 }
 
@@ -28,7 +28,7 @@ pre code {
 .highlight {
   position: relative;
   background: $color-bg-code;
-  border-radius: 6px;
+  border-radius: 0;
   padding: 1rem;
   overflow-x: auto;
   border: 1px solid $color-primary;
@@ -138,7 +138,7 @@ pre code {
   background: $color-bg-container;
   color: $color-primary;
   border: 1px solid $color-primary;
-  border-radius: 4px;
+  border-radius: 0;
   cursor: pointer;
   font-size: 0.8rem;
   padding: 0.2rem 0.5rem;
@@ -149,5 +149,6 @@ pre code {
 
 .copy-code-button:hover {
   opacity: 1;
-  background: $color-bg-body;
+  background: $color-primary;
+  color: $color-ink;
 }

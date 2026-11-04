@@ -4,6 +4,12 @@
   margin: 0 auto 3rem auto;
   font-family: $font-family-mono;
   transition: max-width 0.25s ease;
+  border: 3px solid $color-primary;
+  background: $color-bg-code;
+  box-shadow:
+    0 0 0 2px $color-bg-body,
+    0 0 0 5px $color-accent-magenta,
+    6px 6px 0 $color-black;
 }
 
 /* Green traffic light: expand tool within the page content */
@@ -14,62 +20,62 @@
 
 /* Grow the interactive pane the same way across tools */
 .terminal-section.is-maximized .terminal-body {
-  height: min(70vh, 720px);
+  height: #{"min(70vh, 720px)"};
 }
 
 .tool-section.is-maximized #email-raw-input {
-  height: min(40vh, 320px) !important;
+  height: #{"min(40vh, 320px)"} !important;
 }
 
 .proxy-browser.is-maximized .xf-iframe,
 .proxy-browser.is-maximized .xf-raw {
-  height: min(70vh, 720px);
+  height: #{"min(70vh, 720px)"};
 }
 
 .proxy-browser.is-maximized .xf-viewport {
-  min-height: min(70vh, 720px);
+  min-height: #{"min(70vh, 720px)"};
 }
 
 .terminal-header {
   background: $color-bg-header;
   padding: 0.5rem 1rem;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  border: 1px solid $color-primary;
-  border-bottom: none;
+  border-radius: 0;
+  border: none;
+  border-bottom: 2px solid $color-primary;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 .terminal-button {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
   display: inline-block;
+  border: 1px solid $color-black;
+  box-shadow: 1px 1px 0 $color-black;
 }
 
-.terminal-button.red { background: $color-accent-red; }
-.terminal-button.yellow { background: $color-accent-yellow; }
-.terminal-button.green { background: $color-accent-green; }
+.terminal-button.red { background: $color-traffic-red; }
+.terminal-button.yellow { background: $color-traffic-yellow; }
+.terminal-button.green { background: $color-traffic-green; }
 
 .terminal-title {
   margin-left: 1rem;
-  color: $color-text-muted;
+  color: $color-text-dim;
   font-size: 0.9rem;
 }
 
 .terminal-window {
-  background: $color-bg-body; /* Darker background for terminal content */
-  border: 1px solid $color-primary;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
+  background: $color-bg-body;
+  border: none;
+  border-radius: 0;
   padding: 1rem;
   min-height: 100px;
   overflow-y: auto;
   font-size: 0.9rem;
   color: $color-text-main;
-  box-shadow: 0 0 10px rgba(57, 255, 20, 0.1);
+  box-shadow: none;
 }
 
 /* Match email/proxy: window owns chrome; body is the interactive pane */
@@ -134,7 +140,7 @@
   gap: 0.4rem;
   align-items: center;
   padding: 0.55rem 0.75rem;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid $color-border;
   flex-wrap: wrap;
 }
 
@@ -143,10 +149,10 @@
 .proxy-browser .xf-cancel,
 .proxy-browser .xf-retry,
 .proxy-browser .xf-view-toggle {
-  background: #1a1a1a;
+  background: $color-bg-header;
   color: $color-primary;
-  border: 1px solid #333;
-  border-radius: 4px;
+  border: 1px solid $color-border;
+  border-radius: 0;
   cursor: pointer;
   font-family: inherit;
   font-size: 0.88em;
@@ -156,7 +162,7 @@
   width: 28px;
   height: 28px;
   font-size: 1rem;
-  opacity: 0.3;
+  opacity: 0.35;
   padding: 0;
 }
 
@@ -168,33 +174,46 @@
   cursor: default;
 }
 
+.proxy-browser .xf-nav-btn:not(:disabled):hover,
+.proxy-browser .xf-view-toggle:not(:disabled):hover,
+.proxy-browser .xf-select:hover {
+  background: $color-primary;
+  color: $color-ink;
+  border-color: $color-primary;
+}
+
 .proxy-browser .xf-urlbar {
   flex: 1;
   min-width: 160px;
-  background: #0c0c0c;
+  background: $color-bg-code;
   color: $color-primary;
-  border: 1px solid #444;
+  border: 1px solid $color-border;
   padding: 0.35rem 0.6rem;
-  border-radius: 4px;
+  border-radius: 0;
   font-family: $font-family-mono;
   font-size: 0.88em;
 }
 
 .proxy-browser .xf-select {
-  background: #0c0c0c;
+  background: $color-bg-code;
   padding: 0.35rem 0.4rem;
 }
 
 .proxy-browser .xf-go {
   background: $color-primary;
-  color: #000;
-  border: none;
+  color: $color-ink;
+  border: 2px solid $color-primary;
   padding: 0.35rem 1rem;
-  border-radius: 4px;
+  border-radius: 0;
   font-weight: bold;
   cursor: pointer;
   font-family: inherit;
   white-space: nowrap;
+}
+
+.proxy-browser .xf-go:hover:not(:disabled) {
+  background: transparent;
+  color: $color-primary;
 }
 
 .proxy-browser .xf-go:disabled {
@@ -210,13 +229,23 @@
 }
 
 .proxy-browser .xf-cancel {
-  border-color: #664444;
-  color: #ff8888;
+  border-color: $color-accent-red;
+  color: $color-accent-red;
+}
+
+.proxy-browser .xf-cancel:hover {
+  background: $color-accent-red;
+  color: $color-ink;
 }
 
 .proxy-browser .xf-retry {
-  border-color: #556633;
-  color: #c8ff66;
+  border-color: $color-success;
+  color: $color-success;
+}
+
+.proxy-browser .xf-retry:hover {
+  background: $color-success;
+  color: $color-ink;
 }
 
 .proxy-browser .xf-view-toggle:disabled {
@@ -228,8 +257,8 @@
   padding: 0.15rem 0.75rem;
   font-size: 0.75em;
   font-family: $font-family-mono;
-  color: #555;
-  border-bottom: 1px solid #1a1a1a;
+  color: $color-text-muted;
+  border-bottom: 1px solid $color-border-dark;
   min-height: 1.3rem;
   white-space: nowrap;
   overflow: hidden;
@@ -239,14 +268,14 @@
 .proxy-browser .xf-viewport {
   position: relative;
   min-height: 520px;
-  background: #0c0c0c;
+  background: $color-bg-code;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .proxy-browser .xf-placeholder {
-  color: #444;
+  color: $color-text-muted;
   font-family: $font-family-mono;
   text-align: center;
   padding: 2rem;
@@ -261,10 +290,10 @@
   color: $color-primary;
   font-family: $font-family-mono;
   z-index: 2;
-  background: rgba(12, 12, 12, 0.85);
+  background: rgba(22, 22, 30, 0.92);
   padding: 0.75rem 1.25rem;
-  border-radius: 6px;
-  border: 1px solid #333;
+  border-radius: 0;
+  border: 1px solid $color-primary;
 }
 
 .proxy-browser .xf-iframe {
@@ -281,8 +310,8 @@
   height: 600px;
   overflow: auto;
   padding: 1rem;
-  background: #0a0a0a;
-  color: #c8c8c8;
+  background: $color-bg-code;
+  color: $color-text-main;
   font-family: $font-family-mono;
   font-size: 0.78em;
   line-height: 1.45;
@@ -293,7 +322,7 @@
 
 /* Shared collapsible "How it works" for homepage tools */
 .tool-help {
-  border-top: 1px solid #1a1a1a;
+  border-top: 1px solid $color-border;
   background: $color-bg-body;
   flex: 0 0 auto;
 }
@@ -303,12 +332,11 @@
   border-left: none;
   border-right: none;
   border-bottom: none;
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
+  border-radius: 0;
 }
 
 .tool-help summary {
-  color: #555;
+  color: $color-primary;
   cursor: pointer;
   padding: 0.4rem 0.75rem;
   font-size: 0.8em;
@@ -323,7 +351,7 @@
 
 .tool-help summary::before {
   content: '▸ ';
-  color: #444;
+  color: $color-primary;
 }
 
 .tool-help[open] summary::before {
@@ -332,9 +360,9 @@
 
 .tool-help-body {
   padding: 0.75rem;
-  color: #888;
+  color: $color-text-dim;
   font-size: 0.85em;
-  border-top: 1px solid #1a1a1a;
+  border-top: 1px solid $color-border;
   line-height: 1.55;
 }
 
@@ -356,11 +384,252 @@
 }
 
 .tool-help-body strong {
-  color: #e0e0e0;
+  color: $color-text-main;
 }
 
 .tool-help-body code {
-  color: #aaa;
+  color: $color-primary;
+}
+
+/* Email parser controls and rendered report */
+.ep-pad {
+  padding: 1.5rem;
+  color: $color-text-main;
+}
+
+.ep-lead {
+  margin-top: 0;
+}
+
+.ep-file-row {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ep-file {
+  color: $color-text-main;
+  background: $color-bg-container;
+  padding: 0.5rem;
+  border: 1px solid $color-border;
+  border-radius: 0;
+  font-family: $font-family-mono;
+}
+
+.ep-raw {
+  width: 100%;
+  height: 150px;
+  background: $color-bg-code;
+  color: $color-primary;
+  border: 1px solid $color-border;
+  padding: 0.5rem;
+  font-family: $font-family-mono;
+  border-radius: 0;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.ep-parse {
+  margin-top: 1rem;
+  background: $color-primary;
+  color: $color-ink;
+  border: 2px solid $color-primary;
+  padding: 0.5rem 1.5rem;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 0;
+  font-family: inherit;
+}
+
+.ep-parse:hover {
+  background: transparent;
+  color: $color-primary;
+}
+
+.ep-results {
+  margin-top: 2rem;
+  display: none;
+  border-top: 1px solid $color-border;
+  padding-top: 1rem;
+}
+
+.ep-section-head {
+  color: $color-primary;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.ep-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: $color-text-main;
+  margin-bottom: 0.5rem;
+}
+
+.ep-table-label,
+.ep-table-value {
+  padding: 7px 8px;
+  border-bottom: 1px solid $color-border;
+  vertical-align: top;
+}
+
+.ep-table-label {
+  color: $color-text-dim;
+  white-space: nowrap;
+  width: 110px;
+}
+
+.ep-table-value {
+  word-break: break-all;
+}
+
+.ep-pass {
+  color: $color-success;
+  font-weight: bold;
+}
+
+.ep-fail {
+  color: $color-accent-red;
+  font-weight: bold;
+}
+
+.ep-panel {
+  background: $color-bg-code;
+  padding: 10px;
+  border: 1px solid $color-border;
+  font-family: $font-family-mono;
+  border-radius: 0;
+  white-space: pre-wrap;
+  margin-bottom: 0.5rem;
+}
+
+#ep-text-body {
+  font-size: 0.9em;
+  max-height: 400px;
+  overflow-y: auto;
+  word-break: break-word;
+}
+
+.ep-received {
+  font-size: 0.85em;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.ep-headers {
+  font-size: 0.8em;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+}
+
+.ep-hop {
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed $color-border;
+}
+
+.ep-hop strong,
+.ep-header-key {
+  color: $color-text-dim;
+}
+
+.ep-header-line {
+  margin-bottom: 4px;
+}
+
+.ep-note {
+  color: $color-text-dim;
+  font-style: italic;
+  margin-bottom: 0.5rem;
+}
+
+.ep-html-row {
+  margin-top: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ep-hint {
+  color: $color-text-muted;
+  font-size: 0.8em;
+}
+
+.ep-ghost-btn {
+  background: $color-bg-container;
+  color: $color-primary;
+  border: 1px solid $color-primary;
+  padding: 4px 14px;
+  border-radius: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85em;
+}
+
+.ep-ghost-btn:hover {
+  background: $color-primary;
+  color: $color-ink;
+}
+
+.ep-frame {
+  margin-top: 0.5rem;
+  border: 1px solid $color-border;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.ep-html-frame {
+  width: 100%;
+  height: 500px;
+  border: none;
+  background: #fff;
+}
+
+.ep-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ep-att-btn {
+  background: $color-bg-container;
+  color: $color-text-main;
+  border: 1px solid $color-border;
+  padding: 8px 14px;
+  border-radius: 0;
+  cursor: pointer;
+  font-family: $font-family-mono;
+  font-size: 0.85em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ep-att-btn:hover {
+  border-color: $color-primary;
+  color: $color-primary;
+}
+
+.ep-att-icon {
+  color: $color-primary;
+  font-size: 1em;
+}
+
+.ep-att-meta {
+  color: $color-text-muted;
+  font-size: 0.8em;
+}
+
+.ep-all-headers {
+  margin-top: 1.5rem;
+}
+
+.ep-details-summary {
+  color: $color-primary;
+  cursor: pointer;
+  user-select: none;
 }
 
 @media (max-width: 600px) {

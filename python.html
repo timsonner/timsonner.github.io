@@ -12,11 +12,11 @@ permalink: /python/
   flex-direction: column;
   height: calc(100vh - 220px);
   min-height: 560px;
-  border: 1px solid #39ff14;
-  border-radius: 8px;
+  border: 2px solid var(--color-primary);
+  border-radius: 0;
   overflow: hidden;
-  background: #0c0c0c;
-  box-shadow: 0 0 12px rgba(57,255,20,0.2);
+  background: var(--color-bg-code);
+  box-shadow: 4px 4px 0 #000;
 }
 
 .py-toolbar {
@@ -31,7 +31,7 @@ permalink: /python/
 }
 
 .py-toolbar-title {
-  color: #39ff14;
+  color: var(--color-primary);
   font-weight: bold;
   font-size: 0.9rem;
   letter-spacing: 0.05em;
@@ -40,12 +40,12 @@ permalink: /python/
 .py-status {
   font-size: 0.75rem;
   padding: 0.15rem 0.55rem;
-  border-radius: 3px;
+  border-radius: 0;
   font-family: inherit;
   transition: all 0.3s;
 }
-.py-status.loading { color: #888;    border: 1px solid #333; }
-.py-status.ready   { color: #39ff14; border: 1px solid rgba(57,255,20,0.5); }
+.py-status.loading { color: var(--color-text-dim); border: 1px solid var(--color-border); }
+.py-status.ready   { color: var(--color-success); border: 1px solid var(--color-success); }
 .py-status.running { color: #ffc107; border: 1px solid #ffc107; }
 .py-status.err     { color: #ff6b6b; border: 1px solid #ff6b6b; }
 
@@ -63,25 +63,27 @@ permalink: /python/
 }
 
 .py-btn {
-  background: #39ff14;
-  color: #000;
-  border: none;
+  background: var(--color-primary);
+  color: var(--color-ink);
+  border: 2px solid var(--color-primary);
   padding: 0.28rem 0.75rem;
-  border-radius: 4px;
+  border-radius: 0;
   font-weight: bold;
   cursor: pointer;
   font-family: inherit;
   font-size: 0.82rem;
-  transition: all 0.15s;
 }
-.py-btn:hover:not(:disabled) { background: #7fff5a; }
+.py-btn:hover:not(:disabled) {
+  background: transparent;
+  color: var(--color-primary);
+}
 .py-btn:disabled { background: #222; color: #555; cursor: not-allowed; }
 .py-btn.ghost {
   background: transparent;
   color: #555;
   border: 1px solid #222;
 }
-.py-btn.ghost:hover:not(:disabled) { color: #39ff14; border-color: #39ff14; background: transparent; }
+.py-btn.ghost:hover:not(:disabled) { color: var(--color-primary); border-color: var(--color-primary); background: transparent; }
 
 .py-panels {
   display: flex;
@@ -113,19 +115,19 @@ permalink: /python/
 .CodeMirror {
   background: #0c0c0c !important;
   color: #d4d4d4 !important;
-  font-family: 'Fira Mono', 'Courier New', monospace !important;
+  font-family: var(--font-mono) !important;
   font-size: 0.87rem !important;
   height: 100% !important;
   line-height: 1.55 !important;
 }
 .CodeMirror-scroll     { height: 100%; }
 .CodeMirror-gutters    { background: #0f0f0f !important; border-right: 1px solid #1a1a1a !important; }
-.CodeMirror-linenumber { color: #333 !important; font-size: 0.78rem; }
-.CodeMirror-cursor     { border-left: 2px solid #39ff14 !important; }
-.CodeMirror-selected   { background: rgba(57,255,20,0.08) !important; }
+.CodeMirror-linenumber { color: var(--color-text-muted) !important; font-size: 0.78rem; }
+.CodeMirror-cursor     { border-left: 2px solid var(--color-primary) !important; }
+.CodeMirror-selected   { background: rgba(125, 207, 255, 0.14) !important; }
 .CodeMirror-activeline-background { background: #0f0f0f !important; }
-.cm-keyword  { color: #39ff14 !important; font-weight: bold; }
-.cm-builtin  { color: #7fff5a !important; }
+.cm-keyword  { color: var(--color-primary) !important; font-weight: bold; }
+.cm-builtin  { color: var(--color-success) !important; }
 .cm-string   { color: #ce9178 !important; }
 .cm-comment  { color: #3a3a3a !important; font-style: italic; }
 .cm-number   { color: #b5cea8 !important; }
@@ -168,7 +170,7 @@ permalink: /python/
   padding: 0.3rem 0.65rem;
   border-bottom: 1px solid #0f0f0f;
   font-size: 0.8rem;
-  font-family: 'Fira Mono', monospace;
+  font-family: var(--font-mono);
   transition: background 0.1s;
 }
 .py-var-row:hover { background: #111; }
@@ -179,13 +181,13 @@ permalink: /python/
 .py-badge {
   font-size: 0.65rem;
   padding: 0.1rem 0.35rem;
-  border-radius: 3px;
+  border-radius: 0;
   font-weight: bold;
   text-align: center;
   white-space: nowrap;
 }
 .badge-int, .badge-float, .badge-complex { background: #0d2137; color: #4fc3f7; }
-.badge-str                               { background: #0d2010; color: #39ff14; }
+.badge-str                               { background: #1a2618; color: var(--color-success); }
 .badge-bool                              { background: #2a1e00; color: #ffc107; }
 .badge-list, .badge-tuple                { background: #2a1400; color: #ff9800; }
 .badge-dict                              { background: #1e0a2a; color: #ce93d8; }
@@ -232,13 +234,13 @@ permalink: /python/
 }
 .py-exc-type {
   color: #ff6b6b;
-  font-family: 'Fira Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.82rem;
   font-weight: bold;
 }
 .py-exc-msg {
   color: #cc8888;
-  font-family: 'Fira Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.76rem;
   margin-top: 0.2rem;
   word-break: break-word;
@@ -272,13 +274,13 @@ permalink: /python/
 }
 .py-frame-func {
   color: #dcdcaa;
-  font-family: 'Fira Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.78rem;
   font-weight: bold;
 }
 .py-frame-loc {
   color: #3a2a2a;
-  font-family: 'Fira Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.72rem;
   margin-left: auto;
 }
@@ -286,7 +288,7 @@ permalink: /python/
 
 .py-frame-code {
   margin-top: 0.2rem;
-  font-family: 'Fira Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.77rem;
   color: #886666;
   padding-left: 0.5rem;
@@ -317,7 +319,7 @@ permalink: /python/
   overflow-y: auto;
   margin: 0;
   padding: 0.45rem 0.7rem;
-  font-family: 'Fira Mono', 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 0.8rem;
   line-height: 1.5;
   white-space: pre-wrap;
@@ -325,7 +327,7 @@ permalink: /python/
   color: #d4d4d4;
 }
 .out-info    { color: #2a2a2a; }
-.out-success { color: #39ff14; }
+.out-success { color: var(--color-success); }
 .out-stderr  { color: #ff6b6b; }
 </style>
 
@@ -729,23 +731,23 @@ _sys.version.split()[0]
   pointer-events: none;
 }
 .py-loading-text {
-  font-family: 'Fira Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.85rem;
-  color: #39ff14;
+  color: var(--color-primary);
   letter-spacing: 0.05em;
 }
 .py-loading-bar {
   width: 200px;
   height: 2px;
   background: #1a1a1a;
-  border-radius: 2px;
+  border-radius: 0;
   overflow: hidden;
 }
 .py-loading-bar-fill {
   height: 100%;
   width: 0%;
-  background: #39ff14;
-  box-shadow: 0 0 6px #39ff14;
+  background: var(--color-primary);
+  box-shadow: none;
   animation: py-bar-sweep 1.8s ease-in-out infinite;
 }
 @keyframes py-bar-sweep {
@@ -754,9 +756,9 @@ _sys.version.split()[0]
   100% { width: 0%;   margin-left: 100%; }
 }
 .py-loading-sub {
-  font-family: 'Fira Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.72rem;
-  color: #2a2a2a;
+  color: var(--color-text-muted);
   letter-spacing: 0.08em;
 }
 </style>
