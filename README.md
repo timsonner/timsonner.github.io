@@ -67,7 +67,7 @@ Mini browser for investigating pages in-frame (`_includes/proxy-browser.html` + 
 │   ├── js/                  # terminal.js, proxy-browser.js, copy-code.js, visitor.js, …
 │   └── images/              # Per-post image folders
 ├── index.html               # Homepage (tools + latest posts)
-├── resume.md / about.md (redirect) / python.html
+├── python.html
 ├── Gemfile                  # Ruby / GitHub Pages deps
 └── .github/copilot-instructions.md
 ```

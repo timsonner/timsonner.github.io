@@ -12,7 +12,6 @@ author:
 image: /assets/images/hero-image-1240x620.jpg
 
 header_pages:
-  - resume.md
   - python.html
 
 # Build settings
