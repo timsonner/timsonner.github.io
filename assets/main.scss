@@ -128,17 +128,14 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: $color-primary;
   text-decoration: none;
-  padding: 0.5rem;
-  border-radius: $radius-pixel;
-  border: 2px solid transparent;
+  padding: 0.5rem 0.7rem;
+  @include pixel-control;
 }
 
 .social-media-list a:hover {
-  color: $color-ink;
-  background-color: $color-primary;
-  border-color: $color-primary;
+  text-decoration: none;
+  @include pixel-control-hover;
 }
 
 .social-media-list .svg-icon {
@@ -260,9 +257,9 @@ a:hover {
 
 .hero-copy {
   padding: 1.25rem 1.5rem 1.5rem;
-  background-color: $color-bg-container;
-  background-image: radial-gradient(circle, rgba($color-primary, 0.18) 1px, transparent 1px);
-  background-size: 8px 8px;
+  background: $color-bg-container;
+  border-top: 2px solid $color-primary;
+  overflow: visible;
 }
 
 .site-title {
@@ -281,17 +278,28 @@ a:hover {
 }
 
 .site-description {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: none;
+  margin: 0;
+  padding: 0;
   font-size: 1.05rem;
-  padding-left: 0;
-  padding-right: 0;
+  line-height: 1.6;
   opacity: 1;
   color: $color-text-main;
-  font-family: inherit;
-  margin-top: 0;
+  font-family: $font-family-mono;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .posts-section {
-  max-width: 800px;
+  max-width: none;
+  width: 100%;
   margin: 0 auto;
 }
 
@@ -349,21 +357,17 @@ a:hover {
 }
 
 .page-link {
-  color: $color-primary;
   text-decoration: none;
   font-weight: 500;
   font-family: $font-family-mono;
   padding: 0.45rem 0.75rem;
-  border-radius: $radius-pixel;
   background: transparent;
-  border: 2px solid $color-primary;
-  box-shadow: 3px 3px 0 $color-black;
+  @include pixel-control;
 }
 
 .page-link:hover {
-  color: $color-ink;
-  background-color: $color-primary;
-  box-shadow: 3px 3px 0 $color-accent-magenta;
+  text-decoration: none;
+  @include pixel-control-hover;
 }
 
 @import "code-blocks";
@@ -391,21 +395,15 @@ a:hover {
   align-items: center;
   gap: 0.45rem;
   padding: 0.45rem 0.9rem;
-  background: $color-bg-container;
-  border: 2px solid $color-primary;
-  border-radius: $radius-pixel;
-  color: $color-primary;
   text-decoration: none;
   font-weight: 500;
   font-size: 0.9rem;
-  box-shadow: 3px 3px 0 $color-black;
+  @include pixel-control;
 }
 
 .home-contact-link:hover {
-  color: $color-ink;
-  background: $color-primary;
   text-decoration: none;
-  box-shadow: 3px 3px 0 $color-accent-magenta;
+  @include pixel-control-hover;
 }
 
 .home-contact-icon {
@@ -427,52 +425,86 @@ a:hover {
   }
 }
 
-/* Hero section visitor info */
+/* Hero section visitor info — opaque panel, never raw text on the castle */
 #visitor-info, .visitor-info {
-  margin-top: 1rem;
-  margin-bottom: 0;
-  margin-left: 0;
-  margin-right: 0;
-  padding: 0.75rem 1rem;
+  margin: 1rem 0 0;
+  padding: 0.75rem 0.9rem;
   background: $color-bg-code;
   border-radius: $radius-pixel;
   border: 2px solid $color-primary;
-  color: $color-primary;
+  color: $color-text-main;
   font-family: inherit;
-  display: inline-block;
+  display: block;
+  width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  text-align: left;
+  overflow: hidden;
 }
 
 #visitor-greeting {
   font-size: 0.95rem;
   font-weight: 500;
-  color: $color-primary;
+  line-height: 1.45;
+  color: $color-text-main;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+  min-width: 0;
   animation: fadeIn 0.8s ease-in;
   font-family: inherit;
 }
 
+.visitor-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem 0.55rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
 .info-item {
+  min-width: 0;
+  color: $color-text-main;
   white-space: normal;
+  overflow-wrap: anywhere;
   word-break: break-word;
 }
 
-.visitor-label {
-  color: $color-white;
+.info-separator {
+  color: $color-text-dim;
 }
 
-@media (max-width: 600px) {
-  #visitor-greeting {
+.visitor-label {
+  color: $color-primary;
+  font-weight: 700;
+}
+
+.visitor-row-ua {
+  max-width: 100%;
+}
+
+.visitor-ua {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+@media (max-width: 768px) {
+  .visitor-row-meta {
     flex-direction: column;
-    gap: 0.25rem;
+    align-items: flex-start;
+    gap: 0.2rem;
   }
 
-  .info-separator {
+  .visitor-row-meta .info-separator {
     display: none;
   }
 }
