@@ -54,6 +54,33 @@ $font-family-mono: 'IBM Plex Mono', 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', 
   --color-text-dim: #{$color-text-dim};
   --color-border: #{$color-border};
   --color-ink: #{$color-ink};
+  --color-bg-header: #{$color-bg-header};
   --font-mono: #{$font-family-mono};
   --radius-pixel: #{$radius-pixel};
+}
+
+// Shared pixel control. Outline by default; filled for primary actions.
+@mixin pixel-control($filled: false) {
+  border: 2px solid $color-primary;
+  border-radius: $radius-pixel;
+  box-shadow: 3px 3px 0 $color-black;
+  font-family: inherit;
+  @if $filled {
+    background: $color-primary;
+    color: $color-ink;
+  } @else {
+    background: $color-bg-container;
+    color: $color-primary;
+  }
+}
+
+@mixin pixel-control-hover($filled: false) {
+  box-shadow: 3px 3px 0 $color-accent-magenta;
+  @if $filled {
+    background: transparent;
+    color: $color-primary;
+  } @else {
+    background: $color-primary;
+    color: $color-ink;
+  }
 }

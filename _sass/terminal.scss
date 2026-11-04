@@ -1,6 +1,7 @@
 /* Terminal Emulator Styles */
 .terminal-section, .tool-section {
-  max-width: 800px;
+  max-width: none;
+  width: 100%;
   margin: 0 auto 3rem auto;
   font-family: $font-family-mono;
   transition: max-width 0.25s ease;
@@ -64,6 +65,17 @@
   margin-left: 1rem;
   color: $color-text-dim;
   font-size: 0.9rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.terminal-header .copy-code-button {
+  position: static;
+  margin-left: auto;
+  padding: 0.15rem 0.55rem;
+  flex-shrink: 0;
 }
 
 .terminal-window {
@@ -91,18 +103,19 @@
   flex: 1 1 auto;
   height: 300px;
   min-height: 300px;
-  padding: 1rem;
+  padding: 0.55rem 0.7rem;
   overflow-y: auto;
   box-sizing: border-box;
   transition: height 0.25s ease;
 }
 
 .terminal-output {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
 }
 
 .terminal-line {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.08rem;
+  line-height: 1.35;
   word-wrap: break-word;
 }
 
@@ -146,16 +159,16 @@
 
 .proxy-browser .xf-nav-btn,
 .proxy-browser .xf-select,
-.proxy-browser .xf-cancel,
-.proxy-browser .xf-retry,
-.proxy-browser .xf-view-toggle {
-  background: $color-bg-header;
-  color: $color-primary;
-  border: 1px solid $color-border;
-  border-radius: 0;
+.proxy-browser .xf-view-toggle,
+.proxy-browser .xf-urlbar {
   cursor: pointer;
   font-family: inherit;
   font-size: 0.88em;
+  @include pixel-control;
+}
+
+.proxy-browser .xf-urlbar {
+  cursor: text;
 }
 
 .proxy-browser .xf-nav-btn {
@@ -176,44 +189,40 @@
 
 .proxy-browser .xf-nav-btn:not(:disabled):hover,
 .proxy-browser .xf-view-toggle:not(:disabled):hover,
-.proxy-browser .xf-select:hover {
-  background: $color-primary;
-  color: $color-ink;
-  border-color: $color-primary;
+.proxy-browser .xf-select:hover,
+.proxy-browser .xf-urlbar:hover,
+.proxy-browser .xf-urlbar:focus {
+  outline: none;
+  @include pixel-control-hover;
 }
 
 .proxy-browser .xf-urlbar {
-  flex: 1;
-  min-width: 160px;
-  background: $color-bg-code;
-  color: $color-primary;
-  border: 1px solid $color-border;
+  flex: 1 1 180px;
+  min-width: 0;
   padding: 0.35rem 0.6rem;
-  border-radius: 0;
   font-family: $font-family-mono;
-  font-size: 0.88em;
+}
+
+.proxy-browser .xf-urlbar:hover,
+.proxy-browser .xf-urlbar:focus {
+  caret-color: $color-ink;
 }
 
 .proxy-browser .xf-select {
-  background: $color-bg-code;
   padding: 0.35rem 0.4rem;
+  max-width: 100%;
 }
 
 .proxy-browser .xf-go {
-  background: $color-primary;
-  color: $color-ink;
-  border: 2px solid $color-primary;
   padding: 0.35rem 1rem;
-  border-radius: 0;
   font-weight: bold;
   cursor: pointer;
-  font-family: inherit;
   white-space: nowrap;
+  @include pixel-control(true);
 }
 
 .proxy-browser .xf-go:hover:not(:disabled) {
-  background: transparent;
-  color: $color-primary;
+  @include pixel-control-hover(true);
 }
 
 .proxy-browser .xf-go:disabled {
@@ -228,24 +237,36 @@
   white-space: nowrap;
 }
 
+.proxy-browser .xf-cancel,
+.proxy-browser .xf-retry {
+  border-radius: $radius-pixel;
+  box-shadow: 3px 3px 0 $color-black;
+  font-family: inherit;
+  cursor: pointer;
+}
+
 .proxy-browser .xf-cancel {
-  border-color: $color-accent-red;
+  border: 2px solid $color-accent-red;
   color: $color-accent-red;
+  background: transparent;
 }
 
 .proxy-browser .xf-cancel:hover {
   background: $color-accent-red;
   color: $color-ink;
+  box-shadow: 3px 3px 0 $color-accent-magenta;
 }
 
 .proxy-browser .xf-retry {
-  border-color: $color-success;
+  border: 2px solid $color-success;
   color: $color-success;
+  background: transparent;
 }
 
 .proxy-browser .xf-retry:hover {
   background: $color-success;
   color: $color-ink;
+  box-shadow: 3px 3px 0 $color-accent-magenta;
 }
 
 .proxy-browser .xf-view-toggle:disabled {
@@ -257,7 +278,7 @@
   padding: 0.15rem 0.75rem;
   font-size: 0.75em;
   font-family: $font-family-mono;
-  color: $color-text-muted;
+  color: $color-text-dim;
   border-bottom: 1px solid $color-border-dark;
   min-height: 1.3rem;
   white-space: nowrap;
@@ -275,7 +296,7 @@
 }
 
 .proxy-browser .xf-placeholder {
-  color: $color-text-muted;
+  color: $color-text-dim;
   font-family: $font-family-mono;
   text-align: center;
   padding: 2rem;
@@ -338,8 +359,9 @@
 .tool-help summary {
   color: $color-primary;
   cursor: pointer;
-  padding: 0.4rem 0.75rem;
-  font-size: 0.8em;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.85em;
+  font-weight: 700;
   font-family: $font-family-mono;
   user-select: none;
   list-style: none;
@@ -361,9 +383,9 @@
 .tool-help-body {
   padding: 0.75rem;
   color: $color-text-dim;
-  font-size: 0.85em;
+  font-size: 0.9em;
   border-top: 1px solid $color-border;
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 .tool-help-body p {
@@ -411,41 +433,43 @@
 
 .ep-file {
   color: $color-text-main;
-  background: $color-bg-container;
   padding: 0.5rem;
-  border: 1px solid $color-border;
-  border-radius: 0;
   font-family: $font-family-mono;
+  max-width: 100%;
+  @include pixel-control;
 }
 
 .ep-raw {
   width: 100%;
   height: 150px;
-  background: $color-bg-code;
-  color: $color-primary;
-  border: 1px solid $color-border;
   padding: 0.5rem;
   font-family: $font-family-mono;
-  border-radius: 0;
   resize: vertical;
   box-sizing: border-box;
+  color: $color-text-main;
+  @include pixel-control;
+}
+
+.ep-raw:hover,
+.ep-raw:focus,
+.ep-file:hover,
+.ep-file:focus {
+  outline: none;
+  box-shadow: 3px 3px 0 $color-accent-magenta;
+  background: $color-bg-container;
+  color: $color-text-main;
 }
 
 .ep-parse {
   margin-top: 1rem;
-  background: $color-primary;
-  color: $color-ink;
-  border: 2px solid $color-primary;
   padding: 0.5rem 1.5rem;
   cursor: pointer;
   font-weight: bold;
-  border-radius: 0;
-  font-family: inherit;
+  @include pixel-control(true);
 }
 
 .ep-parse:hover {
-  background: transparent;
-  color: $color-primary;
+  @include pixel-control-hover(true);
 }
 
 .ep-results {
@@ -558,19 +582,14 @@
 }
 
 .ep-ghost-btn {
-  background: $color-bg-container;
-  color: $color-primary;
-  border: 1px solid $color-primary;
   padding: 4px 14px;
-  border-radius: 0;
   cursor: pointer;
-  font-family: inherit;
   font-size: 0.85em;
+  @include pixel-control;
 }
 
 .ep-ghost-btn:hover {
-  background: $color-primary;
-  color: $color-ink;
+  @include pixel-control-hover;
 }
 
 .ep-frame {
@@ -594,22 +613,19 @@
 }
 
 .ep-att-btn {
-  background: $color-bg-container;
-  color: $color-text-main;
-  border: 1px solid $color-border;
   padding: 8px 14px;
-  border-radius: 0;
   cursor: pointer;
   font-family: $font-family-mono;
   font-size: 0.85em;
   display: flex;
   align-items: center;
   gap: 6px;
+  max-width: 100%;
+  @include pixel-control;
 }
 
 .ep-att-btn:hover {
-  border-color: $color-primary;
-  color: $color-primary;
+  @include pixel-control-hover;
 }
 
 .ep-att-icon {
@@ -630,6 +646,16 @@
   color: $color-primary;
   cursor: pointer;
   user-select: none;
+}
+
+@media (max-width: 768px) {
+  .proxy-browser .xf-chrome {
+    gap: 0.45rem;
+  }
+
+  .proxy-browser .xf-urlbar {
+    flex: 1 1 100%;
+  }
 }
 
 @media (max-width: 600px) {

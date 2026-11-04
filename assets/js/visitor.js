@@ -10,13 +10,23 @@ async function fetchVisitorInfo() {
       const location = `${data.city}, ${data.region}`;
       const userAgent = navigator.userAgent;
 
+      const esc = (value) => String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
       greetingElement.innerHTML = `
-        <span class="info-item"><span class="visitor-label">Visitor:</span> ${data.ip}</span>
-        <span class="info-separator">|</span>
-        <span class="info-item"><span class="visitor-label">Location:</span> ${location}</span>
-        <span class="info-separator">|</span>
-        <span class="info-item"><span class="visitor-label">Data:</span> <a href="https://ipapi.co" target="_blank">ipapi.co</a></span>
-        <span class="info-item"><span class="visitor-label">UA:</span> ${userAgent}</span>
+        <span class="visitor-row visitor-row-meta">
+          <span class="info-item"><span class="visitor-label">Visitor:</span> ${esc(data.ip)}</span>
+          <span class="info-separator">|</span>
+          <span class="info-item"><span class="visitor-label">Location:</span> ${esc(location)}</span>
+          <span class="info-separator">|</span>
+          <span class="info-item"><span class="visitor-label">Data:</span> <a href="https://ipapi.co" target="_blank">ipapi.co</a></span>
+        </span>
+        <span class="visitor-row visitor-row-ua">
+          <span class="info-item visitor-ua" title="${esc(userAgent)}"><span class="visitor-label">UA:</span> ${esc(userAgent)}</span>
+        </span>
       `;
 
     } else {
