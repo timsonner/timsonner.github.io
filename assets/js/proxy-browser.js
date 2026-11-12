@@ -383,7 +383,7 @@
       return [
         'Check the URL is correct and the site is up',
         'Try Auto or pin the Worker from the dropdown; Try next walks the backend list',
-        'The Worker only allows timsonner.com / github.io origins — localhost Jekyll serve gets 403',
+        'The Worker only allows timsonner.com / github.io origins; localhost Jekyll serve gets 403',
         'Some targets block the Worker or rate-limit (e.g. bleepingcomputer 403, reddit r/sysadmin 429)',
         'Use Raw HTML if the page fetched but will not render cleanly',
         'Direct iframe only works when the target allows framing',
@@ -396,7 +396,7 @@
       const resp = await fetch(proxy.fn(url), { signal });
       if (!resp.ok) throw new Error(proxy.name + ' HTTP ' + resp.status);
 
-      const html = await resp.text();
+      let html = await resp.text();
       let finalUrl = url;
       const xFinal = resp.headers.get('X-Final-Url');
       if (xFinal && isHttpUrl(xFinal)) {
