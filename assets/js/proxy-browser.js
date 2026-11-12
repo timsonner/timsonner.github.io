@@ -51,14 +51,20 @@
     const MAX_HTML_CHARS = 2_500_000;
 
     const WORKER = 'https://timsonner-cors.timsonner.workers.dev/';
+    const VERCEL = 'https://timsonner-cors.vercel.app/api/proxy';
 
-    // Site CORS Worker — list shape allows adding another backend later.
+    // Site CORS backends: Cloudflare Worker plus a Vercel function on a different network.
     // Auto races the list; X-Final-Url is used when present, else HTML heuristics.
     const PROXIES = [
       {
         name: 'timsonner-cors (Cloudflare Worker)',
         raw: true,
         fn: (u) => WORKER + '?url=' + encodeURIComponent(u),
+      },
+      {
+        name: 'timsonner-cors (Vercel)',
+        raw: true,
+        fn: (u) => VERCEL + '?url=' + encodeURIComponent(u),
       },
     ];
 
@@ -382,9 +388,9 @@
     function defaultTips() {
       return [
         'Check the URL is correct and the site is up',
-        'Try Auto or pin the Worker from the dropdown; Try next walks the backend list',
-        'The Worker only allows timsonner.com / github.io origins; localhost Jekyll serve gets 403',
-        'Some targets block the Worker or rate-limit (e.g. bleepingcomputer 403, reddit r/sysadmin 429)',
+        'Try Auto or pin a backend from the dropdown; Try next walks the backend list',
+        'The backends only allow timsonner.com / github.io origins; localhost Jekyll serve gets 403',
+        'Some targets block Cloudflare (e.g. Hacker News 419); Vercel usually gets through. Reddit may block both',
         'Use Raw HTML if the page fetched but will not render cleanly',
         'Direct iframe only works when the target allows framing',
       ];
