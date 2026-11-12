@@ -22,11 +22,7 @@
       </select>
       <select id="xf-proxy" class="xf-select" title="Proxy to use">
         <option value="auto">Auto (race)</option>
-        <option value="cors.eu.org">cors.eu.org</option>
-        <option value="proxy.cors.sh">proxy.cors.sh</option>
-        <option value="allorigins.win">allorigins.win</option>
-        <option value="corsproxy.io">corsproxy.io</option>
-        <option value="codetabs.com">codetabs.com</option>
+        <option value="timsonner-cors (Cloudflare Worker)">timsonner-cors (Cloudflare Worker)</option>
       </select>
       <button type="button" id="xf-go" class="xf-go">Load</button>
       <button type="button" id="xf-cancel" class="xf-cancel" title="Cancel in-flight request" style="display:none;">Cancel</button>
@@ -63,18 +59,17 @@
         <p>
           Mini browser for inspecting pages in-frame — phishing kits, clickjacking behavior,
           and framing headers — without opening a full trusted browser session.
-          Everything runs client-side; there is no first-party proxy on this site.
+          Fetches go through the site&apos;s Cloudflare Worker CORS proxy from the browser.
         </p>
 
         <p>
-          <strong>Proxy Fetch</strong> (default) pulls the target HTML through public CORS proxies,
-          then renders it in a sandboxed iframe via <code>srcdoc</code>.
-          Available backends: <code>cors.eu.org</code>, <code>proxy.cors.sh</code>,
-          <code>allorigins.win</code>, <code>corsproxy.io</code>, <code>codetabs.com</code>.
+          <strong>Proxy Fetch</strong> (default) pulls the target HTML through
+          <code>timsonner-cors.timsonner.workers.dev</code>, then renders it in a sandboxed iframe
+          via <code>srcdoc</code>.
         </p>
         <ul>
-          <li><strong>Auto (race)</strong> — tries all proxies in parallel; first valid HTML wins.</li>
-          <li><strong>Pinned proxy</strong> — force one backend from the dropdown.</li>
+          <li><strong>Auto (race)</strong> — races configured backends in parallel; first valid HTML wins.</li>
+          <li><strong>Pinned proxy</strong> — force the Worker from the dropdown.</li>
           <li><strong>Cancel</strong> — abort an in-flight load.</li>
           <li><strong>Try next</strong> — after a failure, walk the remaining proxies sequentially.</li>
           <li><strong>Raw HTML</strong> — show the fetched source when the rendered view is broken.</li>
@@ -98,8 +93,10 @@
         </p>
 
         <p>
-          <strong>Limits</strong> — free public proxies rate-limit, time out, and get blocked by WAFs;
-          a failure is often the proxy, not your URL. The sandbox has no real browser session:
+          <strong>Limits</strong> — the Worker only accepts requests from
+          <code>timsonner.com</code>, <code>www.timsonner.com</code>, and
+          <code>timsonner.github.io</code> (localhost <code>jekyll serve</code> gets 403).
+          Upstream sites may still block or rate-limit the Worker. The sandbox has no real browser session:
           cookies/auth, many SPAs, and POST bodies will not behave like Chrome/Firefox.
           Subresources still load from the live origin via <code>&lt;base&gt;</code>.
           Prefer <strong>Raw HTML</strong> when you only need the markup.
