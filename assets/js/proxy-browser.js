@@ -50,34 +50,15 @@
     const MIN_HTML_LEN = 40;
     const MAX_HTML_CHARS = 2_500_000;
 
-    // Public CORS proxies — free tiers flap; Auto races them.
-    // allorigins /get exposes post-redirect URL via status.url.
-    // Raw proxies need HTML heuristics for final URL.
+    const WORKER = 'https://timsonner-cors.timsonner.workers.dev/';
+
+    // Site CORS Worker — list shape allows adding another backend later.
+    // Auto races the list; X-Final-Url is used when present, else HTML heuristics.
     const PROXIES = [
       {
-        name: 'cors.eu.org',
+        name: 'timsonner-cors (Cloudflare Worker)',
         raw: true,
-        fn: (u) => 'https://cors.eu.org/' + u,
-      },
-      {
-        name: 'proxy.cors.sh',
-        raw: true,
-        fn: (u) => 'https://proxy.cors.sh/' + u,
-      },
-      {
-        name: 'allorigins.win',
-        raw: false,
-        fn: (u) => 'https://api.allorigins.win/get?url=' + encodeURIComponent(u),
-      },
-      {
-        name: 'corsproxy.io',
-        raw: true,
-        fn: (u) => 'https://corsproxy.io/?' + encodeURIComponent(u),
-      },
-      {
-        name: 'codetabs.com',
-        raw: true,
-        fn: (u) => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
+        fn: (u) => WORKER + '?url=' + encodeURIComponent(u),
       },
     ];
 
@@ -401,8 +382,9 @@
     function defaultTips() {
       return [
         'Check the URL is correct and the site is up',
-        'Try another proxy from the dropdown, or Auto',
-        'Public proxies rate-limit and get blocked by WAFs — wait and retry',
+        'Try Auto or pin the Worker from the dropdown; Try next walks the backend list',
+        'The Worker only allows timsonner.com / github.io origins — localhost Jekyll serve gets 403',
+        'Some targets block the Worker or rate-limit (e.g. bleepingcomputer 403, reddit r/sysadmin 429)',
         'Use Raw HTML if the page fetched but will not render cleanly',
         'Direct iframe only works when the target allows framing',
       ];
@@ -414,27 +396,11 @@
       const resp = await fetch(proxy.fn(url), { signal });
       if (!resp.ok) throw new Error(proxy.name + ' HTTP ' + resp.status);
 
-      let html;
+      const html = await resp.text();
       let finalUrl = url;
-
-      if (!proxy.raw) {
-        const data = await resp.json();
-        if (data == null) throw new Error(proxy.name + ' empty JSON');
-        if (data.status && typeof data.status.http_code === 'number') {
-          const code = data.status.http_code;
-          if (code >= 400) throw new Error(proxy.name + ' upstream HTTP ' + code);
-        }
-        if (!data.contents && data.contents !== '') {
-          throw new Error(proxy.name + ' missing contents');
-        }
-        html = data.contents;
-        if (data.status && data.status.url && isHttpUrl(data.status.url)) {
-          finalUrl = data.status.url;
-        }
-      } else {
-        html = await resp.text();
-        // Some proxies echo error JSON with 200
-        finalUrl = url;
+      const xFinal = resp.headers.get('X-Final-Url');
+      if (xFinal && isHttpUrl(xFinal)) {
+        finalUrl = xFinal;
       }
 
       html = validateFetchedHtml(html);

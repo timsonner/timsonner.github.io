@@ -35,8 +35,8 @@ Client-side `.eml` / raw email analyzer (`_includes/email-parser.html`):
 ### Proxy Browser (X-Frame Demo)
 Mini browser for investigating pages in-frame (`_includes/proxy-browser.html` + `assets/js/proxy-browser.js`):
 
-- **Proxy Fetch** — load HTML through public CORS proxies (`cors.eu.org`, `proxy.cors.sh`, `allorigins.win`, …), inject `<base>` + nav interceptor (phishing / framed inspection without a full browser session)
-- **Auto (race)** — first valid proxy response wins; cancel in-flight loads; try-next on failure
+- **Proxy Fetch** — load HTML through the Cloudflare Worker `timsonner-cors.timsonner.workers.dev`, inject `<base>` + nav interceptor (phishing / framed inspection without a full browser session)
+- **Auto (race)** — races the configured backend list (Worker today); cancel in-flight loads; try-next on failure
 - **Raw HTML** — inspect fetched source when render is broken
 - **Direct iframe** — set `iframe src` directly to demo `X-Frame-Options` / `CSP frame-ancestors` blocking
 - Back / forward / reload chrome and selectable proxy backends

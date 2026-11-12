@@ -813,12 +813,10 @@ document.addEventListener('DOMContentLoaded', function() {
     addToOutput(`Looking up vendor for MAC: ${mac}...`);
 
     try {
+      const WORKER = 'https://timsonner-cors.timsonner.workers.dev/';
       const apiUrl = `https://api.maclookup.app/v2/macs/${mac}`;
       const proxies = [
-        (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-        (url) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-        (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-        (url) => `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(url)}`
+        (url) => WORKER + '?url=' + encodeURIComponent(url),
       ];
 
       let data = null;
@@ -834,19 +832,16 @@ document.addEventListener('DOMContentLoaded', function() {
           }
 
           const text = await response.text();
-          let proxyData;
+          let parsedData;
           try {
-             proxyData = JSON.parse(text);
-          } catch(e) {
-             continue; // ignore parse errors (e.g. 502 html responses from proxies)
+            parsedData = JSON.parse(text);
+          } catch (e) {
+            continue;
           }
 
-          // allorigins returns { contents: "..." }, corsproxy/raw returns direct json
-          let parsedData = proxyData.contents ? JSON.parse(proxyData.contents) : proxyData;
-
           if (parsedData && typeof parsedData === 'object' && parsedData.hasOwnProperty('found')) {
-             data = parsedData;
-             break;
+            data = parsedData;
+            break;
           }
         } catch (e) {
           fetchError = e;
@@ -869,7 +864,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (data.country) addToOutput(`Country: ${data.country}`);
       addToOutput(`Prefix:  ${data.macPrefix}`);
       addToOutput('----------------------------------------');
-      addToOutput('Data provided by maclookup.app (via proxies)');
+      addToOutput('Data provided by maclookup.app (via site CORS proxy)');
 
     } catch (error) {
       addToOutput(`Lookup failed: ${error.message}`, 'command-error');
@@ -950,15 +945,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let str = null;
     let fetchError = null;
 
-    // Proxy strategies to try in order
-
+    const WORKER = 'https://timsonner-cors.timsonner.workers.dev/';
     const proxies = [
-      // Primary: corsproxy.io
-      (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-      // Fallback 1: api.allorigins.win
-      (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-      // Fallback 2: thingproxy.freeboard.io
-      (url) => `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(url)}`
+      (url) => WORKER + '?url=' + encodeURIComponent(url),
     ];
 
     for (const getProxyUrl of proxies) {
