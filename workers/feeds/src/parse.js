@@ -4,11 +4,13 @@ import { safeItemLink } from "./guard.js";
 
 const TITLE_MAX = 300;
 
-export function parseFeed(xml) {
+export function parseFeed(xml, limit) {
   const text = String(xml || "").replace(/^\uFEFF/, "");
-  const blocks = splitBlocks(text, "item").concat(splitBlocks(text, "entry"));
+  const max = Number.isFinite(limit) ? limit : Infinity;
+  const blocks = splitBlocks(text, "item", max).concat(splitBlocks(text, "entry", max));
   const items = [];
   for (const block of blocks) {
+    if (items.length >= max) break;
     const title = cleanText(tagText(block, "title"));
     const link = pickLink(block);
     const published = toIso(
@@ -27,11 +29,12 @@ export function parseFeed(xml) {
   return items;
 }
 
-export function splitBlocks(xml, local) {
+export function splitBlocks(xml, local, limit) {
+  const max = Number.isFinite(limit) ? limit : Infinity;
   const open = new RegExp(`<(([\\w.-]+):)?${local}(\\s[^>]*)?>`, "gi");
   const blocks = [];
   let match;
-  while ((match = open.exec(xml))) {
+  while (blocks.length < max && (match = open.exec(xml))) {
     const prefix = match[2] ? `${match[2]}:` : "";
     const closeToken = `</${prefix}${local}>`;
     const start = match.index + match[0].length;
@@ -134,6 +137,102 @@ function fromCode(code) {
   } catch {
     return "";
   }
+}
+
+const META_CAP = 8192;
+const TAG_TAIL = 64;
+const OPEN_TAG = /<((?:[\w.-]+:)?)(item|entry)(?=[\s>])/i;
+
+// Pull up to `limit` items without keeping the rest of a feed body.
+// Title, link, and date are taken from the start of each item.
+export function createItemScanner(limit) {
+  const max = Number.isFinite(limit) && limit > 0 ? limit : 0;
+  let pending = "";
+  let inItem = false;
+  let meta = "";
+  let closeNeedle = "";
+  const items = [];
+  let done = max === 0;
+
+  function pump() {
+    while (!done) {
+      if (!inItem) {
+        const open = findOpen(pending);
+        if (!open) {
+          if (pending.length > TAG_TAIL) pending = pending.slice(-TAG_TAIL);
+          return;
+        }
+        if (open.partial) {
+          if (open.index > 0) pending = pending.slice(open.index);
+          return;
+        }
+        pending = pending.slice(open.after);
+        inItem = true;
+        meta = "";
+        closeNeedle = open.close;
+        continue;
+      }
+      const closeAt = pending.toLowerCase().indexOf(closeNeedle);
+      if (closeAt === -1) {
+        const room = META_CAP - meta.length;
+        if (room > 0) {
+          meta += pending.slice(0, room);
+          pending = pending.slice(room);
+        }
+        if (pending.length > TAG_TAIL) pending = pending.slice(-TAG_TAIL);
+        return;
+      }
+      const room = META_CAP - meta.length;
+      const head = meta + (room > 0 ? pending.slice(0, Math.min(closeAt, room)) : "");
+      const parsed = parseFeed("<item>" + head + "</item>", 1);
+      if (parsed[0]) items.push(parsed[0]);
+      pending = pending.slice(closeAt + closeNeedle.length);
+      inItem = false;
+      meta = "";
+      closeNeedle = "";
+      if (items.length >= max) {
+        done = true;
+        pending = "";
+      }
+    }
+  }
+
+  return {
+    push(chunk) {
+      if (done || !chunk) return;
+      pending += chunk;
+      pump();
+    },
+    finish() {
+      return items;
+    },
+    abort() {
+      if (!done && inItem && meta) {
+        const parsed = parseFeed("<item>" + meta + "</item>", 1);
+        if (parsed[0]) items.push(parsed[0]);
+      }
+      done = true;
+      pending = "";
+      inItem = false;
+      meta = "";
+      return items;
+    },
+    get done() {
+      return done;
+    }
+  };
+}
+
+function findOpen(text) {
+  const match = OPEN_TAG.exec(text);
+  if (!match) return null;
+  const end = text.indexOf(">", match.index);
+  if (end === -1) return { partial: true, index: match.index };
+  return {
+    partial: false,
+    after: end + 1,
+    close: "</" + match[1].toLowerCase() + match[2].toLowerCase() + ">"
+  };
 }
 
 export function toIso(value) {
