@@ -213,14 +213,10 @@
   font-size: 0.75rem;
 }
 
-.news-copy {
-  justify-self: start;
-}
-
 @media (min-width: 800px) {
   .news-row {
     display: grid;
-    grid-template-columns: minmax(8rem, 12rem) minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(8rem, 12rem) minmax(0, 1fr) auto;
     gap: 0.75rem;
     align-items: center;
   }
