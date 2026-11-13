@@ -8,15 +8,18 @@ GitHub Pages does not publish this directory. `_config.yml` excludes `workers`.
 
 ## Routes
 
-- `GET /sources` returns a list of `{ key, name, category, status }`.
-- `GET /items` returns `{ fetched_at, sources, items }`. Each item is `{ source, title, link, published }`. Titles are plain text. Links are http or https. Descriptions are not included.
+- `GET /sources` returns a list of `{ key, name, category, status }`. Status from this route is `unknown`. It does not fetch feeds.
+- `GET /items?sources=krebs&per=5` returns `{ fetched_at, sources, items }` for the named allowlist keys only. `per` is 1 to 50 and defaults to 5. Each item is `{ source, title, link, published }`. Titles are plain text. Links are http or https. Descriptions are not included. A request with no `sources` returns an empty list. A `url` query cannot add a target.
+- One request fetches at most one source that is not already in cache. Further named sources come back as `pending` so a long list cannot exceed the Workers Free CPU budget (about 10 ms). The News page requests one source at a time.
 - Any other path returns 404. Any other method returns 405.
 
 Allowed browser origins are `https://timsonner.com`, `https://www.timsonner.com`, `https://timsonner.github.io`, and `http://localhost:4000` (this Worker only, so local Jekyll preview can load items).
 
 ## Cache
 
-The item list is cached for 15 minutes (`Cache-Control: public, max-age=300, s-maxage=900`). A browser refresh inside that window does not fetch every upstream. If an upstream fails, the last good items for that source stay in the cache and the source is marked stale. Feeds are fetched with a small concurrency cap, a 12 second timeout, and an 8 MiB size cap.
+Each source is cached on its own for 15 minutes. A later request for that source does not fetch it again until the cache is older than that. Parsing stops after `per` items, keeps only the start of each item, and does not scan more than 512 KB of a feed. If an upstream fails and a previous good copy is still stored, that copy is returned and the source is marked stale. A fetch uses a 12 second timeout and an 8 MiB size cap.
+
+A cron warmer is not included. Cron triggers still have the free-plan CPU limit, and the Cache API is local to one location, so a schedule would not keep every location warm.
 
 ## Checks
 

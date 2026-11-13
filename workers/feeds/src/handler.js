@@ -1,14 +1,18 @@
 import { FEEDS } from "./catalog.js";
-import { isAllowedFeedUrl } from "./guard.js";
-import { parseFeed } from "./parse.js";
+import { feedAllowed, isAllowedFeedUrl } from "./guard.js";
+import { createItemScanner, parseFeed } from "./parse.js";
 
 export const TTL_MS = 15 * 60 * 1000;
 export const MAX_BYTES = 8 * 1024 * 1024;
+export const MAX_SCAN = 512 * 1024;
 export const MAX_ITEMS = 50;
-export const CONCURRENCY = 6;
+// One cold feed per request. Parsing more than that exceeds the Workers Free
+// CPU budget (about 10 ms). The News page requests one source at a time.
+export const COLD_FETCHES = 1;
 export const FETCH_TIMEOUT_MS = 12000;
 const MAX_REDIRECTS = 3;
 const UA = "timsonner-feeds/1.0 (+https://timsonner.com/news/)";
+const DEFAULT_PER = 5;
 
 export const ALLOWED_ORIGINS = [
   "https://timsonner.com",
@@ -18,13 +22,13 @@ export const ALLOWED_ORIGINS = [
 ];
 
 const ALLOWED = new Set(ALLOWED_ORIGINS);
-const CACHE_URL = "https://timsonner-feeds.timsonner.workers.dev/__cache/items";
+const CACHE_PREFIX = "https://timsonner-feeds.timsonner.workers.dev/__cache/source/";
 
 export function createHandler(deps = {}) {
   const feeds = deps.feeds || FEEDS;
   const fetchImpl = deps.fetchImpl || globalThis.fetch;
   const now = deps.now || (() => Date.now());
-  let inflight = null;
+  const inflight = new Map();
 
   function store() {
     if (deps.cache) return deps.cache;
@@ -37,62 +41,61 @@ export function createHandler(deps = {}) {
     return now() - ms < TTL_MS;
   }
 
-  async function ensureItems() {
-    const cached = await readCache(store());
-    if (cached && fresh(cached)) return cached;
-    if (!inflight) {
-      inflight = fill(cached).finally(() => {
-        inflight = null;
-      });
-    }
-    return inflight;
+  function usable(data, per) {
+    if (!data || !fresh(data)) return false;
+    if (data.status === "unavailable") return true;
+    return data.status === "ok" && data.limit >= per && Array.isArray(data.items);
   }
 
-  async function fill(previous) {
-    const prevFeeds = previous && previous.feeds ? previous.feeds : {};
-    const results = await mapPool(feeds, CONCURRENCY, (feed) => pullFeed(feed, prevFeeds[feed.key]));
-    const next = {
-      fetched_at: new Date(now()).toISOString(),
-      feeds: {}
-    };
-    for (const row of results) next.feeds[row.key] = row.state;
-    try {
-      await writeCache(store(), next);
-    } catch {
-      // A cache write failure still returns the items we just fetched.
-    }
-    return next;
+  async function loadSource(feed, per) {
+    const running = inflight.get(feed.key);
+    if (running) return running;
+    const job = pullFeed(feed, per).finally(() => {
+      inflight.delete(feed.key);
+    });
+    inflight.set(feed.key, job);
+    return job;
   }
 
-  async function pullFeed(feed, previous) {
+  async function pullFeed(feed, per) {
+    const previous = await readSource(store(), feed.key);
+    if (usable(previous, per)) return previous;
     try {
-      const xml = await fetchText(feed.url, 0);
-      const parsed = parseFeed(xml);
+      const response = await fetchResponse(feed.url, 0);
+      const parsed = await readItems(response, per);
       if (!parsed.length) throw new Error("empty");
-      return {
+      const state = {
         key: feed.key,
-        state: {
-          status: "ok",
-          fetched_at: new Date(now()).toISOString(),
-          items: newest(parsed).slice(0, MAX_ITEMS)
-        }
+        status: "ok",
+        fetched_at: new Date(now()).toISOString(),
+        limit: per,
+        items: newest(parsed).slice(0, per)
       };
+      await writeSource(store(), state);
+      return state;
     } catch {
       if (previous && Array.isArray(previous.items) && previous.items.length) {
         return {
           key: feed.key,
-          state: {
-            status: "stale",
-            fetched_at: previous.fetched_at || null,
-            items: previous.items
-          }
+          status: "stale",
+          fetched_at: previous.fetched_at || null,
+          limit: previous.limit || previous.items.length,
+          items: previous.items.slice(0, per)
         };
       }
-      return { key: feed.key, state: { status: "unavailable", fetched_at: null, items: [] } };
+      const missing = {
+        key: feed.key,
+        status: "unavailable",
+        fetched_at: new Date(now()).toISOString(),
+        limit: per,
+        items: []
+      };
+      await writeSource(store(), missing);
+      return missing;
     }
   }
 
-  async function fetchText(url, hops) {
+  async function fetchResponse(url, hops) {
     if (!isAllowedFeedUrl(url)) throw new Error("blocked");
     const response = await fetchImpl(url, {
       method: "GET",
@@ -108,10 +111,10 @@ export function createHandler(deps = {}) {
       if (hops >= MAX_REDIRECTS) throw new Error("redirect");
       const location = response.headers.get("Location");
       if (!location) throw new Error("redirect");
-      return fetchText(new URL(location, url).href, hops + 1);
+      return fetchResponse(new URL(location, url).href, hops + 1);
     }
     if (!response.ok) throw new Error("status");
-    return readLimited(response);
+    return response;
   }
 
   return async function handle(request) {
@@ -133,50 +136,92 @@ export function createHandler(deps = {}) {
     }
     const path = normalizePath(request.url);
     if (path === "/sources") {
-      const data = await readCache(store());
-      return json(sourcesPayload(feeds, data), 200, origin);
+      return json(sourcesPayload(feeds), 200, origin);
     }
     if (path === "/items") {
-      const data = await ensureItems();
-      return json(itemsPayload(feeds, data), 200, origin);
+      const selected = selectFeeds(request.url, feeds);
+      const per = selectPer(request.url);
+      const states = [];
+      let cold = 0;
+      for (const feed of selected) {
+        const cached = await readSource(store(), feed.key);
+        if (usable(cached, per)) {
+          states.push({
+            ...cached,
+            items: Array.isArray(cached.items) ? cached.items.slice(0, per) : []
+          });
+          continue;
+        }
+        if (cold >= COLD_FETCHES) {
+          states.push({
+            key: feed.key,
+            status: "pending",
+            fetched_at: null,
+            limit: 0,
+            items: []
+          });
+          continue;
+        }
+        cold += 1;
+        states.push(await loadSource(feed, per));
+      }
+      return json(itemsPayload(states), 200, origin);
     }
     return json({ error: "not found" }, 404, origin);
   };
 }
 
-export function sourcesPayload(feeds, data) {
-  const states = data && data.feeds ? data.feeds : {};
+export function sourcesPayload(feeds) {
   return feeds.map((feed) => ({
     key: feed.key,
     name: feed.name,
     category: feed.category,
-    status: states[feed.key] ? states[feed.key].status : "unknown"
+    status: "unknown"
   }));
 }
 
-export function itemsPayload(feeds, data) {
-  const states = data && data.feeds ? data.feeds : {};
+export function selectFeeds(requestUrl, feeds) {
+  const params = new URL(requestUrl).searchParams;
+  const raw = params.get("sources");
+  if (!raw) return [];
+  const wanted = new Set();
+  for (const part of raw.split(",")) {
+    const key = part.trim().toLowerCase();
+    if (!key || /crowdstrike/i.test(key)) continue;
+    wanted.add(key);
+  }
+  return feeds.filter((feed) => wanted.has(feed.key) && feedAllowed(feed.key, feed.url));
+}
+
+export function selectPer(requestUrl) {
+  const raw = new URL(requestUrl).searchParams.get("per");
+  const per = parseInt(raw || "", 10);
+  if (!Number.isFinite(per) || per < 1) return DEFAULT_PER;
+  if (per > MAX_ITEMS) return MAX_ITEMS;
+  return per;
+}
+
+export function itemsPayload(states) {
   const items = [];
-  const sources = feeds.map((feed) => {
-    const state = states[feed.key];
+  let fetchedAt = null;
+  const sources = states.map((state) => {
     const list = state && Array.isArray(state.items) ? state.items : [];
     for (const item of list) {
       if (!item || typeof item.title !== "string" || !item.title) continue;
       items.push({
-        source: feed.key,
+        source: state.key,
         title: item.title,
         link: item.link || null,
         published: item.published || null
       });
     }
-    return { key: feed.key, status: state ? state.status : "unavailable" };
+    if (state && state.fetched_at && (!fetchedAt || state.fetched_at > fetchedAt)) {
+      fetchedAt = state.fetched_at;
+    }
+    return { key: state.key, status: state && state.status ? state.status : "unavailable" };
   });
   items.sort(byDateDesc);
-  return {
-    fetched_at: data && data.fetched_at ? data.fetched_at : null,
-    sources,
-    items
-  };
+  return { fetched_at: fetchedAt, sources, items };
 }
 
 function byDateDesc(a, b) {
@@ -217,9 +262,13 @@ function json(body, status, origin) {
   return new Response(JSON.stringify(body), { status, headers: baseHeaders(origin) });
 }
 
-async function readCache(cache) {
+function cacheRequest(key) {
+  return new Request(CACHE_PREFIX + key);
+}
+
+async function readSource(cache, key) {
   if (!cache) return null;
-  const response = await cache.match(new Request(CACHE_URL));
+  const response = await cache.match(cacheRequest(key));
   if (!response) return null;
   try {
     return await response.json();
@@ -228,55 +277,48 @@ async function readCache(cache) {
   }
 }
 
-async function writeCache(cache, data) {
-  if (!cache) return;
-  await cache.put(new Request(CACHE_URL), new Response(JSON.stringify(data), {
+async function writeSource(cache, state) {
+  if (!cache || !state || !state.key) return;
+  await cache.put(cacheRequest(state.key), new Response(JSON.stringify(state), {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": "public, max-age=900"
+      "Cache-Control": "public, max-age=86400"
     }
   }));
 }
 
-async function readLimited(response) {
+async function readItems(response, limit) {
   if (!response.body || typeof response.body.getReader !== "function") {
     const text = await response.text();
     if (text.length > MAX_BYTES) throw new Error("too_large");
-    return text;
+    return parseFeed(text, limit);
   }
   const reader = response.body.getReader();
-  const chunks = [];
+  const decoder = new TextDecoder("utf-8", { fatal: false });
+  const scanner = createItemScanner(limit);
   let received = 0;
-  while (true) {
-    const step = await reader.read();
-    if (step.done) break;
-    received += step.value.byteLength;
-    if (received > MAX_BYTES) {
-      try { await reader.cancel(); } catch { /* ignore */ }
-      throw new Error("too_large");
+  try {
+    while (!scanner.done) {
+      const step = await reader.read();
+      if (step.done) {
+        scanner.push(decoder.decode());
+        break;
+      }
+      received += step.value.byteLength;
+      if (received > MAX_BYTES) throw new Error("too_large");
+      let piece = step.value;
+      if (received > MAX_SCAN) {
+        const keep = step.value.byteLength - (received - MAX_SCAN);
+        piece = keep > 0 ? step.value.subarray(0, keep) : new Uint8Array();
+      }
+      if (piece.byteLength) scanner.push(decoder.decode(piece, { stream: true }));
+      if (received >= MAX_SCAN) {
+        if (!scanner.done) scanner.abort();
+        break;
+      }
     }
-    chunks.push(step.value);
+  } finally {
+    try { await reader.cancel(); } catch { /* ignore */ }
   }
-  const buf = new Uint8Array(received);
-  let offset = 0;
-  for (const chunk of chunks) {
-    buf.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return new TextDecoder("utf-8", { fatal: false }).decode(buf);
+  return scanner.finish();
 }
-
-async function mapPool(list, limit, fn) {
-  const ret = new Array(list.length);
-  let cursor = 0;
-  const workers = Math.min(limit, list.length);
-  await Promise.all(Array.from({ length: workers }, async () => {
-    while (cursor < list.length) {
-      const index = cursor;
-      cursor += 1;
-      ret[index] = await fn(list[index], index);
-    }
-  }));
-  return ret;
-}
-

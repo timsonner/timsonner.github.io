@@ -19,13 +19,16 @@
   var refreshEl = document.getElementById("news-refresh");
   var chips = Array.prototype.slice.call(document.querySelectorAll("[data-chip]"));
 
+  var FETCH_CONCURRENCY = 4;
   var catalog = [];
   var state = null;
   var payload = null;
+  var held = {};
   var apiError = null;
   var loading = false;
   var lastFetchAt = 0;
   var timer = 0;
+  var loadGeneration = 0;
 
   document.getElementById("news-toolbar").addEventListener("submit", function (event) {
     event.preventDefault();
@@ -182,7 +185,7 @@
           }
           syncChips();
           persist();
-          renderList();
+          loadItems(false);
         });
         label.appendChild(box);
         label.appendChild(document.createTextNode(row.name));
@@ -217,7 +220,7 @@
         syncChips();
         renderSources();
         persist();
-        renderList();
+        loadItems(false);
       });
     });
 
@@ -225,7 +228,7 @@
       state.per = sanitize({ sources: state.sources, per: perEl.value, range: state.range, from: state.from, to: state.to }).per;
       perEl.value = String(state.per);
       persist();
-      renderList();
+      loadItems(false);
     });
 
     rangeEl.addEventListener("change", function () {
@@ -252,7 +255,7 @@
     toEl.addEventListener("change", onDate);
 
     searchEl.addEventListener("input", renderSources);
-    refreshEl.addEventListener("click", function () { loadItems(); });
+    refreshEl.addEventListener("click", function () { loadItems(true); });
     document.addEventListener("visibilitychange", onVisibility);
   }
 
@@ -261,7 +264,7 @@
       window.clearTimeout(timer);
       return;
     }
-    if (lastFetchAt && Date.now() - lastFetchAt >= REFRESH_MS) loadItems();
+    if (lastFetchAt && Date.now() - lastFetchAt >= REFRESH_MS) loadItems(true);
     else arm();
   }
 
@@ -270,34 +273,120 @@
     if (document.hidden) return;
     var elapsed = lastFetchAt ? Date.now() - lastFetchAt : REFRESH_MS;
     var wait = Math.max(1000, REFRESH_MS - elapsed);
-    timer = window.setTimeout(function () { loadItems(); }, wait);
+    timer = window.setTimeout(function () { loadItems(true); }, wait);
   }
 
-  function loadItems() {
-    if (loading) return;
+  function loadItems(force) {
+    var generation = ++loadGeneration;
+    var keys = state.sources.filter(function (key) { return !/crowdstrike/i.test(key); });
+    var per = state.per;
+    var needed = keys.filter(function (key) {
+      var row = held[key];
+      return force || !row || row.per < per;
+    });
+    if (!needed.length) {
+      loading = false;
+      refreshEl.disabled = false;
+      apiError = null;
+      publish(generation);
+      if (!lastFetchAt) lastFetchAt = Date.now();
+      arm();
+      return;
+    }
     loading = true;
     refreshEl.disabled = true;
+    publish(generation);
     var api = String(root.getAttribute("data-api") || "").replace(/\/$/, "");
-    fetch(api + "/items", { headers: { Accept: "application/json" } })
+    var cursor = 0;
+    var active = 0;
+    var finished = 0;
+    var networkErrors = 0;
+
+    function pump() {
+      if (generation !== loadGeneration) return;
+      while (active < FETCH_CONCURRENCY && cursor < needed.length) {
+        active += 1;
+        (function (key) {
+          fetchSource(api, key, per).then(function (result) {
+          if (generation !== loadGeneration) return;
+          active -= 1;
+          finished += 1;
+          if (result.network) {
+            networkErrors += 1;
+            if (!held[key]) held[key] = { status: "unavailable", items: [], fetched_at: null, per: per };
+          } else {
+            held[key] = result.row;
+          }
+          var complete = finished === needed.length;
+          if (complete) {
+            loading = false;
+            refreshEl.disabled = false;
+            var anyItems = keys.some(function (name) { return held[name] && held[name].items && held[name].items.length; });
+            apiError = networkErrors === needed.length ? (anyItems ? "refresh" : "down") : null;
+            lastFetchAt = Date.now();
+          }
+          publish(generation);
+          if (complete) arm();
+          else pump();
+          });
+        })(needed[cursor]);
+        cursor += 1;
+      }
+    }
+    pump();
+  }
+
+  function fetchSource(api, key, per) {
+    var url = api + "/items?sources=" + encodeURIComponent(key) + "&per=" + encodeURIComponent(String(per));
+    return fetch(url, { headers: { Accept: "application/json" }, cache: "no-store" })
       .then(function (response) {
         if (!response.ok) throw new Error("status");
         return response.json();
       })
       .then(function (data) {
-        if (!data || !Array.isArray(data.items)) throw new Error("shape");
-        payload = data;
-        apiError = null;
+        var status = "unavailable";
+        var items = [];
+        var fetched = data && data.fetched_at ? data.fetched_at : null;
+        if (data && Array.isArray(data.sources)) {
+          data.sources.forEach(function (source) {
+            if (source && source.key === key && source.status) status = source.status;
+          });
+        }
+        if (data && Array.isArray(data.items)) {
+          items = data.items.filter(function (item) { return item && item.source === key; });
+        }
+        return { network: false, row: { status: status, items: items, fetched_at: fetched, per: per } };
       })
       .catch(function () {
-        apiError = payload ? "refresh" : "down";
-      })
-      .then(function () {
-        loading = false;
-        refreshEl.disabled = false;
-        lastFetchAt = Date.now();
-        renderList();
-        arm();
+        return { network: true };
       });
+  }
+
+  function publish(generation) {
+    if (generation !== loadGeneration) return;
+    var items = [];
+    var sources = [];
+    var fetchedAt = null;
+    state.sources.forEach(function (key) {
+      var row = held[key];
+      if (!row) {
+        sources.push({ key: key, status: "unknown" });
+        return;
+      }
+      sources.push({ key: key, status: row.status || "unknown" });
+      if (row.fetched_at && (!fetchedAt || row.fetched_at > fetchedAt)) fetchedAt = row.fetched_at;
+      (row.items || []).forEach(function (item) { items.push(item); });
+    });
+    items.sort(function (a, b) {
+      var am = a && a.published ? Date.parse(a.published) : NaN;
+      var bm = b && b.published ? Date.parse(b.published) : NaN;
+      if (!isFinite(am) && !isFinite(bm)) return 0;
+      if (!isFinite(am)) return 1;
+      if (!isFinite(bm)) return -1;
+      return bm - am;
+    });
+    payload = { fetched_at: fetchedAt, sources: sources, items: items };
+    renderList();
   }
 
   function safeHref(value) {
@@ -401,7 +490,8 @@
     problemsEl.replaceChildren();
     listEl.replaceChildren();
     if (!payload) {
-      if (apiError === "down") {
+      if (loading) setBanner("Loading headlines.", false);
+      else if (apiError === "down") {
         setBanner("The feeds API is not reachable yet. Headlines show up here after the feeds Worker is deployed.", true);
       }
       updatedEl.textContent = "Links open in a new tab.";
@@ -428,14 +518,16 @@
     });
     state.sources.forEach(function (key) {
       var status = statuses[key] || "unknown";
-      if (status !== "stale" && status !== "unavailable") return;
+      if (status !== "stale" && status !== "unavailable" && status !== "pending") return;
       var li = document.createElement("li");
-      var label = status === "stale" ? "stale, showing last good items" : "unavailable";
+      var label = status === "stale" ? "stale, showing last good items" : (status === "pending" ? "not loaded yet" : "unavailable");
       li.textContent = nameFor(key) + ": " + label;
       problemsEl.appendChild(li);
     });
 
-    if (apiError === "refresh") {
+    if (loading) {
+      setBanner("Loading headlines.", false);
+    } else if (apiError === "refresh") {
       setBanner("Refresh failed. Showing the last headlines loaded in this tab.", true);
     } else if (payload.fetched_at) {
       setBanner("Updated " + formatDenver(payload.fetched_at) + ". Links open in a new tab.", false);
