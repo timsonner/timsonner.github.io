@@ -25,6 +25,13 @@ Browser-based terminal on the homepage (`_includes/terminal.html` + `assets/js/t
 
 Arrow keys walk command history. Window controls minimize, restore, and clear output.
 
+### News
+Headlines from the same public RSS feeds, on one page (`/news/`). Filters cover source, how many items per source (default 5, max 50), and a time window (24 hours, 48 hours, 7 days, all, or a from/to date range). The default view is Security and Advisories, five items each, from the last 48 hours.
+
+A query such as `?sources=unit42,krebs&per=5&range=48h` restores that view, and the browser remembers the last view locally. The page reloads headlines on open, when you press Refresh, and every 15 minutes while the tab is visible. Item text is escaped. Only http and https links can be clicked. Copy link copies the URL.
+
+The feed list is `assets/data/news-feeds.json`. Headlines come from the `timsonner-feeds` Worker in `workers/feeds/`, which caches allowlisted public feeds for 15 minutes. Deploy steps are in `workers/feeds/README.md`. Until that Worker is deployed, the page says the feeds API is not reachable yet.
+
 ### Email Parser
 Client-side `.eml` / raw email analyzer (`_includes/email-parser.html`):
 
@@ -64,9 +71,12 @@ Mini browser for investigating pages in-frame (`_includes/proxy-browser.html` + 
 ├── _sass/                   # SCSS partials (terminal, code-blocks, variables)
 ├── assets/
 │   ├── main.scss            # Styles entrypoint
-│   ├── js/                  # terminal.js, proxy-browser.js, copy-code.js, visitor.js, …
+│   ├── js/                  # terminal.js, news.js, proxy-browser.js, copy-code.js, visitor.js, …
+│   ├── data/news-feeds.json # Public feed allowlist for /news/
 │   └── images/              # Per-post image folders
+├── workers/feeds/           # timsonner-feeds Worker (not published by Jekyll)
 ├── index.html               # Homepage (tools + latest posts)
+├── news.html                # News headlines
 ├── python.html
 ├── Gemfile                  # Ruby / GitHub Pages deps
 └── .github/copilot-instructions.md
@@ -132,6 +142,8 @@ print("Hello, world!")
 | Global styles | `assets/main.scss` + `_sass/` |
 | Terminal commands | `processCommand` in `assets/js/terminal.js` |
 | Terminal look | `_sass/terminal.scss` |
+| News page | `news.html`, `assets/js/news.js`, `_sass/news.scss`, `assets/data/news-feeds.json` |
+| Feeds Worker | `workers/feeds/` (deploy notes in that README) |
 | Email parser / proxy browser | `_includes/email-parser.html`, `_includes/proxy-browser.html` + `assets/js/proxy-browser.js` |
 | New pages | Root `.md` / `.html` + add to `header_pages` in `_config.yml` |
 

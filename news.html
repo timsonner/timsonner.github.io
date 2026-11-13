@@ -1,0 +1,64 @@
+---
+layout: default
+title: News
+permalink: /news/
+---
+
+<article class="news" id="news-root" data-catalog="{{ '/assets/data/news-feeds.json' | relative_url }}" data-api="https://timsonner-feeds.timsonner.workers.dev">
+  <header class="news-header">
+    <h1 class="news-title">News</h1>
+    <p class="news-sub">Headlines from RSS feeds. Links open in a new tab. The default view is Security and Advisories, five items each, from the last 48 hours.</p>
+  </header>
+
+  <form class="news-toolbar" id="news-toolbar" action="{{ '/news/' | relative_url }}" autocomplete="off">
+    <div class="news-chips" role="group" aria-label="Feed presets">
+      <button type="button" class="news-btn" data-chip="Security">Security</button>
+      <button type="button" class="news-btn" data-chip="Advisories">Advisories</button>
+      <button type="button" class="news-btn" data-chip="Linux/Tech">Linux/Tech</button>
+      <button type="button" class="news-btn" data-chip="all">All</button>
+      <button type="button" class="news-btn" data-chip="custom">Custom</button>
+    </div>
+
+    <label class="news-field">
+      <span>Per source</span>
+      <input id="news-per" class="news-input" type="number" min="1" max="50" value="5" inputmode="numeric">
+    </label>
+
+    <label class="news-field">
+      <span>Window</span>
+      <select id="news-range" class="news-input">
+        <option value="24h">Last 24 hours</option>
+        <option value="48h" selected>Last 48 hours</option>
+        <option value="7d">Last 7 days</option>
+        <option value="all">All time</option>
+        <option value="custom">Date range</option>
+      </select>
+    </label>
+
+    <label class="news-field">
+      <span>From</span>
+      <input id="news-from" class="news-input" type="date">
+    </label>
+
+    <label class="news-field">
+      <span>To</span>
+      <input id="news-to" class="news-input" type="date">
+    </label>
+
+    <button type="button" class="news-btn news-btn-primary" id="news-refresh">Refresh</button>
+    <p class="news-updated" id="news-updated">Links open in a new tab.</p>
+
+    <label class="news-field news-search">
+      <span>Find a source</span>
+      <input id="news-search" class="news-input" type="search" placeholder="Name or key">
+    </label>
+
+    <div id="news-sources" class="news-sources"></div>
+  </form>
+
+  <p class="news-banner" id="news-banner" role="status"></p>
+  <ul class="news-problems" id="news-problems"></ul>
+  <div class="news-list" id="news-list" aria-live="polite"></div>
+</article>
+
+<script src="{{ '/assets/js/news.js' | relative_url }}" defer></script>

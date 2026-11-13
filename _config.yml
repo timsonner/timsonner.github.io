@@ -13,6 +13,7 @@ image: /assets/images/hero-image-1240x620.jpg
 
 header_pages:
   - python.html
+  - news.html
 
 # Build settings
 markdown: kramdown
@@ -41,6 +42,7 @@ exclude:
   - Gemfile.lock
   - node_modules
   - vendor
+  - workers
 
 # Collections (if you want to organize content)
 collections:

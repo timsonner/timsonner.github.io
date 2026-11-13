@@ -1,0 +1,310 @@
+{
+  "feeds": [
+    {
+      "key": "ars",
+      "name": "Ars Technica Security",
+      "url": "https://arstechnica.com/security/feed/",
+      "category": "Security"
+    },
+    {
+      "key": "blackhills",
+      "name": "Black Hills InfoSec",
+      "url": "https://www.blackhillsinfosec.com/feed/",
+      "category": "Security"
+    },
+    {
+      "key": "bleeping",
+      "name": "Bleeping Computer",
+      "url": "https://www.bleepingcomputer.com/feed/",
+      "category": "Security"
+    },
+    {
+      "key": "daemon",
+      "name": "Daemonic Dispatches",
+      "url": "http://www.daemonology.net/blog/index.rss",
+      "category": "Security"
+    },
+    {
+      "key": "darkreading",
+      "name": "Dark Reading",
+      "url": "https://www.darkreading.com/rss.xml",
+      "category": "Security"
+    },
+    {
+      "key": "dfirreport",
+      "name": "The DFIR Report",
+      "url": "https://thedfirreport.com/feed/",
+      "category": "Security"
+    },
+    {
+      "key": "doublepulsar",
+      "name": "doublepulsar",
+      "url": "https://doublepulsar.com/feed",
+      "category": "Security"
+    },
+    {
+      "key": "eff",
+      "name": "EFF Updates",
+      "url": "https://www.eff.org/rss/updates.xml",
+      "category": "Security"
+    },
+    {
+      "key": "helpnetsec",
+      "name": "Help Net Security",
+      "url": "https://www.helpnetsecurity.com/feed/",
+      "category": "Security"
+    },
+    {
+      "key": "krebs",
+      "name": "Krebs on Security",
+      "url": "https://krebsonsecurity.com/feed/",
+      "category": "Security"
+    },
+    {
+      "key": "malwaretech",
+      "name": "MalwareTech",
+      "url": "https://www.malwaretech.com/feed/",
+      "category": "Security"
+    },
+    {
+      "key": "mandiant",
+      "name": "Mandiant (Google)",
+      "url": "https://cloudblog.withgoogle.com/topics/threat-intelligence/rss/",
+      "category": "Security"
+    },
+    {
+      "key": "privacyguides",
+      "name": "Privacy Guides",
+      "url": "https://www.privacyguides.org/articles/feed_rss_created.xml",
+      "category": "Security"
+    },
+    {
+      "key": "projectzero",
+      "name": "Project Zero",
+      "url": "https://projectzero.google/feed.xml",
+      "category": "Security"
+    },
+    {
+      "key": "redcanary",
+      "name": "Red Canary",
+      "url": "https://redcanary.com/feed/",
+      "category": "Security"
+    },
+    {
+      "key": "sans",
+      "name": "SANS ISC",
+      "url": "https://isc.sans.edu/rssfeed.xml",
+      "category": "Security"
+    },
+    {
+      "key": "schneier",
+      "name": "Schneier on Security",
+      "url": "https://www.schneier.com/feed/atom/",
+      "category": "Security"
+    },
+    {
+      "key": "securitymagazine",
+      "name": "Security Magazine",
+      "url": "https://www.securitymagazine.com/rss/15",
+      "category": "Security"
+    },
+    {
+      "key": "securityweek",
+      "name": "SecurityWeek",
+      "url": "https://www.securityweek.com/feed/",
+      "category": "Security"
+    },
+    {
+      "key": "techanarchy",
+      "name": "Tech Anarchy",
+      "url": "https://techanarchy.net/feed/",
+      "category": "Security"
+    },
+    {
+      "key": "thehackernews",
+      "name": "The Hacker News",
+      "url": "https://feeds.feedburner.com/TheHackersNews",
+      "category": "Security"
+    },
+    {
+      "key": "theregister",
+      "name": "The Register Security",
+      "url": "https://www.theregister.com/security/headlines.atom",
+      "category": "Security"
+    },
+    {
+      "key": "trailofbits",
+      "name": "Trail of Bits",
+      "url": "https://blog.trailofbits.com/feed/",
+      "category": "Security"
+    },
+    {
+      "key": "troyhunt",
+      "name": "Troy Hunt",
+      "url": "https://www.troyhunt.com/rss/",
+      "category": "Security"
+    },
+    {
+      "key": "trustedsec",
+      "name": "TrustedSec",
+      "url": "https://trustedsec.com/feed/",
+      "category": "Security"
+    },
+    {
+      "key": "unit42",
+      "name": "Unit 42",
+      "url": "https://unit42.paloaltonetworks.com/feed/",
+      "category": "Security"
+    },
+    {
+      "key": "wired",
+      "name": "Wired Security",
+      "url": "https://www.wired.com/feed/category/security/latest/rss",
+      "category": "Security"
+    },
+    {
+      "key": "cis",
+      "name": "CIS Advisories",
+      "url": "https://www.cisecurity.org/feed/advisories",
+      "category": "Advisories"
+    },
+    {
+      "key": "cisa",
+      "name": "CISA Advisories",
+      "url": "https://www.cisa.gov/cybersecurity-advisories/all.xml",
+      "category": "Advisories"
+    },
+    {
+      "key": "msrc",
+      "name": "Microsoft Security",
+      "url": "https://api.msrc.microsoft.com/update-guide/rss",
+      "category": "Advisories"
+    },
+    {
+      "key": "archlinux",
+      "name": "Arch Linux News",
+      "url": "https://archlinux.org/feeds/news/",
+      "category": "Linux/Tech"
+    },
+    {
+      "key": "ars-tech",
+      "name": "Ars Technica Biz and IT",
+      "url": "https://arstechnica.com/information-technology/feed/",
+      "category": "Linux/Tech"
+    },
+    {
+      "key": "changelog",
+      "name": "Changelog",
+      "url": "https://changelog.com/feed",
+      "category": "Linux/Tech"
+    },
+    {
+      "key": "cursor-changelog",
+      "name": "Cursor Changelog",
+      "url": "https://cursor.com/changelog/rss.xml",
+      "category": "Linux/Tech"
+    },
+    {
+      "key": "deepmind",
+      "name": "Google DeepMind",
+      "url": "https://deepmind.google/blog/rss.xml",
+      "category": "Linux/Tech"
+    },
+    {
+      "key": "framework",
+      "name": "Framework Blog",
+      "url": "https://frame.work/blog.rss",
+      "category": "Linux/Tech"
+    },
+    {
+      "key": "github-changelog",
+      "name": "GitHub Changelog",
+      "url": "https://github.blog/changelog/feed/",
+      "category": "Linux/Tech"
+    },
+    {
+      "key": "huggingface",
+      "name": "Hugging Face Blog",
+      "url": "https://huggingface.co/blog/feed.xml",
+      "category": "Linux/Tech"
+    },
+    {
+      "key": "hyprland-releases",
+      "name": "Hyprland Releases",
+      "url": "https://github.com/hyprwm/Hyprland/releases.atom",
+      "category": "Linux/Tech"
+    },
+    {
+      "key": "lwn",
+      "name": "LWN.net",
+      "url": "https://lwn.net/headlines/rss",
+      "category": "Linux/Tech"
+    },
+    {
+      "key": "nixcraft",
+      "name": "nixCraft",
+      "url": "http://feeds.cyberciti.biz/Nixcraft-LinuxFreebsdSolarisTipsTricks",
+      "category": "Linux/Tech"
+    },
+    {
+      "key": "omarchy-releases",
+      "name": "Omarchy Releases",
+      "url": "https://github.com/omacom/omarchy/releases.atom",
+      "category": "Linux/Tech"
+    },
+    {
+      "key": "openai",
+      "name": "OpenAI News",
+      "url": "https://openai.com/news/rss.xml",
+      "category": "Linux/Tech"
+    },
+    {
+      "key": "phoronix",
+      "name": "Phoronix",
+      "url": "https://www.phoronix.com/rss.php",
+      "category": "Linux/Tech"
+    },
+    {
+      "key": "simonw",
+      "name": "Simon Willison",
+      "url": "https://simonwillison.net/atom/everything/",
+      "category": "Linux/Tech"
+    },
+    {
+      "key": "cybersecurity",
+      "name": "/r/cybersecurity",
+      "url": "https://www.reddit.com/r/cybersecurity/.rss",
+      "category": "Community"
+    },
+    {
+      "key": "hn-best",
+      "name": "Hacker News Best",
+      "url": "https://hnrss.org/best",
+      "category": "Community"
+    },
+    {
+      "key": "lobsters",
+      "name": "Lobsters",
+      "url": "https://lobste.rs/rss",
+      "category": "Community"
+    },
+    {
+      "key": "netsec",
+      "name": "/r/netsec",
+      "url": "https://www.reddit.com/r/netsec/.rss",
+      "category": "Community"
+    },
+    {
+      "key": "security-se",
+      "name": "IT Security Stack Exchange",
+      "url": "https://security.stackexchange.com/feeds/week",
+      "category": "Community"
+    },
+    {
+      "key": "sysadmin",
+      "name": "/r/sysadmin",
+      "url": "https://www.reddit.com/r/sysadmin/.rss",
+      "category": "Community"
+    }
+  ]
+}

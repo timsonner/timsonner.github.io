@@ -1,0 +1,8 @@
+{
+  "name": "timsonner-feeds",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/feeds.test.js"
+  }
+}
