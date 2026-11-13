@@ -93,6 +93,7 @@ yarn-error.log*
 
 # Node modules
 node_modules/
+.wrangler/
 npm-debug.log
 yarn-error.log
 

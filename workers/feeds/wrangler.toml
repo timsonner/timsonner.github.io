@@ -1,0 +1,6 @@
+name = "timsonner-feeds"
+main = "src/index.js"
+compatibility_date = "2026-11-13"
+workers_dev = true
+
+# Account comes from `wrangler login`. Do not commit an account id or an API token.
