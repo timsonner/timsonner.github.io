@@ -28,7 +28,7 @@ Arrow keys walk command history. Window controls minimize, restore, and clear ou
 ### News
 Headlines from the same public RSS feeds, on one page (`/news/`). Filters cover source, how many items per source (default 5, max 50), and a time window (24 hours, 48 hours, 7 days, all, or a from/to date range). The default view is Security and Advisories, five items each, from the last 48 hours.
 
-A query such as `?sources=unit42,krebs&per=5&range=48h` restores that view, and the browser remembers the last view locally. The page loads each selected source on its own, again when you press Refresh, and every 15 minutes while the tab is visible. Item text is escaped. Only http and https links can be clicked. Copy link copies the URL.
+A query such as `?sources=unit42,krebs&per=5&range=48h` restores that view, and the browser remembers the last view locally. The page loads each selected source on its own, again when you press Refresh, and every 15 minutes while the tab is visible. Item text is escaped. Only http and https links can be clicked, and they open in a new tab. The source box filters as you type and lists only names or keys that contain the text.
 
 The feed list is `assets/data/news-feeds.json`. Headlines come from the `timsonner-feeds` Worker in `workers/feeds/`. That Worker fetches only the sources named on the request and caches each one for 15 minutes. Deploy steps are in `workers/feeds/README.md`. Until that Worker is deployed, the page says the feeds API is not reachable yet.
 

@@ -168,15 +168,14 @@
       legend.textContent = category;
       group.appendChild(legend);
       rows.forEach(function (row) {
+        if (query && !sourceMatches(row, query)) return;
+        visible += 1;
         var label = document.createElement("label");
         label.className = "news-source-label";
         var box = document.createElement("input");
         box.type = "checkbox";
         box.value = row.key;
         box.checked = state.sources.indexOf(row.key) !== -1;
-        var hay = (row.name + " " + row.key).toLowerCase();
-        if (query && hay.indexOf(query) === -1) label.hidden = true;
-        else visible += 1;
         box.addEventListener("change", function () {
           if (box.checked) {
             if (state.sources.indexOf(row.key) === -1) state.sources.push(row.key);
@@ -193,6 +192,18 @@
       });
       if (visible) sourcesEl.appendChild(group);
     });
+    if (query && !sourcesEl.childElementCount) {
+      var none = document.createElement("p");
+      none.className = "news-empty";
+      none.textContent = "No sources match.";
+      sourcesEl.appendChild(none);
+    }
+  }
+
+  function sourceMatches(row, query) {
+    var name = String(row.name || "").toLowerCase();
+    var key = String(row.key || "").toLowerCase();
+    return name.indexOf(query) !== -1 || key.indexOf(query) !== -1;
   }
 
   function wire() {
@@ -579,27 +590,7 @@
       row.appendChild(source);
       row.appendChild(titleNode);
       row.appendChild(time);
-      if (href) {
-        var copy = document.createElement("button");
-        copy.type = "button";
-        copy.className = "news-btn news-copy";
-        copy.textContent = "Copy link";
-        copy.addEventListener("click", function () { copyLink(href, copy); });
-        row.appendChild(copy);
-      }
       listEl.appendChild(row);
     });
-  }
-
-  function copyLink(href, button) {
-    var done = function (ok) {
-      button.textContent = ok ? "Copied" : "Copy failed";
-      window.setTimeout(function () { button.textContent = "Copy link"; }, 1500);
-    };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(href).then(function () { done(true); }, function () { done(false); });
-      return;
-    }
-    done(false);
   }
 })();
