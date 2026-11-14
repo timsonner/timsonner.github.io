@@ -23,11 +23,14 @@ export const ALLOWED_ORIGINS = [
 
 const ALLOWED = new Set(ALLOWED_ORIGINS);
 const CACHE_PREFIX = "https://timsonner-feeds.timsonner.workers.dev/__cache/source/";
+export const PROXY_KEYS = new Set(["bleeping", "nixcraft", "netsec"]);
 
 export function createHandler(deps = {}) {
   const feeds = deps.feeds || FEEDS;
   const fetchImpl = deps.fetchImpl || globalThis.fetch;
   const now = deps.now || (() => Date.now());
+  const proxyBase = deps.proxyBase ?? deps.env?.FEED_PROXY_URL;
+  const proxyKey = deps.proxyKey ?? deps.env?.FEED_PROXY_KEY;
   const inflight = new Map();
 
   function store() {
@@ -61,7 +64,7 @@ export function createHandler(deps = {}) {
     const previous = await readSource(store(), feed.key);
     if (usable(previous, per)) return previous;
     try {
-      const response = await fetchResponse(feed.url, 0);
+      const response = await fetchResponse(feed.url, 0, feed.key);
       const parsed = await readItems(response, per);
       if (!parsed.length) throw new Error("empty");
       const state = {
@@ -95,15 +98,38 @@ export function createHandler(deps = {}) {
     }
   }
 
-  async function fetchResponse(url, hops) {
+  function resolveFetchTarget(catalogUrl, feedKey) {
+    if (
+      feedKey &&
+      PROXY_KEYS.has(feedKey) &&
+      proxyBase &&
+      proxyKey
+    ) {
+      const origin = String(proxyBase).replace(/\/+$/, "");
+      const target = origin + "/" + feedKey;
+      if (isAllowedFeedUrl(target)) {
+        return { url: target, sendProxyKey: true };
+      }
+    }
+    return { url: catalogUrl, sendProxyKey: false };
+  }
+
+  async function fetchResponse(catalogUrl, hops, feedKey) {
+    const { url, sendProxyKey } = hops === 0
+      ? resolveFetchTarget(catalogUrl, feedKey)
+      : { url: catalogUrl, sendProxyKey: false };
     if (!isAllowedFeedUrl(url)) throw new Error("blocked");
+    const headers = {
+      "User-Agent": UA,
+      "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.8"
+    };
+    if (sendProxyKey) {
+      headers["X-Feed-Proxy-Key"] = proxyKey;
+    }
     const response = await fetchImpl(url, {
       method: "GET",
       redirect: "manual",
-      headers: {
-        "User-Agent": UA,
-        "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.8"
-      },
+      headers,
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS)
     });
     const status = response.status;
@@ -111,7 +137,7 @@ export function createHandler(deps = {}) {
       if (hops >= MAX_REDIRECTS) throw new Error("redirect");
       const location = response.headers.get("Location");
       if (!location) throw new Error("redirect");
-      return fetchResponse(new URL(location, url).href, hops + 1);
+      return fetchResponse(new URL(location, url).href, hops + 1, feedKey);
     }
     if (!response.ok) throw new Error("status");
     return response;
