@@ -49,3 +49,16 @@ npx wrangler deploy
 ```
 
 The public hostname is `https://timsonner-feeds.timsonner.workers.dev`. Do not put tokens or account ids in this folder.
+
+## Optional fetch proxy
+
+Some catalog sources block Cloudflare egress. When both Worker secrets are set, the Worker fetches `bleeping`, `nixcraft`, and `netsec` through an optional fetch proxy configured by Worker secrets instead of their catalog URLs. All other sources are unchanged. If either secret is unset, every source uses its catalog URL as today.
+
+Set the secrets from `workers/feeds` (do not commit values):
+
+```bash
+npx wrangler secret put FEED_PROXY_URL
+npx wrangler secret put FEED_PROXY_KEY
+```
+
+`FEED_PROXY_URL` must be an `https` origin with no trailing slash. The Worker requests `{FEED_PROXY_URL}/{key}` for the three keys above and sends `X-Feed-Proxy-Key: {FEED_PROXY_KEY}`. Redirects off the proxy host do not include that header.

@@ -41,13 +41,65 @@ function memoryCache() {
   };
 }
 
-function handlerFor(feeds, fetchImpl, now) {
+function handlerFor(feeds, fetchImpl, now, env) {
   return createHandler({
     feeds,
     fetchImpl,
     cache: memoryCache(),
-    now
+    now,
+    env
   });
+}
+
+const PROXY_FEEDS = [
+  {
+    key: "bleeping",
+    name: "Bleeping Computer",
+    url: "https://www.bleepingcomputer.com/feed/",
+    category: "Security"
+  },
+  {
+    key: "nixcraft",
+    name: "nixCraft",
+    url: "http://feeds.cyberciti.biz/Nixcraft-LinuxFreebsdSolarisTipsTricks",
+    category: "Linux/Tech"
+  },
+  {
+    key: "netsec",
+    name: "/r/netsec",
+    url: "https://www.reddit.com/r/netsec/.rss",
+    category: "Community"
+  },
+  {
+    key: "krebs",
+    name: "Krebs on Security",
+    url: "https://krebsonsecurity.com/feed/",
+    category: "Security"
+  }
+];
+
+const PROXY_ENV = {
+  FEED_PROXY_URL: "https://proxy.example",
+  FEED_PROXY_KEY: "test-proxy-key"
+};
+
+function captureFetch(responses = {}) {
+  const calls = [];
+  const fetchImpl = async (url, init) => {
+    const entry = {
+      url: String(url),
+      proxyKey: init?.headers?.["X-Feed-Proxy-Key"] ?? null
+    };
+    calls.push(entry);
+    const key = PROXY_FEEDS.find((feed) => entry.url.endsWith("/" + feed.key))?.key
+      || (entry.url.includes("krebsonsecurity") ? "krebs" : null)
+      || (entry.url.includes("cdn.example") ? "redirect" : null);
+    const spec = responses[key] || responses.default;
+    if (typeof spec === "function") return spec(url, init, entry);
+    if (spec) return spec;
+    return new Response(rssItem({ title: "Story", link: "https://example.com/story" }), { status: 200 });
+  };
+  return { calls, fetchImpl };
 }
 
 test("catalog is the terminal list plus workflow feeds, with CrowdStrike gone", () => {
@@ -409,6 +461,83 @@ test("a request fetches only the named sources and stops after per items", async
   assert.equal(bareBody.items.length, 0);
   assert.equal(bareBody.sources.length, 0);
   assert.equal(calls.length, 1);
+});
+
+test("optional fetch proxy targets three keys when both secrets are set", async () => {
+  const { calls, fetchImpl } = captureFetch();
+  const handle = handlerFor(
+    PROXY_FEEDS,
+    fetchImpl,
+    () => Date.parse("2026-11-13T18:00:00Z"),
+    PROXY_ENV
+  );
+  for (const key of ["bleeping", "nixcraft", "netsec"]) {
+    calls.length = 0;
+    const response = await handle(new Request(
+      "https://timsonner-feeds.timsonner.workers.dev/items?sources=" + key
+    ));
+    assert.equal(response.status, 200);
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].url, "https://proxy.example/" + key);
+    assert.equal(calls[0].proxyKey, PROXY_ENV.FEED_PROXY_KEY);
+  }
+
+  calls.length = 0;
+  await handle(new Request(
+    "https://timsonner-feeds.timsonner.workers.dev/items?sources=krebs"
+  ));
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, "https://krebsonsecurity.com/feed/");
+  assert.equal(calls[0].proxyKey, null);
+});
+
+test("proxy path is skipped when either secret is missing", async () => {
+  const { calls, fetchImpl } = captureFetch();
+  const handle = handlerFor(
+    PROXY_FEEDS,
+    fetchImpl,
+    () => Date.parse("2026-11-13T18:00:00Z"),
+    { FEED_PROXY_URL: "https://proxy.example" }
+  );
+  for (const feed of PROXY_FEEDS.filter((row) => row.key !== "krebs")) {
+    calls.length = 0;
+    await handle(new Request(
+      "https://timsonner-feeds.timsonner.workers.dev/items?sources=" + feed.key
+    ));
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].url, feed.url);
+    assert.equal(calls[0].proxyKey, null);
+  }
+});
+
+test("proxy redirects do not send the proxy key to another host", async () => {
+  const { calls, fetchImpl } = captureFetch({
+    bleeping: new Response(null, {
+      status: 302,
+      headers: { Location: "https://cdn.example/feed.xml" }
+    }),
+    redirect: new Response(rssItem({
+      title: "After redirect",
+      link: "https://example.com/after"
+    }), { status: 200 })
+  });
+  const handle = handlerFor(
+    [PROXY_FEEDS[0]],
+    fetchImpl,
+    () => Date.parse("2026-11-13T18:00:00Z"),
+    PROXY_ENV
+  );
+  const response = await handle(new Request(
+    "https://timsonner-feeds.timsonner.workers.dev/items?sources=bleeping"
+  ));
+  assert.equal(response.status, 200);
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0].url, "https://proxy.example/bleeping");
+  assert.equal(calls[0].proxyKey, PROXY_ENV.FEED_PROXY_KEY);
+  assert.equal(calls[1].url, "https://cdn.example/feed.xml");
+  assert.equal(calls[1].proxyKey, null);
+  const body = await response.json();
+  assert.equal(body.items.some((item) => item.title === "After redirect"), true);
 });
 
 test("wrangler config names the feeds Worker and allows localhost only here", () => {
