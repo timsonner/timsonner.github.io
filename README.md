@@ -13,7 +13,7 @@ Browser-based terminal on the homepage (`_includes/terminal.html` + `assets/js/t
 |---|---|
 | `help` | List available commands |
 | `whois <domain>` | RDAP/WHOIS lookup |
-| `dig <domain>` | DNS records |
+| `dns <domain\|ip>` | Full DNS report (DoH, SPF/DMARC/DKIM, reverse for IPs) |
 | `osint <target>` | Quick OSINT link pack |
 | `subdomains <domain>` | Subdomain discovery helpers |
 | `headers <url>` | Fetch and review response headers (incl. framing/CSP checks) |

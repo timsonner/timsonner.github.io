@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     switch(command) {
       case 'help':
-        addToOutput('Available commands: help, clear, date, whois, dig, osint, subdomains, headers, mac, cve, news, subnet');
+        addToOutput('Available commands: help, clear, date, whois, dns, osint, subdomains, headers, mac, cve, news, subnet');
         break;
       case 'news':
         handleNews(args);
@@ -157,8 +157,8 @@ document.addEventListener('DOMContentLoaded', function() {
       case 'whois':
         handleWhois(args);
         break;
-      case 'dig':
-        handleDig(args);
+      case 'dns':
+        handleDns(args);
         break;
       case 'osint':
         handleOsint(args);
@@ -268,94 +268,28 @@ document.addEventListener('DOMContentLoaded', function() {
     terminalWindow.scrollTop = terminalWindow.scrollHeight;
   }
 
-  async function handleDig(args) {
-    if (args.length === 0) {
-      addToOutput('Usage: dig <domain> [type] (default: A)');
-      addToOutput('       Types: A, AAAA, CNAME, MX, TXT, NS, SOA');
-      addToOutput('       dig <domain> DMARC');
-      addToOutput('       dig <selector>._domainkey.<domain> DKIM');
+  async function handleDns(args) {
+    if (typeof DnsLookup === 'undefined') {
+      addToOutput('DNS module failed to load.', 'command-error');
       return;
     }
 
-    let domain = args[0];
-    let type = args[1] ? args[1].toUpperCase() : 'A';
-
-    // Special handling for DMARC
-    if (type === 'DMARC') {
-        if (!domain.startsWith('_dmarc.')) {
-            domain = '_dmarc.' + domain;
-        }
-        type = 'TXT';
-        addToOutput(`; (Pseudo-type DMARC maps to ${domain} IN TXT)`);
+    if (args.length === 0) {
+      DnsLookup.usageLines().forEach((line) => addToOutput(line));
+      return;
     }
 
-    // Special handling for DKIM
-    if (type === 'DKIM') {
-        addToOutput('; For DKIM, you need the selector.');
-        addToOutput(`; Usage: dig <selector>._domainkey.${domain} TXT`);
-        addToOutput('; Example: dig google._domainkey.example.com TXT');
-        return;
-    }
-    
-    addToOutput(`; <<>> DiG 9.10.6 <<>> ${domain} ${type}`);
-    addToOutput(';; global options: +cmd');
-    addToOutput(';; Got answer:');
-    addToOutput(`;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: ${Math.floor(Math.random() * 65535)}`);
-    addToOutput(';; flags: qr rd ra; QUERY: 1, ANSWER: ?, AUTHORITY: 0, ADDITIONAL: 1');
-    addToOutput('');
-    addToOutput(';; QUESTION SECTION:');
-    addToOutput(`;${domain}.\t\tIN\t${type}`);
-    addToOutput('');
+    const target = args[0];
+    const extra = args.slice(1);
+    addToOutput(`Querying DNS for ${target}...`);
 
     try {
-      const startTime = performance.now();
-      const response = await fetch(`https://dns.google/resolve?name=${domain}&type=${type}`);
-      const endTime = performance.now();
-      const queryTime = Math.round(endTime - startTime);
-
-      if (!response.ok) {
-        addToOutput(`;; connection timed out; no servers could be reached`, 'command-error');
-        return;
-      }
-
-      const data = await response.json();
-
-      if (data.Status !== 0) {
-         addToOutput(`;; ->>HEADER<<- status: ${data.Status === 3 ? 'NXDOMAIN' : 'SERVFAIL'}`);
-      }
-
-      if (data.Answer) {
-        addToOutput(';; ANSWER SECTION:');
-        data.Answer.forEach(record => {
-          // Map type number to name if possible, or use raw type
-          let typeName = 'A';
-          if (record.type === 1) typeName = 'A';
-          if (record.type === 28) typeName = 'AAAA';
-          if (record.type === 5) typeName = 'CNAME';
-          if (record.type === 15) typeName = 'MX';
-          if (record.type === 16) typeName = 'TXT';
-          if (record.type === 2) typeName = 'NS';
-          if (record.type === 6) typeName = 'SOA';
-          if (record.type === 12) typeName = 'PTR';
-          
-          // If user requested a specific type, use that label, otherwise guess
-          if (type !== 'A' && type !== 'AAAA') typeName = type;
-
-          addToOutput(`${record.name}\t${record.TTL}\tIN\t${typeName}\t${record.data}`);
-        });
-        addToOutput('');
-      }
-
-      addToOutput(`;; Query time: ${queryTime} msec`);
-      addToOutput(`;; SERVER: 8.8.8.8#53(8.8.8.8)`);
-      addToOutput(`;; WHEN: ${new Date().toString()}`);
-      addToOutput(`;; MSG SIZE  rcvd: ${JSON.stringify(data).length}`);
-      addToOutput(`;; Data provided by Google Public DNS (dns.google)`);
-
+      const result = await DnsLookup.lookup(target, extra);
+      result.lines.forEach((line) => addToOutput(line));
     } catch (error) {
-      addToOutput(`;; connection failed: ${error.message}`, 'command-error');
+      addToOutput(`DNS error: ${error.message}`, 'command-error');
     }
-    
+
     terminalWindow.scrollTop = terminalWindow.scrollHeight;
   }
 
