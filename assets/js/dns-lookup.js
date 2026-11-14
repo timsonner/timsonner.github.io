@@ -61,6 +61,11 @@
     };
   }
 
+  function normalizeHostname(host) {
+    if (host == null) return '';
+    return String(host).replace(/\.$/, '').toLowerCase();
+  }
+
   function normalizeTarget(raw) {
     if (raw == null) return { ok: false, reason: 'usage' };
     let s = String(raw).trim();
@@ -157,7 +162,6 @@
         if (mech === 'all') {
           allQualifier = qual;
           allWord = describeAll(qual);
-          mechanismCount += 1;
           continue;
         }
         if (mechanisms.includes(mech)) {
@@ -191,7 +195,7 @@
       allWord,
       notes,
       warnings,
-      displayCount: `${Math.min(mechanismCount, 10)} / 10`,
+      displayCount: `${mechanismCount} / 10`,
       visited,
       chain,
     };
@@ -252,7 +256,7 @@
     if (result.mechanismCount > 10 && !result.warnings.length) {
       result.warnings.push('SPF lists more than 10 DNS mechanisms (RFC 7208 limit)');
     }
-    result.displayCount = `${Math.min(result.mechanismCount, 10)} / 10`;
+    result.displayCount = `${result.mechanismCount} / 10`;
     return result;
   }
 
@@ -370,11 +374,24 @@
     }
 
     async function dohQuery(name, typeKey) {
-      const key = `${name}|${typeKey}`;
+      const normName = normalizeHostname(name);
+      const key = `${normName}|${typeKey}`;
       if (dnsCache.has(key)) return dnsCache.get(key);
-      const pending = scheduleDoh(() => dohQueryUncached(name, typeKey));
+      const pending = scheduleDoh(() => dohQueryUncached(normName, typeKey));
       dnsCache.set(key, pending);
+      pending.catch(() => {
+        dnsCache.delete(key);
+      });
       return pending;
+    }
+
+    async function dohQueryCatch(name, typeKey) {
+      try {
+        const answers = await dohQuery(name, typeKey);
+        return { answers, error: null };
+      } catch (e) {
+        return { answers: [], error: e.message || String(e) };
+      }
     }
 
     async function resolveTxt(name) {
@@ -433,23 +450,22 @@
       return result;
     }
 
-    async function collectIpsForAsn(domain, wave1) {
+    function collectIpsForBudget(wave1) {
       const ips = [];
       const seen = new Set();
 
       function pushIp(ip) {
-        if (!ip || seen.has(ip)) return;
-        seen.add(ip);
-        ips.push(ip);
+        const n = ip && String(ip).toLowerCase();
+        if (!n || seen.has(n)) return;
+        seen.add(n);
+        ips.push(n);
       }
 
-      const a = wave1.A || [];
-      const aaaa = wave1.AAAA || [];
-      a.forEach((r) => pushIp(r.data));
-      aaaa.forEach((r) => pushIp(r.data));
+      (wave1.A || []).forEach((r) => pushIp(r.data));
+      (wave1.AAAA || []).forEach((r) => pushIp(r.data));
 
       (wave1.MX || []).forEach((mx) => {
-        const host = mx.data.includes(' ') ? mx.data.split(/\s+/).pop() : mx.data;
+        const host = normalizeHostname(mx.data.includes(' ') ? mx.data.split(/\s+/).pop() : mx.data);
         const targets = wave1._mxIps && wave1._mxIps[host];
         if (targets) {
           targets.a.forEach((x) => pushIp(x));
@@ -458,7 +474,7 @@
       });
 
       (wave1.NS || []).forEach((ns) => {
-        const host = ns.data;
+        const host = normalizeHostname(ns.data);
         const targets = wave1._nsIps && wave1._nsIps[host];
         if (targets) {
           targets.a.forEach((x) => pushIp(x));
@@ -469,8 +485,44 @@
       return ips.slice(0, 15);
     }
 
-    function formatLines(report) {
-      return report.lines;
+    function formatAsnOrg(asnRow) {
+      if (!asnRow || !asnRow.asn) return '';
+      return `AS${String(asnRow.asn).replace(/^AS/i, '')} ${asnRow.org || ''}`.trim();
+    }
+
+    function formatIpDetail(ip, asnByIp, ptrByIp) {
+      const asnPart = formatAsnOrg(asnByIp[ip]);
+      const ptr = ptrByIp[ip];
+      const extra = [asnPart, ptr ? `PTR ${ptr}` : ''].filter(Boolean).join(' | ');
+      return extra ? `  ${ip}  ${extra}` : `  ${ip}`;
+    }
+
+    async function buildIpEnrichment(wave1) {
+      const budgetIps = collectIpsForBudget(wave1);
+      const asnByIp = {};
+      const ptrByIp = {};
+
+      await Promise.all(
+        budgetIps.map(async (ip) => {
+          asnByIp[ip] = await lookupAsn(ip);
+          const ptrName = IPV4_RE.test(ip) ? buildIpv4Ptr(ip) : buildIpv6Ptr(ip);
+          if (!ptrName) return;
+          const { answers, error } = await dohQueryCatch(ptrName, 'PTR');
+          if (!error && answers.length) {
+            ptrByIp[ip] = answers.map((p) => p.data.replace(/\.$/, '')).join(', ');
+          }
+        }),
+      );
+
+      return { asnByIp, ptrByIp, budgetIps };
+    }
+
+    function sectionEmpty(wave1, types, errors) {
+      const rows = types.flatMap((t) => wave1[t] || []);
+      if (rows.length) return null;
+      const err = types.map((t) => errors[t]).filter(Boolean);
+      if (err.length) return `Lookup failed: ${err[0]}`;
+      return 'No records';
     }
 
     async function runDomainLookup(domain, extraArgs) {
@@ -481,104 +533,133 @@
       lines.push(`; DNS report for ${domain}`);
       lines.push('');
 
-      const wave1 = {};
-      for (const t of WAVE1_TYPES) {
-        const ans = await dohQuery(domain, t);
-        wave1[t] = ans;
-      }
-      const dmarcName = `_dmarc.${domain}`;
-      wave1._dmarcTxt = await dohQuery(dmarcName, 'TXT');
+      const wave1 = { _errors: {} };
+      await Promise.all(
+        WAVE1_TYPES.map(async (t) => {
+          const { answers, error } = await dohQueryCatch(domain, t);
+          wave1[t] = answers;
+          if (error) wave1._errors[t] = error;
+        }),
+      );
+
+      const dmarcResult = await dohQueryCatch(`_dmarc.${domain}`, 'TXT');
+      wave1._dmarcTxt = dmarcResult.answers;
+      if (dmarcResult.error) wave1._errors._dmarc = dmarcResult.error;
 
       const mxHosts = new Set();
       (wave1.MX || []).forEach((r) => {
-        const host = (r.data.includes(' ') ? r.data.split(/\s+/).pop() : r.data).replace(/\.$/, '');
-        mxHosts.add(host.toLowerCase());
+        const host = normalizeHostname(r.data.includes(' ') ? r.data.split(/\s+/).pop() : r.data);
+        if (host) mxHosts.add(host);
       });
       const nsHosts = new Set();
       (wave1.NS || []).forEach((r) => {
-        nsHosts.add(r.data.replace(/\.$/, '').toLowerCase());
+        const host = normalizeHostname(r.data);
+        if (host) nsHosts.add(host);
       });
 
       wave1._mxIps = {};
-      for (const h of mxHosts) {
-        const a = await dohQuery(h, 'A');
-        const aaaa = await dohQuery(h, 'AAAA');
-        wave1._mxIps[h] = { a: a.map((x) => x.data), aaaa: aaaa.map((x) => x.data) };
-      }
+      await Promise.all(
+        [...mxHosts].map(async (h) => {
+          const [aRes, aaaaRes] = await Promise.all([dohQueryCatch(h, 'A'), dohQueryCatch(h, 'AAAA')]);
+          wave1._mxIps[h] = {
+            a: aRes.answers.map((x) => x.data),
+            aaaa: aaaaRes.answers.map((x) => x.data),
+            error: aRes.error || aaaaRes.error,
+          };
+        }),
+      );
+
       wave1._nsIps = {};
-      for (const h of nsHosts) {
-        const a = await dohQuery(h, 'A');
-        const aaaa = await dohQuery(h, 'AAAA');
-        wave1._nsIps[h] = { a: a.map((x) => x.data), aaaa: aaaa.map((x) => x.data) };
-      }
+      await Promise.all(
+        [...nsHosts].map(async (h) => {
+          const [aRes, aaaaRes] = await Promise.all([dohQueryCatch(h, 'A'), dohQueryCatch(h, 'AAAA')]);
+          wave1._nsIps[h] = {
+            a: aRes.answers.map((x) => x.data),
+            aaaa: aaaaRes.answers.map((x) => x.data),
+            error: aRes.error || aaaaRes.error,
+          };
+        }),
+      );
 
       const dkimFound = [];
       const dkimMiss = [];
-      for (const sel of DKIM_SELECTORS) {
-        const name = `${sel}._domainkey.${domain}`;
-        const txt = await dohQuery(name, 'TXT');
-        const cname = await dohQuery(name, 'CNAME');
-        if (txt.length > 0) {
-          dkimFound.push({ selector: sel, type: 'TXT', value: truncateDkim(txt.map((x) => x.data).join(' ')) });
-        } else if (cname.length > 0) {
-          dkimFound.push({ selector: sel, type: 'CNAME', value: cname.map((x) => x.data).join(', ') });
-        } else {
-          dkimMiss.push(sel);
-        }
-      }
+      await Promise.all(
+        DKIM_SELECTORS.map(async (sel) => {
+          const name = `${sel}._domainkey.${domain}`;
+          const [txtRes, cnameRes] = await Promise.all([dohQueryCatch(name, 'TXT'), dohQueryCatch(name, 'CNAME')]);
+          if (txtRes.answers.length > 0) {
+            dkimFound.push({
+              selector: sel,
+              type: 'TXT',
+              value: truncateDkim(txtRes.answers.map((x) => x.data).join(' ')),
+            });
+          } else if (cnameRes.answers.length > 0) {
+            dkimFound.push({
+              selector: sel,
+              type: 'CNAME',
+              value: cnameRes.answers.map((x) => x.data).join(', '),
+            });
+          } else {
+            dkimMiss.push(sel);
+          }
+        }),
+      );
 
-      const asnIps = await collectIpsForAsn(domain, wave1);
-      const asnByIp = {};
-      for (const ip of asnIps) {
-        asnByIp[ip] = await lookupAsn(ip);
-      }
+      const { asnByIp, ptrByIp } = await buildIpEnrichment(wave1);
 
       lines.push('[A / AAAA]');
-      const addrRows = [...(wave1.A || []), ...(wave1.AAAA || []), ...(wave1.CNAME || [])];
-      if (!addrRows.length) lines.push('No records');
-      else {
+      const addrRows = [...(wave1.A || []), ...(wave1.AAAA || [])];
+      const cnameRows = wave1.CNAME || [];
+      const emptyA = sectionEmpty(wave1, ['A', 'AAAA', 'CNAME'], wave1._errors);
+      if (!addrRows.length && !cnameRows.length) {
+        lines.push(emptyA);
+      } else {
         addrRows.forEach((r) => {
           lines.push(`${r.name} ${r.ttl} IN ${typeLabel(r.type)} ${r.data}`);
+          const ip = String(r.data).toLowerCase();
+          if ((r.type === 1 || r.type === 28) && (asnByIp[ip] || ptrByIp[ip])) {
+            lines.push(formatIpDetail(ip, asnByIp, ptrByIp));
+          }
+        });
+        cnameRows.forEach((r) => {
+          lines.push(`${r.name} ${r.ttl} IN CNAME ${r.data}`);
         });
       }
       lines.push('');
 
       lines.push('[MX]');
-      if (!(wave1.MX || []).length) lines.push('No records');
-      else {
+      if (!(wave1.MX || []).length) {
+        lines.push(sectionEmpty(wave1, ['MX'], wave1._errors));
+      } else {
         wave1.MX.forEach((r) => {
           lines.push(`${r.name} ${r.ttl} IN MX ${r.data}`);
+          const host = normalizeHostname(r.data.includes(' ') ? r.data.split(/\s+/).pop() : r.data);
+          const targets = wave1._mxIps[host] || { a: [], aaaa: [] };
+          const ips = [...targets.a, ...targets.aaaa];
+          if (!ips.length) {
+            if (targets.error) lines.push(`  Lookup failed: ${targets.error}`);
+            else lines.push(`  (no A/AAAA for ${host})`);
+          } else {
+            ips.forEach((ip) => lines.push(formatIpDetail(ip, asnByIp, ptrByIp)));
+          }
         });
       }
       lines.push('');
 
       lines.push('[NS]');
-      if (!(wave1.NS || []).length) lines.push('No records');
-      else {
+      if (!(wave1.NS || []).length) {
+        lines.push(sectionEmpty(wave1, ['NS'], wave1._errors));
+      } else {
         for (const r of wave1.NS) {
-          const host = r.data.replace(/\.$/, '').toLowerCase();
+          const host = normalizeHostname(r.data);
           const targets = wave1._nsIps[host] || { a: [], aaaa: [] };
           const ips = [...targets.a, ...targets.aaaa];
           lines.push(`${r.name} ${r.ttl} IN NS ${r.data}`);
           if (!ips.length) {
-            lines.push(`  (no A/AAAA for ${host})`);
+            if (targets.error) lines.push(`  Lookup failed: ${targets.error}`);
+            else lines.push(`  (no A/AAAA for ${host})`);
           } else {
-            for (const ip of ips) {
-              const asn = asnByIp[ip] || {};
-              const asnPart = asn.asn ? `AS${String(asn.asn).replace(/^AS/i, '')} ${asn.org || ''}`.trim() : '';
-              let ptrLabel = '';
-              const ptrName = IPV4_RE.test(ip) ? buildIpv4Ptr(ip) : buildIpv6Ptr(ip);
-              if (ptrName) {
-                try {
-                  const ptrs = await dohQuery(ptrName, 'PTR');
-                  if (ptrs.length) ptrLabel = ptrs.map((p) => p.data).join(', ');
-                } catch (_e) {
-                  ptrLabel = '';
-                }
-              }
-              const extra = [asnPart, ptrLabel ? `PTR ${ptrLabel}` : ''].filter(Boolean).join(' | ');
-              lines.push(`  ${ip}${extra ? `  ${extra}` : ''}`);
-            }
+            ips.forEach((ip) => lines.push(formatIpDetail(ip, asnByIp, ptrByIp)));
           }
         }
       }
@@ -680,12 +761,14 @@
         return { kind: 'ip', lines };
       }
 
-      const ptrs = await dohQuery(ptrName, 'PTR');
+      const ptrResult = await dohQueryCatch(ptrName, 'PTR');
       lines.push('[PTR]');
-      if (!ptrs.length) {
+      if (ptrResult.error) {
+        lines.push(`Lookup failed: ${ptrResult.error}`);
+      } else if (!ptrResult.answers.length) {
         lines.push('No records');
       } else {
-        ptrs.forEach((r) => lines.push(`${r.name} ${r.ttl} IN PTR ${r.data}`));
+        ptrResult.answers.forEach((r) => lines.push(`${r.name} ${r.ttl} IN PTR ${r.data}`));
       }
       lines.push('');
 
@@ -699,6 +782,8 @@
         lines.push('No records');
       }
       lines.push('');
+
+      const ptrs = ptrResult.answers;
 
       lines.push('[Forward confirm]');
       if (!ptrs.length) {
@@ -741,6 +826,7 @@
 
     return {
       dohQuery,
+      dohQueryCatch,
       resolveTxt,
       lookupAsn,
       runLookup,
@@ -766,9 +852,31 @@
     ];
   }
 
+  let sessionResolver = null;
+  const resolverByFetch = new WeakMap();
+
+  function getSessionResolver(options) {
+    const opts = options || {};
+    const fetchFn = opts.fetch || DEFAULT_FETCH;
+    if (!fetchFn) {
+      throw new Error('fetch is not available');
+    }
+    if (opts.fetch) {
+      if (!resolverByFetch.has(fetchFn)) {
+        resolverByFetch.set(fetchFn, createResolver(opts));
+      }
+      return resolverByFetch.get(fetchFn);
+    }
+    if (!sessionResolver) {
+      sessionResolver = createResolver({ fetch: DEFAULT_FETCH });
+    }
+    return sessionResolver;
+  }
+
   return {
     usageLines,
     normalizeTarget,
+    normalizeHostname,
     parseSpfRecord,
     parseDmarcFromTxts,
     buildIpv4Ptr,
@@ -776,9 +884,12 @@
     registrableDomainFromHost,
     DKIM_SELECTORS,
     createResolver,
+    getSessionResolver,
+    resetSessionForTests() {
+      sessionResolver = null;
+    },
     async lookup(target, extraArgs, options) {
-      const resolver = createResolver({ fetch: (options && options.fetch) || DEFAULT_FETCH });
-      return resolver.runLookup(target, extraArgs);
+      return getSessionResolver(options).runLookup(target, extraArgs);
     },
   };
 });

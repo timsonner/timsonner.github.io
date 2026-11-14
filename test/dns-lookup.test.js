@@ -129,10 +129,15 @@ describe('dns-lookup', () => {
     assert.ok(parsed.mechanismCount >= 6);
     assert.equal(parsed.allWord, 'fail (-all)');
 
+    const onlyAll = DnsLookup.parseSpfRecord('v=spf1 -all');
+    assert.equal(onlyAll.mechanismCount, 0);
+    assert.equal(onlyAll.allWord, 'fail (-all)');
+
     const over = 'v=spf1 ' + Array.from({ length: 12 }, (_, i) => `include:inc${i}.example.org`).join(' ') + ' -all';
     const overParsed = DnsLookup.parseSpfRecord(over);
-    assert.ok(overParsed.mechanismCount > 10);
+    assert.equal(overParsed.mechanismCount, 12);
     assert.ok(overParsed.warnings.length > 0);
+    assert.equal(overParsed.displayCount, '12 / 10');
 
     const resolveTxt = async (name) => {
       if (name === 'spf1.example.org') return ['v=spf1 include:deep.example.org -all'];
@@ -240,6 +245,7 @@ describe('dns-lookup', () => {
     for (const header of ['[A / AAAA]', '[MX]', '[NS]', '[SOA]', '[TXT]', '[CAA]', '[SPF]', '[DMARC]', '[DKIM]']) {
       assert.match(text, new RegExp(header.replace(/[[\]]/g, '\\$&')));
     }
+    assert.match(text, /AS64496/);
     assert.ok(!text.includes('10.0.0.1'));
     assert.ok(!text.includes('198.51.100'));
   });
@@ -281,6 +287,166 @@ describe('dns-lookup', () => {
     const r = createResolver(fetchFn);
     const report = await r.runLookup('example.com', ['MX', 'ignored']);
     assert.match(report.lines.join('\n'), /extra arguments ignored/);
+  });
+
+  it('normalizes trailing-dot MX hosts for follow-up A lookups', async () => {
+    const dnsMap = { default: emptyDns() };
+    dnsMap['example.com|15'] = {
+      Status: 0,
+      Answer: [{ name: 'example.com.', type: 15, TTL: 300, data: '10 mail.example.com.' }],
+    };
+    dnsMap['mail.example.com|1'] = jsonAnswer('mail.example.com', 1, '192.0.2.55');
+    for (const t of ['1', '28', '5', '2', '6', '16', '257']) {
+      if (t !== '15') dnsMap[`example.com|${t}`] = emptyDns();
+    }
+    dnsMap['_dmarc.example.com|16'] = emptyDns();
+  const ptr = '55.2.0.192.in-addr.arpa';
+    dnsMap[`${ptr}|12`] = jsonAnswer(ptr, 12, 'mail.example.com');
+    const ipapi = ipapiHandler({ ips: { '192.0.2.55': { asn: 'AS64496', org: 'Example Org' } } });
+    const { fetchFn, calls } = makeFetch([
+      cloudflareHandler(dnsMap),
+      googleHandler(dnsMap),
+      ipapi.handler,
+    ]);
+    const r = createResolver(fetchFn);
+    const report = await r.runLookup('example.com');
+    const text = report.lines.join('\n');
+    assert.match(text, /192\.0\.2\.55/);
+    assert.match(text, /AS64496/);
+    assert.ok(calls.some((c) => c.url.includes('name=mail.example.com')));
+    assert.ok(!calls.some((c) => c.url.includes('mail.example.com.')));
+  });
+
+  it('shows ASN/PTR on apex A and MX rows', async () => {
+    const dnsMap = { default: emptyDns() };
+    dnsMap['example.com|1'] = jsonAnswer('example.com', 1, '192.0.2.1');
+    dnsMap['example.com|15'] = jsonAnswer('example.com', 15, '10 mx.example.com');
+    dnsMap['mx.example.com|1'] = jsonAnswer('mx.example.com', 1, '192.0.2.20');
+    for (const t of ['28', '5', '2', '6', '16', '257']) dnsMap[`example.com|${t}`] = emptyDns();
+    dnsMap['_dmarc.example.com|16'] = emptyDns();
+    const ipapi = ipapiHandler({
+      ips: {
+        '192.0.2.1': { asn: 'AS64496', org: 'Apex Org' },
+        '192.0.2.20': { asn: 'AS64496', org: 'Mx Org' },
+      },
+    });
+    const { fetchFn } = makeFetch([cloudflareHandler(dnsMap), googleHandler(dnsMap), ipapi.handler]);
+    const r = createResolver(fetchFn);
+    const text = (await r.runLookup('example.com')).lines.join('\n');
+    assert.match(text, /\[A \/ AAAA\][\s\S]*192\.0\.2\.1[\s\S]*Apex Org/);
+    assert.match(text, /\[MX\][\s\S]*192\.0\.2\.20[\s\S]*Mx Org/);
+  });
+
+  it('does not cache failed DoH lookups', async () => {
+    const dnsMap = {
+      default: emptyDns(),
+      failNames: new Set(['fail.example.com']),
+    };
+    const cf = async (url) => {
+      if (!url.includes('cloudflare-dns.com')) return undefined;
+      const u = new URL(url);
+      const name = u.searchParams.get('name');
+      if (dnsMap.failNames.has(name)) {
+        return { ok: false, status: 500, json: async () => ({}) };
+      }
+      return { ok: true, json: async () => emptyDns() };
+    };
+    const gg = async (url) => {
+      if (!url.includes('dns.google')) return undefined;
+      const u = new URL(url);
+      if (dnsMap.failNames.has(u.searchParams.get('name'))) {
+        return { ok: false, status: 500, json: async () => ({}) };
+      }
+      return { ok: true, json: async () => emptyDns() };
+    };
+    const { fetchFn } = makeFetch([cf, gg]);
+    const r = createResolver(fetchFn);
+    await r.dohQueryCatch('fail.example.com', 'A');
+    assert.ok(!r._dnsCache.has('fail.example.com|A'));
+    await r.dohQueryCatch('fail.example.com', 'A');
+    const failed = (await r.dohQueryCatch('fail.example.com', 'A')).error;
+    assert.ok(failed);
+  });
+
+  it('keeps report sections when one record type fails', async () => {
+    const dnsMap = { default: emptyDns() };
+    dnsMap['example.com|1'] = jsonAnswer('example.com', 1, '192.0.2.1');
+    dnsMap['example.com|6'] = 'THROW';
+    const cf = async (url) => {
+      if (!url.includes('cloudflare-dns.com')) return undefined;
+      const u = new URL(url);
+      const key = `${u.searchParams.get('name')}|${u.searchParams.get('type')}`;
+      if (dnsMap[key] === 'THROW') {
+        return { ok: false, status: 503, json: async () => ({}) };
+      }
+      const body = dnsMap[key] ?? dnsMap.default;
+      return { ok: true, json: async () => body };
+    };
+    const gg = async (url) => {
+      if (!url.includes('dns.google')) return undefined;
+      const u = new URL(url);
+      const type = u.searchParams.get('type');
+      const name = u.searchParams.get('name');
+      const key = `${name}|${type === 'SOA' ? '6' : type}`;
+      if (dnsMap[`${name}|6`] === 'THROW' && type === 'SOA') {
+        return { ok: false, status: 503, json: async () => ({}) };
+      }
+      const body = dnsMap[`${name}|1`] && type === 'A' ? dnsMap[`${name}|1`] : dnsMap.default;
+      return { ok: true, json: async () => (type === 'A' && name === 'example.com' ? dnsMap['example.com|1'] : emptyDns()) };
+    };
+    for (const t of ['28', '5', '15', '2', '16', '257']) dnsMap[`example.com|${t}`] = emptyDns();
+    dnsMap['_dmarc.example.com|16'] = emptyDns();
+    const { fetchFn } = makeFetch([cf, gg]);
+    const r = createResolver(fetchFn);
+    const text = (await r.runLookup('example.com')).lines.join('\n');
+    assert.match(text, /\[A \/ AAAA\]/);
+    assert.match(text, /\[SOA\]/);
+    assert.match(text, /(Lookup failed|No records)/);
+  });
+
+  it('reuses a single resolver for repeated DnsLookup.lookup calls', async () => {
+    DnsLookup.resetSessionForTests();
+    const dnsMap = { default: emptyDns() };
+    dnsMap['example.com|1'] = jsonAnswer('example.com', 1, '192.0.2.1');
+    dnsMap['example.org|1'] = jsonAnswer('example.org', 1, '192.0.2.2');
+    for (const t of ['28', '5', '15', '2', '6', '16', '257']) {
+      dnsMap[`example.com|${t}`] = emptyDns();
+      dnsMap[`example.org|${t}`] = emptyDns();
+    }
+    dnsMap['_dmarc.example.com|16'] = emptyDns();
+    dnsMap['_dmarc.example.org|16'] = emptyDns();
+    const { fetchFn } = makeFetch([cloudflareHandler(dnsMap), googleHandler(dnsMap)]);
+    const sessionA = DnsLookup.getSessionResolver({ fetch: fetchFn });
+    await sessionA.runLookup('example.com');
+    const sessionB = DnsLookup.getSessionResolver({ fetch: fetchFn });
+    await sessionB.runLookup('example.org');
+    assert.strictEqual(sessionA, sessionB);
+    const cacheKeysAfterTwo = [...sessionB._dnsCache.keys()];
+    assert.ok(cacheKeysAfterTwo.length > 0);
+  });
+
+  it('runs wave-one queries through the DoH pool', async () => {
+    let inFlight = 0;
+    let maxInFlight = 0;
+    const dnsMap = { default: emptyDns() };
+    dnsMap['example.com|1'] = jsonAnswer('example.com', 1, '192.0.2.1');
+    const cf = async (url) => {
+      if (!url.includes('cloudflare-dns.com')) return undefined;
+      inFlight += 1;
+      maxInFlight = Math.max(maxInFlight, inFlight);
+      await new Promise((r) => setTimeout(r, 5));
+      inFlight -= 1;
+      const u = new URL(url);
+      const key = `${u.searchParams.get('name')}|${u.searchParams.get('type')}`;
+      return { ok: true, json: async () => (dnsMap[key] ?? dnsMap.default) };
+    };
+    for (const t of ['28', '5', '15', '2', '6', '16', '257']) dnsMap[`example.com|${t}`] = emptyDns();
+    dnsMap['_dmarc.example.com|16'] = emptyDns();
+    const { fetchFn } = makeFetch([cf, googleHandler(dnsMap)]);
+    const r = createResolver(fetchFn);
+    await r.runLookup('example.com');
+    assert.ok(maxInFlight > 1);
+    assert.ok(maxInFlight <= 6);
   });
 });
 
