@@ -32,7 +32,7 @@
           <p><strong>Commands</strong></p>
           <ul>
             <li><code>whois &lt;domain&gt;</code> — RDAP lookup via rdap.org (registrar, status, NS, events).</li>
-            <li><code>dig &lt;domain&gt; [type]</code> — DNS via Google Public DNS (<code>A</code>, <code>AAAA</code>, <code>MX</code>, <code>TXT</code>, <code>NS</code>, <code>SOA</code>, plus <code>DMARC</code> / DKIM helpers).</li>
+            <li><code>dns &lt;domain|ip&gt;</code> — full DNS report via Cloudflare/Google DNS-over-HTTPS (records, SPF/DMARC/DKIM probes, ASN/PTR on NS targets; reverse report for IPs).</li>
             <li><code>osint &lt;ip|domain&gt;</code> — geo/ASN snapshot plus quick links (Shodan, Censys, VirusTotal, etc.).</li>
             <li><code>subdomains &lt;domain&gt;</code> — crt.sh certificate transparency search.</li>
             <li><code>headers &lt;url&gt;</code> — fetch response headers and flag framing / CSP-related values.</li>
@@ -52,7 +52,7 @@
             <strong>Limits</strong> — third-party APIs rate-limit, change shape, and sometimes need
             a CORS proxy hop (<code>news</code>, <code>mac</code>). Results are only as fresh as those
             sources. This is a convenience shell for demos and quick checks, not a replacement for
-            local <code>dig</code> / RDAP clients or authenticated intel platforms.
+            local DNS / RDAP clients or authenticated intel platforms.
           </p>
         </div>
       </details>
