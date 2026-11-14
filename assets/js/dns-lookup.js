@@ -318,6 +318,11 @@
     let asnInFlight = 0;
     const asnWaiters = [];
 
+    function resetAsnRunState() {
+      asnBudgetRemaining = 15;
+      asnStopped = false;
+    }
+
     function fetchWithTimeout(url, init, ms) {
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), ms);
@@ -400,16 +405,15 @@
     }
 
     async function lookupAsn(ip) {
-      if (asnCache.has(ip)) return asnCache.get(ip);
+      if (asnCache.has(ip)) {
+        const cached = asnCache.get(ip);
+        if (cached && cached.asn) return cached;
+      }
       if (asnStopped) {
-        const stub = { ip, asn: null, org: null, skipped: true };
-        asnCache.set(ip, stub);
-        return stub;
+        return { ip, asn: null, org: null, skipped: true };
       }
       if (asnBudgetRemaining <= 0) {
-        const stub = { ip, asn: null, org: null, skipped: true };
-        asnCache.set(ip, stub);
-        return stub;
+        return { ip, asn: null, org: null, skipped: true };
       }
 
       const runLookup = async () => {
@@ -446,7 +450,9 @@
         const w = asnWaiters.shift();
         if (w) w();
       }
-      asnCache.set(ip, result);
+      if (result.asn) {
+        asnCache.set(ip, result);
+      }
       return result;
     }
 
@@ -816,6 +822,7 @@
           lines: usageLines(),
         };
       }
+      resetAsnRunState();
       if (norm.kind === 'domain') {
         const report = await runDomainLookup(norm.value, extraArgs);
         return { ok: true, ...report };

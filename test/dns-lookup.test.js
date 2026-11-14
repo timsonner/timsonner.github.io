@@ -425,6 +425,36 @@ describe('dns-lookup', () => {
     assert.ok(cacheKeysAfterTwo.length > 0);
   });
 
+  it('resets ASN budget on each dns run so later runs still get owners', async () => {
+    const dnsMap = { default: emptyDns() };
+    const makeARecords = (domain, count, base) => {
+      const answers = [];
+      for (let i = 0; i < count; i += 1) {
+        answers.push({ name: `${domain}.`, type: 1, TTL: 60, data: `192.0.2.${base + i}` });
+      }
+      dnsMap[`${domain}|1`] = { Status: 0, Answer: answers };
+    };
+    makeARecords('heavy-a.example', 10, 1);
+    makeARecords('heavy-b.example', 10, 20);
+    for (const domain of ['heavy-a.example', 'heavy-b.example']) {
+      for (const t of ['28', '5', '15', '2', '6', '16', '257']) dnsMap[`${domain}|${t}`] = emptyDns();
+      dnsMap[`_dmarc.${domain}|16`] = emptyDns();
+    }
+    const ipapi = ipapiHandler({});
+    const { fetchFn } = makeFetch([cloudflareHandler(dnsMap), googleHandler(dnsMap), ipapi.handler]);
+    const r = createResolver(fetchFn);
+    const textA = (await r.runLookup('heavy-a.example')).lines.join('\n');
+    const textB = (await r.runLookup('heavy-b.example')).lines.join('\n');
+    assert.match(textA, /AS64496/);
+    assert.match(textB, /AS64496/);
+    assert.ok(ipapi.getCount() > 15);
+    assert.equal(r._getAsnState().asnBudgetRemaining, 5);
+    const callsBeforeCachedRerun = ipapi.getCount();
+    await r.runLookup('heavy-a.example');
+    assert.equal(r._getAsnState().asnBudgetRemaining, 15);
+    assert.equal(ipapi.getCount(), callsBeforeCachedRerun);
+  });
+
   it('runs wave-one queries through the DoH pool', async () => {
     let inFlight = 0;
     let maxInFlight = 0;
