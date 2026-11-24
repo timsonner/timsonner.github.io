@@ -77,7 +77,6 @@ Mini browser for investigating pages in-frame (`_includes/proxy-browser.html` + 
 ├── workers/feeds/           # timsonner-feeds Worker (not published by Jekyll)
 ├── index.html               # Homepage (tools + latest posts)
 ├── news.html                # News headlines
-├── python.html
 ├── Gemfile                  # Ruby / GitHub Pages deps
 └── .github/copilot-instructions.md
 ```
