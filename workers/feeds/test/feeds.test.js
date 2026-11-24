@@ -110,7 +110,7 @@ test("catalog is the terminal list plus workflow feeds, with CrowdStrike gone", 
   }
   assert.equal(keys.size, FEEDS.length);
   assert.equal(new Set(FEEDS.map((feed) => feed.url)).size, FEEDS.length);
-  assert.equal(FEEDS.length, 51);
+  assert.equal(FEEDS.length, 52);
   assert.equal(FEEDS.find((feed) => feed.key === "projectzero").url, "https://projectzero.google/feed.xml");
   assert.equal(FEEDS.find((feed) => feed.key === "phoronix").category, "Linux/Tech");
   assert.equal(FEEDS.find((feed) => feed.key === "cisa").category, "Advisories");
